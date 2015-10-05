@@ -1,6 +1,6 @@
 Import("environment")
 
-no_mmap = True
+no_mmap = False
 
 bufferfile = {}
 
