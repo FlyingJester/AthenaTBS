@@ -1,0 +1,14 @@
+import sys
+
+Import("environment")
+
+sources = []
+
+if sys.platform.startswith("win"):
+    sources += ["sleep_windows.c"]
+else:
+    sources += ["sleep_unix.c"]
+    
+athena_time = environment.Library("athena_time", sources)
+
+Return("athena_time")

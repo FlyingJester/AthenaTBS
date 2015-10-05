@@ -1,0 +1,15 @@
+import os
+
+Import("environment")
+
+platform_dirs = []
+
+for f in os.listdir(os.getcwd()):
+    if os.path.isdir(f):
+        platform_dirs += [f]
+
+libs = SConscript(dirs = platform_dirs, exports = ["environment"])
+
+environment.Append(CPPPATH = [os.getcwd()])
+
+Return("libs")

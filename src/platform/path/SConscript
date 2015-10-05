@@ -1,0 +1,10 @@
+import os
+
+Import("environment")
+
+if os.name == "posix":
+    athena_pathutils = environment.Library("athena_pathutils", ["path.c", "filetype_unix.c"])
+else:
+    athena_pathutils = environment.Library("athena_pathutils", ["path.c"])
+
+Return("athena_pathutils")

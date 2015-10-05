@@ -1,0 +1,20 @@
+Import("environment")
+
+no_mmap = True
+
+bufferfile = {}
+
+l_env = environment.Clone()
+
+configure = Configure(l_env)
+
+if not no_mmap and configure.CheckCHeader("sys/mman.h"):
+    bufferfile = environment.Library("athena_bufferfile", ["bufferfile_mmap.c"])
+elif configure.CheckCHeader("unistd.h") and configure.CheckCHeader("sys/stat.h"):
+    bufferfile = environment.Library("athena_bufferfile", ["bufferfile_unix.c"])
+else:
+    bufferfile = environment.Library("athena_bufferfile", ["bufferfile_c.c"])
+
+l_env = configure.Finish()
+
+Return("bufferfile")

@@ -1,0 +1,5 @@
+[
+    {"attributes":{ "width":24, "height":24 }},
+    {"file":"grass1.png", "obstruction_value": 1.0 },
+    {"file":"water1.png", "obstruction_value": 0.0 }
+]

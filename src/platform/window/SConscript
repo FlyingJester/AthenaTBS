@@ -1,0 +1,33 @@
+import os
+import sys
+
+Import("environment")
+
+window_environment = environment.Clone()
+
+# Intended to force X11 on Windows (via cygwin) or OS X
+prefer_x11 = False
+
+# Intended to force the use of GNUStep on non-OS X platforms.
+use_cocoa = False
+
+# Forces the use of SDL2 even on platforms with native backends
+use_sdl2 = True
+
+if use_sdl2:
+    athena_window = window_environment.SharedLibrary("athena_window", ["window.c", "window_sdl.c"], LIBS = ["sdl2"])
+elif (sys.platform == "darwin" and not prefer_x11) or use_cocoa:
+    athena_window = window_environment.SharedLibrary("athena_window", ["window.c", "window_cocoa.m"])
+elif os.name == "posix" or prefer_x11:
+    window_environment.Append(CFLAGS = "-Wno-variadic-macros")
+    if sys.platform == "darwin":
+        window_environment.Append(CPPPATH = ["/opt/X11/include"], LIBPATH = ["/opt/X11/lib"])
+    athena_window = window_environment.SharedLibrary("athena_window",
+        ["window.c", "window_x11.c"],
+        LIBS = ["x11"])
+else:
+    print "WARNING: Using the dummy windowing backend"
+    athena_window = window_environment.Library("athena_window", ["window.c", "window_dummy.c"])
+
+
+Return("athena_window")
