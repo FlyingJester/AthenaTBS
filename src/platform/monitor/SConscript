@@ -1,0 +1,7 @@
+Import("environment")
+
+libyyymonitor = SConscript(dirs = ["libyyymonitor"], exports = ["environment"])
+
+athena_monitor = environment.SharedLibrary("athena_monitor", ["monitor_yyy.cpp"], LIBS = [libyyymonitor])
+
+Return("athena_monitor")
