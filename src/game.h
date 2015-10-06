@@ -9,7 +9,7 @@ struct Athena_MessageList{
     struct Athena_MessageList *next;
 };
 
-/* Event queue and locking monitor to get events on. `status will be made -1 on exit or error. */
+/* Event queue and locking monitor to get events on. `status' will be made -1 on exit or error. */
 struct Athena_EventData{
     struct Athena_Monitor *monitor;
     struct Athena_MessageList *msg;
@@ -27,3 +27,4 @@ typedef unsigned (*athena_field_condition)(const struct Athena_Field *field, uns
 unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players);
 
 int Athena_Game(struct Athena_Field *field, unsigned num_players, athena_field_condition win_condition);
+void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_MessageList *next);

@@ -41,3 +41,10 @@ int Athena_Game(struct Athena_Field *field, unsigned num_players, athena_field_c
     }while(!(winner = win_condition(field, num_players)));
     return 0;
 }
+
+void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_MessageList *next){
+    if(to==NULL)
+        to[0] = next;
+    else
+        Athena_AppendMessageList(&(to[0]->next), next);
+}

@@ -6,7 +6,7 @@ libathena = environment.StaticLibrary("athena",
     [
         "game.c", "ai.c", "unit.c", "tile.c", "tileset.c", "spriteset.c", "field.c", "collision.c", 
         "animation.c", "image.c", "load_png.c", "load_tga.c", "container.c", "turbo_json_helpers.c",
-        "server_thread.c"
+        "server_thread.c", "ui_thread.c"
     ],
     LIBS = [platform, "png", turbojson])
 
