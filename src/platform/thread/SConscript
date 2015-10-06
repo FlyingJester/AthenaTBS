@@ -1,0 +1,11 @@
+import sys
+
+Import("environment")
+
+# Use this to try and force the use of Cocoa/GNUStep.
+use_cocoa = False
+
+if sys.platform == "darwin" or use_cocoa:
+    libathena_thread = environment.SharedLibrary("athena_thread", ["thread_cocoa.m"], FRAMEWORKS = ["Foundation"])
+    
+Return("libathena_thread")
