@@ -8,16 +8,31 @@ void Athena_ServerThreadWrapper(void *that){
     Athena_ServerThread(that);
 }
 
-static int athena_handle_message_iter(struct Athena_MessageList *msg){
+#define ATHENA_MESSAGE_TYPE(TYPE_2) Athena_ ## TYPE_2 ## MessageType
+
+#define ATHENA_MESSAGE_TYPE_STRING(TYPE_1)\
+const char ATHENA_MESSAGE_TYPE(TYPE_1) [] = #TYPE_1
+
+ATHENA_MESSAGE_TYPE_STRING(EndTurn);
+ATHENA_MESSAGE_TYPE_STRING(MoveUnit);
+ATHENA_MESSAGE_TYPE_STRING(AttackUnit);
+ATHENA_MESSAGE_TYPE_STRING(BuildUnit);
+ATHENA_MESSAGE_TYPE_STRING(BuildTile);
+
+#undef ATHENA_MESSAGE_TYPE_STRING
+
+static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Athena_GameState *that){
     if(!msg){
         return 0;
     }
     else{
         const struct Turbo_Value *type = Turbo_Helper_GetConstObjectElement(&msg->value, "type");
         if(type){
-        
+            if(Turbo_Helper_CompareStringConstant(type, ATHENA_MESSAGE_TYPE(EndTurn))){
+                that->whose_turn = (that->whose_turn+1) % that->num_players;
+            }
         }
-        return athena_handle_message_iter(msg->next);
+        return athena_handle_message_iter(msg->next, that);
     }
 }
 
@@ -46,7 +61,7 @@ int Athena_ServerThread(struct Athena_GameState *that){
     Athena_LockMonitor(that->event.monitor);
 server_thread_begin:
 
-    athena_handle_message_iter(that->event.msg);
+    athena_handle_message_iter(that->event.msg, that);
 
     msg = that->event.msg;
     that->event.msg = NULL;

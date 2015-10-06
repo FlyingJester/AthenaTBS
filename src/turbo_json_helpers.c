@@ -31,3 +31,10 @@ const struct Turbo_Value *Turbo_Helper_GetConstObjectElement(const struct Turbo_
     return NULL;
 }
 
+unsigned Turbo_Helper_CompareString(const struct Turbo_Value *str_value, const char *with, unsigned len){
+    if(str_value->type!=TJ_String)
+        return 0;
+    if(str_value->length != len)
+        return 0;
+    return memcmp(with, str_value->value.string, len)==0;
+}

@@ -19,7 +19,8 @@ struct Athena_EventData{
 struct Athena_GameState{
     struct Athena_Field *field;
     struct Athena_EventData event;
-    
+    struct Athena_Player *players;
+    unsigned whose_turn, num_players;
 };
 
 typedef unsigned (*athena_field_condition)(const struct Athena_Field *field, unsigned num_players);
