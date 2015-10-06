@@ -15,13 +15,17 @@ int Athena_UIThread(struct Athena_GameState *that){
 
 int Athena_UIThreadFrame(struct Athena_GameState *that){
     struct Athena_MessageList *messages = NULL;
-    Athena_LockMonitor(that->event.monitor);
     
     { /* Start Drawing. Maybe someday move this out of here. Who knows. Not me. */
-    
-    
+
+        { /* Field drawing, requires a lock. */
+            int Athena_DrawField(const struct Athena_Field *field, struct Athena_Image *to, int x, int y);
+            
+        } /* End Field Drawing */
+        
     } /* End Drawing. */
     
+    Athena_LockMonitor(that->event.monitor);
     {
         const int status = that->event.status;
         if(messages){

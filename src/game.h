@@ -16,10 +16,17 @@ struct Athena_EventData{
     int status;
 };
 
+/* UI and graphics data. This must only ever be touched by the UI thread. */
+struct Athena_UI{
+    int camera_x, camera_y;
+    struct Athena_Window *window;
+};
+
 struct Athena_GameState{
     struct Athena_Field *field;
     struct Athena_EventData event;
     struct Athena_Player *players;
+    struct Athena_UI ui;
     unsigned whose_turn, num_players;
 };
 
