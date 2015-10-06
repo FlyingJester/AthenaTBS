@@ -1,3 +1,6 @@
 [submodule "TurboJSON_src/TurboJSON"]
 	path = TurboJSON_src/TurboJSON
 	url = https://github.com/FlyingJester/TurboJSON
+[submodule "src/platform/monitor/libyyymonitor"]
+	path = src/platform/monitor/libyyymonitor
+	url = https://github.com/FlyingJester/libyyymonitor

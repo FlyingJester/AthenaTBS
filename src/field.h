@@ -19,8 +19,8 @@ int Athena_LoadFieldFromFile(const char *file, struct Athena_Field *to);
 
 /* Semi-private helper functions */
 unsigned short Athena_TileIndexAt(const struct Athena_Field *field, unsigned x, unsigned y);
-int Athena_LoadFieldFromMemory(const void *data, unsigned len, struct Athena_Field *to);
+int Athena_LoadFieldFromMemory(const void *data, unsigned len, struct Athena_Field *to, const char *directory);
 
 struct Turbo_Value;
 /* value->type _must_ be Object */
-int Athena_LoadFieldFromTurboValue(const struct Turbo_Value *value, struct Athena_Field *to);
+int Athena_LoadFieldFromTurboValue(const struct Turbo_Value *value, struct Athena_Field *to, const char *directory);
