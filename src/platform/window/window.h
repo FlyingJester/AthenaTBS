@@ -14,6 +14,7 @@ int Athena_DrawImage(struct Athena_Window *that, int x, int y, unsigned w, unsig
 int Athena_DrawRect(struct Athena_Window *that, int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
 int Athena_DrawLine(struct Athena_Window *that, int x1, int y1, int x2, int y2, const struct Athena_Color *color);
 
+/* May return 0 for no events. Non-blocking */
 unsigned Athena_GetEvent(struct Athena_Window *that, struct Athena_Event *to);
 
 int Athena_FlipWindow(struct Athena_Window *that);

@@ -21,6 +21,22 @@ ATHENA_MESSAGE_TYPE_STRING(BuildTile);
 
 #undef ATHENA_MESSAGE_TYPE_STRING
 
+enum Athena_ServerMessageTypes { 
+    Nothing,
+    EndTurn,
+    MoveUnit,
+    AttackUnit,
+    BuildUnit,
+    BuildTile,
+    NumServerMessageTypes
+};
+
+struct Athena_InternalServerMessage{
+    enum Athena_ServerMessageTypes type;
+    
+    
+};
+
 static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Athena_GameState *that){
     if(!msg){
         return 0;

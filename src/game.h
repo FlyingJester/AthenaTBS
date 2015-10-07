@@ -35,5 +35,5 @@ struct Athena_GameState{
 typedef unsigned (*athena_field_condition)(const struct Athena_Field *field, unsigned num_players);
 unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players);
 
-int Athena_Game(struct Athena_Field *field, unsigned num_players, athena_field_condition win_condition);
+int Athena_Game(struct Athena_Field *field, unsigned num_players, struct Athena_Player *players, struct Athena_Window *window, athena_field_condition win_condition);
 void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_MessageList *next);
