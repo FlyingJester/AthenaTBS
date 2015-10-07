@@ -1,5 +1,6 @@
 #pragma once
 #include "field.h"
+#include "image.h"
 #include "monitor/monitor.h"
 #include "window/window.h"
 #include <TurboJSON/value.h>
@@ -11,23 +12,24 @@ struct Athena_MessageList{
 
 /* Event queue and locking monitor to get events on. `status' will be made -1 on exit or error. */
 struct Athena_EventData{
-    struct Athena_Monitor *monitor;
     struct Athena_MessageList *msg;
-    int status;
 };
 
 /* UI and graphics data. This must only ever be touched by the UI thread. */
 struct Athena_UI{
     int camera_x, camera_y;
+    struct Athena_Image framebuffer;
     struct Athena_Window *window;
 };
 
 struct Athena_GameState{
+    struct Athena_Monitor *monitor;
     struct Athena_Field *field;
     struct Athena_EventData event;
     struct Athena_Player *players;
     struct Athena_UI ui;
     unsigned whose_turn, num_players;
+    int status;
 };
 
 typedef unsigned (*athena_field_condition)(const struct Athena_Field *field, unsigned num_players);

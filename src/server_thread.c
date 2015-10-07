@@ -58,7 +58,7 @@ static void athena_free_messages(struct Athena_MessageList *msg){
 
 int Athena_ServerThread(struct Athena_GameState *that){
     struct Athena_MessageList *msg;
-    Athena_LockMonitor(that->event.monitor);
+    Athena_LockMonitor(that->monitor);
 server_thread_begin:
 
     athena_handle_message_iter(that->event.msg, that);
@@ -66,18 +66,18 @@ server_thread_begin:
     msg = that->event.msg;
     that->event.msg = NULL;
 
-    Athena_UnlockMonitor(that->event.monitor);
+    Athena_UnlockMonitor(that->monitor);
 
     if(msg)
         athena_free_messages(msg);
 
-    Athena_LockMonitor(that->event.monitor);
-    if(that->event.status==0){
-        Athena_WaitMonitor(that->event.monitor);
+    Athena_LockMonitor(that->monitor);
+    if(that->status==0){
+        Athena_WaitMonitor(that->monitor);
         goto server_thread_begin;    
     }
 
-    Athena_UnlockMonitor(that->event.monitor);
+    Athena_UnlockMonitor(that->monitor);
 
     return 1;
 }

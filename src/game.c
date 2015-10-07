@@ -33,12 +33,17 @@ unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num
 }
 
 int Athena_Game(struct Athena_Field *field, unsigned num_players, athena_field_condition win_condition){
-    unsigned winner = 0;
-    do{
-        
-        
-        
-    }while(!(winner = win_condition(field, num_players)));
+    struct Athena_GameState game_state;
+    game_state.monitor = Athena_CreateMonitor();
+athena_game_start:
+    
+    Athena_LockMonitor(game_state.monitor);
+    {
+        const int status = game_state.status;
+        Athena_UnlockMonitor(game_state.monitor);
+        if(status==0)
+            goto athena_game_start;
+    }
     return 0;
 }
 

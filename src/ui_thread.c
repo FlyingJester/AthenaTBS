@@ -19,20 +19,20 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
     { /* Start Drawing. Maybe someday move this out of here. Who knows. Not me. */
 
         { /* Field drawing, requires a lock. */
-            int Athena_DrawField(const struct Athena_Field *field, struct Athena_Image *to, int x, int y);
+            Athena_DrawField(that->field, &that->ui.framebuffer, that->ui.camera_x, that->ui.camera_y);
             
         } /* End Field Drawing */
         
     } /* End Drawing. */
     
-    Athena_LockMonitor(that->event.monitor);
+    Athena_LockMonitor(that->monitor);
     {
-        const int status = that->event.status;
+        const int status = that->status;
         if(messages){
-            Athena_NotifyMonitor(that->event.monitor);
+            Athena_NotifyMonitor(that->monitor);
             Athena_AppendMessageList(&that->event.msg, messages);  
         }      
-        Athena_UnlockMonitor(that->event.monitor);
+        Athena_UnlockMonitor(that->monitor);
         return status;
     }
 }
