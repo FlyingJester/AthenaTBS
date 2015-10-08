@@ -43,7 +43,7 @@ unsigned Athena_AddTile(struct Athena_Tileset *ts, struct Athena_Tile *tile){
 unsigned Athena_AddImage(struct Athena_Tileset *ts, struct Athena_Image *image){
     ts->images.images = Athena_AssureCapacity(ts->images.images, sizeof(struct Athena_Image), ts->images.num_images+1, &(ts->images.images_capacity));
     ts->images.images[ts->images.num_images++] = *image;
-    return ts->tiles.num_tiles-1;
+    return ts->images.num_images-1;
 }
 
 void Athena_AddImageCopy(struct Athena_Tileset *ts, const struct Athena_Image *a_image){
@@ -91,6 +91,9 @@ int Athena_LoadTilesetFromFile(const char *file, struct Athena_Tileset *to){
     void * data = BufferFile(file, &size);
     char *containing_directory = Athena_GetContainingDirectory(file);
 
+    if(!data && size)
+        return 1;
+
     Athena_LoadTilesetFromMemory(data, size, to, containing_directory);
 
     FreeBufferFile(data, size);
@@ -122,7 +125,8 @@ int Athena_LoadTilesetFromTurboValue(const struct Turbo_Value *value, struct Ath
 
             if(height && height->type == TJ_Number)
                 to->tile_height = height->value.number;
-
+            
+            puts("[Athena_LoadTilesetFromTurboValue]Loaded attributes");
             return Athena_LoadTileArrayFromTurboValue(value->value.array + 1, value->length - 1, to, directory);
         }
         else
