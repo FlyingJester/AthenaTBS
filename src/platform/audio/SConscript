@@ -1,0 +1,7 @@
+import os
+
+Import("environment")
+
+athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], LIBS = ["openal"])
+
+Return("athena_audio")
