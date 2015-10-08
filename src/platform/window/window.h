@@ -10,6 +10,9 @@ int Athena_HideWindow(struct Athena_Window *that);
 int Athena_DestroyWindow(struct Athena_Window *that);
 int Athena_IsWindowShown(struct Athena_Window *that);
 
+int Athena_WindowWidth(struct Athena_Window *that);
+int Athena_WindowHeight(struct Athena_Window *that);
+
 int Athena_DrawImage(struct Athena_Window *that, int x, int y, unsigned w, unsigned h, enum Athena_ImageFormat format, const void *RGB);
 int Athena_DrawRect(struct Athena_Window *that, int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
 int Athena_DrawLine(struct Athena_Window *that, int x1, int y1, int x2, int y2, const struct Athena_Color *color);

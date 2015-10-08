@@ -34,7 +34,13 @@ void *BufferFile(const char *file, int *size){
 
         fstat(fd, &lstat);
         size[0] = lstat.st_size;
-        return mmap(NULL, lstat.st_size, PROT_READ, MAP_SHARED, fd, 0);
+        {
+            void *data = mmap(NULL, lstat.st_size, PROT_READ, MAP_SHARED, fd, 0);
+            if(data!=MAP_FAILED)
+                return data;
+            else
+                return NULL;
+        }
     }
 }
 

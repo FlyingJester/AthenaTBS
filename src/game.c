@@ -51,6 +51,8 @@ int Athena_Game(struct Athena_Field *field, unsigned num_players, struct Athena_
     game_state.ui.window = window;
     game_state.event.msg = NULL;
 
+    Athena_CreateImage(&game_state.ui.framebuffer, Athena_WindowWidth(window), Athena_WindowHeight(window));
+
     Athena_StartThread(server_thread);
 athena_game_start:
 

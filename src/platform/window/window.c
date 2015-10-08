@@ -4,6 +4,7 @@
 
 struct Athena_Window {
     void *handle;
+    unsigned w, h;
     unsigned char is_shown;
     unsigned char dirty;
 };
@@ -15,7 +16,10 @@ struct Athena_Window *Athena_CreateWindow(unsigned w, unsigned h, const char *ti
         return NULL;
     if(Athena_Private_CreateWindow(window->handle, 0, 0, w, h, title)<0)
         return NULL;
-
+    
+    window->w = w;
+    window->h = h;
+    
     return window;
 }
 
@@ -40,6 +44,18 @@ int Athena_HideWindow(struct Athena_Window *that){
 
 int Athena_IsWindowShown(struct Athena_Window *that){
     return 0;
+}
+
+int Athena_WindowWidth(struct Athena_Window *that){
+    if(!that)
+        return -1;
+    return that->w;
+}
+
+int Athena_WindowHeight(struct Athena_Window *that){
+    if(!that)
+        return -1;
+    return that->h;
 }
 
 int Athena_DrawImage(struct Athena_Window *that, int x, int y, unsigned w, unsigned h, enum Athena_ImageFormat format, const void *RGB){

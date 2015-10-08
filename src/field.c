@@ -120,12 +120,13 @@ int Athena_LoadFieldFromTurboValue(const struct Turbo_Value *value, struct Athen
         if(height->type != TJ_Number || width->type != TJ_Number)
             return -20;
         
-        if(field->length < to->h){
-            return -21;
-        }
-        
         to->w = width->value.number;
         to->h = height->value.number;
+        
+        if(field->length < to->h){
+            printf("[Athena_LoadFieldFromTurboValue]Field length of %i is too short. Expected %i\n", field->length, to->h);
+            return -21;
+        }
 
     }
 
@@ -148,14 +149,11 @@ int Athena_LoadFieldFromTurboValue(const struct Turbo_Value *value, struct Athen
         free(to->tileset);
         return -30;
     }
-/*
-    struct Athena_TileIndexArray{
-        unsigned short *indices;
-        unsigned num_indices, indices_capacity;
-    };
-*/
-    to->field.indices = malloc(sizeof(unsigned short) * to->w * to->h);
-    ret = athena_load_field_indices_rows(to->w, to->h, to->field.indices, field);
+
+    to->field.num_indices = to->w * to->h;
+    to->field.indices_capacity = to->field.num_indices;
+    to->field.indices = malloc(sizeof(unsigned short) * to->field.num_indices);
+    ret = athena_load_field_indices_rows(to->w, to->h, to->field.indices, field->value.array);
 
     return ret;
 }
