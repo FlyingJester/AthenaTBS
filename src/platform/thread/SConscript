@@ -1,11 +1,19 @@
 import sys
+import os
 
 Import("environment")
 
 # Use this to try and force the use of Cocoa/GNUStep.
 use_cocoa = False
 
-if sys.platform == "darwin" or use_cocoa:
+# Use this to force pthreads on Posix platforms, even if they 
+# have a different native interface, such as Darwin/OS X
+prefer_pthreads = False
+
+if (sys.platform == "darwin" or use_cocoa) and not prefer_pthreads:
     libathena_thread = environment.SharedLibrary("athena_thread", ["thread_cocoa.m"], FRAMEWORKS = ["Foundation"])
+elif os.name == "posix" or prefer_pthreads:
+    libathena_thread = environment.SharedLibrary("athena_thread", ["thread_pthreads.c"], LIBS = ["pthread"])
+    
     
 Return("libathena_thread")
