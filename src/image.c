@@ -2,6 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <string.h>
+
+#if (__FreeBSD__ >= 9) && (!(defined(__APPLE__)))
+
+static void memset_pattern4(void *to, const void *pattern, unsigned long len){
+    while(len--)
+        to[len] = pattern[len % 4];
+}
+
+#endif
 
 #define ATHENA_MIN(A, B) (((A)>(B))?(B):(A))
 
@@ -83,6 +93,35 @@ void Athena_CreateImage(struct Athena_Image *that, unsigned w, unsigned h){
     that->h = h;
 
     that->pixels = calloc(w<<1, h<<1);
+}
+
+void Athena_SetPixel(struct Athena_Image *to, int x, int y, uint32_t color){
+    if(x < 0 || y < 0 || x >= to->w || y >= to->h)
+        return;
+    Athena_Pixel(to, x, y)[0] = color;
+}
+
+uint32_t Athena_GetPixel(struct Athena_Image *to, int x, int y){
+    if(x < 0 || y < 0 || x >= to->w || y >= to->h)
+        return 0;
+    return *Athena_Pixel(to, x, y);
+}
+
+void Athena_FillRect(struct Athena_Image *to, int x, int y, unsigned w, unsigned h, uint32_t color){
+    if(!w || !h)
+        return;
+    if(x < 0 || y < 0 || x >= to->w || y >= to->h)
+        return;
+
+    memset_pattern4(Athena_Pixel(to, x, y), &color, ATHENA_MIN(w, to->w - x)<<2);
+
+    Athena_FillRect(to, x, y+1, w, h-1, color);
+}
+
+void Athena_FillViewport(struct Athena_Viewport *v, uint32_t color);
+
+uint32_t *Athena_Pixel(struct Athena_Image *to, int x, int y){
+    return to->pixels + x + (y * to->w);
 }
 
 unsigned Athena_LoadAuto(struct Athena_Image *to, const char *path){

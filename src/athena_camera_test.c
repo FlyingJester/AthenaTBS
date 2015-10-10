@@ -27,7 +27,10 @@ int main(int argc, char *argv[]){
     
     Athena_ShowWindow(window);
     {
+        const int err = Athena_LoadFieldFromFile("res/maps/cam_test.json", &field);
+/*
         const int err = Athena_LoadFieldFromMemory(field_src, sizeof(field_src), &field, "");
+*/
         if(err!=0){
             fprintf(stderr, "[athena_camera_test][main]Could not load field. Error code %i\n", err);
             return 1;

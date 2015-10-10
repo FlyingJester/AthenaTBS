@@ -1,5 +1,8 @@
 #pragma once
+#include "viewport.h"
 #include <stdint.h>
+
+struct Athena_Viewport;
 
 struct Athena_Image{
     uint32_t *pixels;
@@ -17,6 +20,11 @@ void Athena_DestroyImageArray(struct Athena_ImageArray *ia);
 void Athena_Blit(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y);
 void Athena_CloneImage(struct Athena_Image *to, const struct Athena_Image *from);
 
+void Athena_SetPixel(struct Athena_Image *to, int x, int y, uint32_t color);
+uint32_t Athena_GetPixel(struct Athena_Image *to, int x, int y);
+void Athena_FillRect(struct Athena_Image *to, int x, int y, unsigned w, unsigned h, uint32_t color);
+void Athena_FillViewport(struct Athena_Viewport *v, uint32_t color);
+
 void Athena_CreateImage(struct Athena_Image *that, unsigned w, unsigned h);
 void Athena_DestroyImage(struct Athena_Image *that);
 
@@ -25,6 +33,11 @@ void Athena_DestroyImage(struct Athena_Image *that);
  * Only performs horizontal clipping. 
  */
 void Athena_BlitScanLine(const struct Athena_Image *src, struct Athena_Image *dst, unsigned line, unsigned x, unsigned y);
+
+/*
+ * Semi-private, does no clipping.
+ */
+uint32_t *Athena_Pixel(struct Athena_Image *to, int x, int y);
 
 #define ATHENA_LOADPNG_SUCCESS 0u
 #define ATHENA_LOADPNG_NO_FILE 1u

@@ -15,11 +15,11 @@
 #endif
 
 void Athena_CreateTileset(struct Athena_Tileset *ts){
-    
+    Athena_CreateTileArray(&ts->tiles);
 }
 
 void Athena_DestroyTileset(struct Athena_Tileset *ts){
-
+    Athena_DestroyTileArray(&ts->tiles);
 }
 
 void Athena_CreateTileArray(struct Athena_TileArray *ta){
@@ -161,7 +161,7 @@ int Athena_LoadTileArrayFromTurboValue(const struct Turbo_Value *value, unsigned
             filename[dir_length + 1 + file->length] = '\0';
 
             {
-                const int err = Athena_LoadPNG(&image, filename);
+                const int err = Athena_LoadAuto(&image, filename);
                 free(filename);
                 if(err!=0){
                     return 27;
@@ -247,7 +247,8 @@ static const char test_tileset1[] = "[\
 
 int Athena_Test_TilesetFromMemory(){
     struct Athena_Tileset ts;
-    int err = Athena_LoadTilesetFromMemory(test_tileset1, sizeof test_tileset1, &ts, "res/tests/test_tileset1/");
+    int err = Athena_LoadTilesetFromMemory(
+        test_tileset1, sizeof test_tileset1, &ts, "res/tests/test_tileset1/");
 
     if(err==0)
         return 1;
