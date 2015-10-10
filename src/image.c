@@ -112,10 +112,17 @@ void Athena_FillRect(struct Athena_Image *to, int x, int y, unsigned w, unsigned
         return;
     if(x < 0 || y < 0 || x >= to->w || y >= to->h)
         return;
+    if(w == 1){
+        Athena_SetPixel(to, x, y, color);
+        if(h > 1){
+            Athena_FillRect(to, x, y+1, 1, h-1, color); 
+        }
+    }
+    else{
+        memset_pattern4(Athena_Pixel(to, x, y), &color, ATHENA_MIN(w, to->w - x)<<2);
 
-    memset_pattern4(Athena_Pixel(to, x, y), &color, ATHENA_MIN(w, to->w - x)<<2);
-
-    Athena_FillRect(to, x, y+1, w, h-1, color);
+        Athena_FillRect(to, x, y+1, w, h-1, color);
+    }
 }
 
 void Athena_FillViewport(struct Athena_Viewport *v, uint32_t color);

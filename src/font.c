@@ -9,54 +9,65 @@ struct Athena_Font *LoadFont(const char *filename){
     int size;
     const uint32_t *mem = BufferFile(filename, &size);
     if(mem && size){
-        
-        struct Athena_Font *font = malloc(sizeof(struct Athena_Font));
+
+        struct Athena_Font *font = LoadFontMem(mem, size);
+
+        FreeBufferFile((void *)mem, size);
+        return font;
+
+    }
+    return NULL;
+}
+
+struct Athena_Font *LoadFontMem(const void *mem_z, const unsigned long size){
+    const uint32_t *mem = mem_z;
+    struct Athena_Font *font = malloc(sizeof(struct Athena_Font));
         
 #ifdef __EMSCRIPTEN__
     mem = (uint32_t *)(((uint8_t*)(mem))-1);
 #endif
 
-        if(mem[0]!=0x6e66722e){ /* 0x66722e82 */
-            printf("Bad Signature %x\n", mem[0]);
-            goto bad_ending;
-        }
-        if(((const uint16_t *)(&mem[1]))[0] != 2) goto bad_ending;
-        else{
-            unsigned i = 0, offset = 64;
-            const unsigned num_chars = ((const uint16_t *)(&mem[1]))[1];
-            font->number_glyphs = num_chars;
-            font->glyphs = malloc(num_chars<<3);
-            /* Real data starts at 64. */
-            
-            while(i<num_chars){
-                unsigned w = ((const uint16_t *)(mem + offset))[0],
-                    h = ((const uint16_t *)(mem + offset))[1];
+const uint32_t sig = 
+#ifdef __EMSCRIPTEN__
+    0x66722e82;
+#else
+    0x6e66722e;
+#endif
 
-                offset+=8;
 
-                if(size<(offset+(w*h))*4){
-                    puts("Unexpected End of File");
-                    /* TODO: HUGE MEMORY LEAK! */
-                    free(font->glyphs);
-                    goto bad_ending;
-                }
-                
-                Athena_CreateImage(font->glyphs + i, w, h);
-                memcpy(font->glyphs[i].pixels, mem + offset, w*h<<2);
-                offset+=w*h;
-                i++;
-            }
-            goto ending;
-        }
-
-    bad_ending:
-        free(font);
-        font = NULL;
-    ending:
-        FreeBufferFile((void *)mem, size);
-        return font;
+    if(mem[0]!=sig){ /* 0x66722e82 */
+        printf("Bad Signature %x\n", mem[0]);
+        return NULL;
     }
-    return NULL;
+    if(((const uint16_t *)(&mem[1]))[0] != 2)
+        return NULL;
+    else{
+        unsigned i = 0, offset = 64;
+        const unsigned num_chars = ((const uint16_t *)(&mem[1]))[1];
+        font->number_glyphs = num_chars;
+        font->glyphs = malloc(num_chars<<3);
+        /* Real data starts at 64. */
+            
+        while(i<num_chars){
+            unsigned w = ((const uint16_t *)(mem + offset))[0],
+                h = ((const uint16_t *)(mem + offset))[1];
+
+            offset+=8;
+
+            if(size<(offset+(w*h))*4){
+                puts("Unexpected End of File");
+                /* TODO: HUGE MEMORY LEAK! */
+                free(font->glyphs);
+                return NULL;
+            }
+
+            Athena_CreateImage(font->glyphs + i, w, h);
+            memcpy(font->glyphs[i].pixels, mem + offset, w*h<<2);
+            offset+=w*h;
+            i++;
+        }
+    }
+    return font;
 }
 
 struct Athena_Image *GetBoundedGlyph(struct Athena_Font *font, unsigned i){
