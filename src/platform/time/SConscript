@@ -7,7 +7,7 @@ sources = []
 if sys.platform.startswith("win"):
     sources += ["sleep_windows.c"]
 else:
-    sources += ["sleep_unix.c"]
+    sources += ["sleep_unix.c", "ticks_unix.c"]
     
 athena_time = environment.Library("athena_time", sources)
 
