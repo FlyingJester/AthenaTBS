@@ -1,5 +1,6 @@
 #include "sleep.h"
 #include <time.h>
+#include <stdlib.h>
 
 void Athena_MillisecondSleep(unsigned ms){
     struct timespec t;
