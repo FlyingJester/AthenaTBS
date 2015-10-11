@@ -4,11 +4,20 @@ Import("environment")
 
 sources = []
 
+conf = Configure(environment)
+
 if sys.platform.startswith("win"):
     sources += ["sleep_windows.c"]
 else:
-    sources += ["sleep_unix.c", "ticks_unix.c"]
-    
+    sources += ["ticks_unix.c"]
+    if conf.CheckCHeader("unistd.h") and conf.CheckFunc("usleep"):
+        sources += ["sleep_usleep.c"]
+    elif conf.CheckCHeader("time.h") and conf.CheckFunc("nanosleep"):
+        sources += ["sleep_nanosleep.c"]
+
+
+environment = conf.Finish()
+
 athena_time = environment.Library("athena_time", sources)
 
 Return("athena_time")
