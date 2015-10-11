@@ -23,5 +23,5 @@ int main(int argc, char *argv[]){
 
         }
     }while(event.type != athena_quit_event);
-
+    return 0;
 }
