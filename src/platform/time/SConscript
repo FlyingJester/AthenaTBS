@@ -20,6 +20,6 @@ else:
 
 environment = conf.Finish()
 
-athena_time = environment.Library("athena_time", sources)
+athena_time = environment.Library("athena_time", sources, CPPDEFINES = ["_POSIX_C_SOURCE=199309L"])
 
 Return("athena_time")
