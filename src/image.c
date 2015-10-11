@@ -234,12 +234,18 @@ uint8_t Athena_RawToA(uint32_t rgba){
     return (rgba >> 24) & 0xFF;
 }
 
-uint32_t Athena_RGBARawBlend(uint32_t src, uint32_t dst){
-    uint8_t src_r, src_g, src_b, src_a, dst_r, dst_g, dst_b, dst_a;
-    Athena_RawToRGBA(src, &src_r, &src_g, &src_b, &src_a);
-    Athena_RawToRGBA(dst, &dst_r, &dst_g, &dst_b, &dst_a);
-    return Athena_RGBABlend(src_r, src_g, src_b, src_a, dst_r, dst_g, dst_b, dst_a);
+#define ATHENA_DECONSTRUCT_BLENDER(NAME)\
+uint32_t Athena_RGBARaw ## NAME(uint32_t src, uint32_t dst){\
+    uint8_t src_r, src_g, src_b, src_a, dst_r, dst_g, dst_b, dst_a;\
+    Athena_RawToRGBA(src, &src_r, &src_g, &src_b, &src_a);\
+    Athena_RawToRGBA(dst, &dst_r, &dst_g, &dst_b, &dst_a);\
+    return Athena_RGBA ## NAME(src_r, src_g, src_b, src_a, dst_r, dst_g, dst_b, dst_a);\
 }
+
+ATHENA_DECONSTRUCT_BLENDER(Blend)
+ATHENA_DECONSTRUCT_BLENDER(Multiply)
+
+#undef ATHENA_DECONSTRUCT_BLENDER
 
 uint32_t Athena_RGBABlend(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
     float accum_r = ((float)dst_r)/255.0f, accum_g = ((float)dst_g)/255.0f, accum_b = ((float)dst_b)/255.0f;
@@ -251,6 +257,15 @@ uint32_t Athena_RGBABlend(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t s
     accum_b = (accum_b * dst_factor) + ((((float)src_b)/255.0f) * src_factor);
 
     return Athena_RGBAToRaw(accum_r * 255.0f, accum_g * 255.0f, accum_b * 255.0f, 0xFF);
+}
+
+uint32_t Athena_RGBAMultiply(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
+    const uint16_t mul_r = src_r * dst_r, 
+        mul_g = src_g * dst_g, 
+        mul_b = src_b * dst_b, 
+        mul_a = src_a * dst_a;
+
+    return Athena_RGBAToRaw(mul_r / 65025, mul_g / 65025, mul_b / 65025, mul_a / 65025);
 }
 
 unsigned Athena_LoadAuto(struct Athena_Image *to, const char *path){

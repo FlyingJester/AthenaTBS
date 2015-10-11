@@ -52,6 +52,9 @@ uint8_t Athena_RawToA(uint32_t rgba);
 uint32_t Athena_RGBARawBlend(uint32_t src, uint32_t dst);
 uint32_t Athena_RGBABlend(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
 
+uint32_t Athena_RGBARawMultiply(uint32_t src, uint32_t dst);
+uint32_t Athena_RGBAMultiply(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
+
 #define ATHENA_LOADPNG_SUCCESS 0u
 #define ATHENA_LOADPNG_NO_FILE 1u
 #define ATHENA_LOADPNG_BADFILE 2u
