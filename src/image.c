@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <string.h>
 
-#if (__FreeBSD__ >= 9) && (!(defined(__APPLE__)))
+#if (!defined(__APPLE__)) || ((defined(__FreeBSD__)) && (__FreeBSD__ < 9))
 
 static void memset_pattern4(void *to, const void *pattern, unsigned long len){
     while(len--)
