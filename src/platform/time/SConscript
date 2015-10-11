@@ -6,13 +6,15 @@ sources = []
 
 conf = Configure(environment)
 
+prefer_nanosleep = True
+
 if sys.platform.startswith("win"):
     sources += ["sleep_windows.c"]
 else:
     sources += ["ticks_unix.c"]
-    if conf.CheckCHeader("unistd.h") and conf.CheckFunc("usleep"):
+    if conf.CheckCHeader("unistd.h") and conf.CheckFunc("usleep") and not prefer_nanosleep:
         sources += ["sleep_usleep.c"]
-    elif conf.CheckCHeader("time.h") and conf.CheckFunc("nanosleep"):
+    elif conf.CheckCHeader("time.h") and conf.CheckFunc("nanosleep") or prefer_nanosleep:
         sources += ["sleep_nanosleep.c"]
 
 
