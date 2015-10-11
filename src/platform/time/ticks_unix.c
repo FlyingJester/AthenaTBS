@@ -1,5 +1,6 @@
 #include "ticks.h"
 #include <sys/time.h>
+#include <stdlib.h>
 
 unsigned long Athena_GetMillisecondTicks(){
     struct timeval t;
