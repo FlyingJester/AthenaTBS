@@ -192,7 +192,36 @@ void Athena_FillRect(struct Athena_Image *to, int x, int y, unsigned w, unsigned
     }
 }
 
-void Athena_FillViewport(struct Athena_Viewport *v, uint32_t color);
+static int athena_blend_rect_iter(struct Athena_Viewport *to, uint32_t color, unsigned laser_x, unsigned laser_y, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
+    if(laser_y >= to->h)
+        return 0;
+    else if(laser_x >= to->w)
+        return athena_blend_rect_iter(to, color, 0, laser_y + 1, blend_func);
+    else{
+        Athena_BlendPixel(to->image, to->x + laser_x, to->y + laser_y, color, blend_func);
+        return athena_blend_rect_iter(to, color, laser_x + 1, laser_y, blend_func);
+    }
+}
+
+void Athena_BlendRect(struct Athena_Image *dst, int x, int y, unsigned w, unsigned h, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
+    struct Athena_Viewport to;
+    to.image = dst;
+    to.x = x;
+    to.y = y;
+    to.w = w;
+    to.h = h;
+    
+    Athena_BlendViewport(&to, color, blend_func);
+}
+
+void Athena_BlendViewport(struct Athena_Viewport *v, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
+    athena_blend_rect_iter(v, color, 0, 0, blend_func);
+}
+
+void Athena_BlendPixel(struct Athena_Image *to, int x, int y, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
+    uint32_t *to_pixel = Athena_Pixel(to, x, y);
+    to_pixel[0] = blend_func(*to_pixel, color);
+}
 
 uint32_t *Athena_Pixel(struct Athena_Image *to, int x, int y){
     return (uint32_t *)Athena_PixelConst(to, x, y);
