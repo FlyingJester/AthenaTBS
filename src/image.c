@@ -48,6 +48,12 @@ void Athena_LowerBlitScanLine(const struct Athena_Image *src, struct Athena_Imag
     memcpy(dst->pixels + x + (y * dst->w), src->pixels + (line * src->w), len << 2);
 }
 
+/* #define ATHENA_DISABLE_OPT_BLEND 
+    #pragma error
+*/
+
+#ifndef ATHENA_DISABLE_OPT_BLEND
+
 static unsigned athena_find_solid_block(const struct Athena_Image *src, unsigned x, unsigned y){
 /* the > 0xFA is a Slightly greedy fudge to improve performance. */
     if(x < src->w && Athena_RawToA( *Athena_PixelConst(src, x, y) ) > 0xFA)
@@ -64,16 +70,20 @@ static unsigned athena_find_empty_block(const struct Athena_Image *src, unsigned
     return x;
 }
 
+#endif
+
 static int athena_blit_scanline_blended_iter(const struct Athena_Image *src, struct Athena_Viewport *to, unsigned laser_x, unsigned laser_y){
     if(laser_y >= to->h)
         return 0;
     else if(laser_x >= to->w)
         return athena_blit_scanline_blended_iter(src, to, 0, laser_y + 1);
     else{
-        const unsigned empty_x = athena_find_empty_block(src, laser_x, laser_y),
-            solid_x = athena_find_solid_block(src, laser_x, laser_y);
+
         uint32_t *pixel_to = Athena_Pixel(to->image, to->x + laser_x, to->y + laser_y);
         const uint32_t *pixel_from = Athena_PixelConst(src, laser_x, laser_y);
+#ifndef ATHENA_DISABLE_OPT_BLEND
+        const unsigned empty_x = athena_find_empty_block(src, laser_x, laser_y),
+            solid_x = athena_find_solid_block(src, laser_x, laser_y);
         if(solid_x > laser_x){
             const unsigned len = ATHENA_MIN(solid_x - laser_x, to->w - laser_x);
             memcpy(pixel_to, pixel_from, len << 2);
@@ -83,7 +93,9 @@ static int athena_blit_scanline_blended_iter(const struct Athena_Image *src, str
             /* Just skip the zero alpha area */
             return athena_blit_scanline_blended_iter(src, to, empty_x, laser_y);
         }
-        else{
+        else
+#endif
+        {
             pixel_to[0] = Athena_RGBARawBlend(*pixel_from, *pixel_to);
             return athena_blit_scanline_blended_iter(src, to, laser_x + 1, laser_y);
         }
@@ -232,16 +244,12 @@ uint32_t Athena_RGBARawBlend(uint32_t src, uint32_t dst){
 uint32_t Athena_RGBABlend(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
     float accum_r = ((float)dst_r)/255.0f, accum_g = ((float)dst_g)/255.0f, accum_b = ((float)dst_b)/255.0f;
     
-    const float src_factor = ((float)dst_a)/255.0f, dst_factor = 1.0f + src_factor;
+    const float src_factor = ((float)src_a)/255.0f, dst_factor = 1.0f - src_factor;
     
-    accum_r += (((float)src_r)/255.0f) * src_factor;
-    accum_g += (((float)src_g)/255.0f) * src_factor;
-    accum_b += (((float)src_b)/255.0f) * src_factor;
-    
-    accum_r /= dst_factor;
-    accum_g /= dst_factor;
-    accum_b /= dst_factor;
-    
+    accum_r = (accum_r * dst_factor) + ((((float)src_r)/255.0f) * src_factor);
+    accum_g = (accum_g * dst_factor) + ((((float)src_g)/255.0f) * src_factor);
+    accum_b = (accum_b * dst_factor) + ((((float)src_b)/255.0f) * src_factor);
+
     return Athena_RGBAToRaw(accum_r * 255.0f, accum_g * 255.0f, accum_b * 255.0f, 0xFF);
 }
 

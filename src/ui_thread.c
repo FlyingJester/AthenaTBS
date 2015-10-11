@@ -45,7 +45,7 @@ static void athena_do_fps_drawing(struct Athena_Image *to){/* Finally do FPS inf
 
     if(fs >= 100){
         last_fps = s_ave_tick;
-/*        printf("FPS: %i (%i, %i)\n", (int)s_ave_tick, (int)s_tick, (int)Athena_GetMillisecondTicks()); */
+        printf("FPS: %i (%i, %i)\n", (int)s_ave_tick, (int)s_tick, (int)Athena_GetMillisecondTicks()); 
         fs = 0;
         s_ave_tick = fps;
     }
