@@ -2,11 +2,6 @@
 #include "bufferfile/bufferfile.h"
 #include <string.h>
 #include <stdlib.h>
-
-#if !(defined(PNG_1_0_X) || defined (PNG_1_2_X))
-#include <setjmp.h>
-#endif
-
 #include <png.h>
 
 struct athena_png_buffer { void *data; int size; unsigned at; };

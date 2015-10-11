@@ -1,6 +1,7 @@
 #include "sleep.h"
 #include <time.h>
 #include <unistd.h>
+#include <sys/time.h>
 #include <stdlib.h>
 
 void Athena_MillisecondSleep(unsigned ms){
