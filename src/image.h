@@ -18,6 +18,7 @@ void Athena_CreateImageArray(struct Athena_ImageArray *ia);
 void Athena_DestroyImageArray(struct Athena_ImageArray *ia);
 
 void Athena_Blit(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y);
+void Athena_BlitBlended(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y);
 void Athena_CloneImage(struct Athena_Image *to, const struct Athena_Image *from);
 
 void Athena_SetPixel(struct Athena_Image *to, int x, int y, uint32_t color);
@@ -33,11 +34,23 @@ void Athena_DestroyImage(struct Athena_Image *that);
  * Only performs horizontal clipping. 
  */
 void Athena_BlitScanLine(const struct Athena_Image *src, struct Athena_Image *dst, unsigned line, unsigned x, unsigned y);
+void Athena_BlitScanLineBlended(const struct Athena_Image *src, struct Athena_Image *dst, unsigned line, unsigned x, unsigned y);
 
 /*
  * Semi-private, does no clipping.
  */
 uint32_t *Athena_Pixel(struct Athena_Image *to, int x, int y);
+const uint32_t *Athena_PixelConst(const struct Athena_Image *to, int x, int y);
+
+uint32_t Athena_RGBAToRaw(uint8_t r, uint8_t g, uint8_t b, uint8_t a);
+void Athena_RawToRGBA(uint32_t rgba, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a);
+uint8_t Athena_RawToR(uint32_t rgba);
+uint8_t Athena_RawToG(uint32_t rgba);
+uint8_t Athena_RawToB(uint32_t rgba);
+uint8_t Athena_RawToA(uint32_t rgba);
+
+uint32_t Athena_RGBARawBlend(uint32_t src, uint32_t dst);
+uint32_t Athena_RGBABlend(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
 
 #define ATHENA_LOADPNG_SUCCESS 0u
 #define ATHENA_LOADPNG_NO_FILE 1u

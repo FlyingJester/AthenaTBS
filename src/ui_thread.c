@@ -1,5 +1,5 @@
 #include "ui_thread.h"
-#include "window_style.h"
+#include "player.h"
 #include "time/sleep.h"
 #include "time/ticks.h"
 #include "font.h"
@@ -68,7 +68,13 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
 
         } /* End Field Drawing */
         { /* Draw info bar */
+
             struct Athena_Viewport port = { NULL, 0, 0, 128, 32 };
+            port.image = &that->ui.framebuffer;
+
+            Athena_DrawPlayerDataBox(that->players + that->whose_turn, &port);
+
+/*
             struct Athena_WindowStyle style;
 
             Athena_DefaultWindowStyle(&style);
@@ -76,6 +82,7 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
             port.image = &that->ui.framebuffer;
 
             Athena_DrawWindowStyle(&style, &port);
+*/
         } /* End info bar Drawing */
         
         athena_do_fps_drawing(&that->ui.framebuffer);
