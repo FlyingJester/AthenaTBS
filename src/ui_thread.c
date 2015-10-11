@@ -53,7 +53,7 @@ static void athena_do_fps_drawing(struct Athena_Image *to){/* Finally do FPS inf
     {
         char buffer[0x80];
         sprintf(buffer, "%i", (short)last_fps);
-/*        WriteString(GetSystemFont(), buffer, to, to->w - 64, 16); */
+        WriteString(GetSystemFont(), buffer, to, to->w - 64, 16);
     }
     s_tick = Athena_GetMillisecondTicks();
 }/* End FPS info drawing */

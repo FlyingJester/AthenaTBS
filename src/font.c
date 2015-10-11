@@ -45,7 +45,7 @@ const uint32_t sig =
         unsigned i = 0, offset = 64;
         const unsigned num_chars = ((const uint16_t *)(&mem[1]))[1];
         font->number_glyphs = num_chars;
-        font->glyphs = malloc(num_chars<<3);
+        font->glyphs = calloc(num_chars, sizeof(struct Athena_Image));
         /* Real data starts at 64. */
             
         while(i<num_chars){
