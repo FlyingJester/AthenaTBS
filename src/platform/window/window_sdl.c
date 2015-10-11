@@ -1,5 +1,5 @@
 #include "private_window.h"
-#include "SDL2/SDL.h"
+#include <SDL2/SDL.h>
 
 struct Athena_SDL2_Window{
     SDL_Window *window;
