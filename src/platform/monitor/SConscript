@@ -2,6 +2,6 @@ Import("environment")
 
 libyyymonitor = SConscript(dirs = ["libyyymonitor"], exports = ["environment"])
 
-athena_monitor = environment.SharedLibrary("athena_monitor", ["monitor_yyy.cpp"], LIBS = [libyyymonitor])
+athena_monitor = environment.SharedLibrary("athena_monitor", ["monitor_yyy.cpp"], LIBS = [libyyymonitor], CXXFLAGS = " -std=c++11 -fno-rtti -fno-exceptions ")
 
 Return("athena_monitor")
