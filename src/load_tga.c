@@ -2,15 +2,7 @@
 #include "bufferfile/bufferfile.h"
 #include <stdint.h>
 #include <string.h>
-
-#if (!defined(__APPLE__)) || ((defined(__FreeBSD__)) && (__FreeBSD__ < 9))
-
-static void memset_pattern4(void *to, const unsigned char *pattern, unsigned long len){
-    while(len--)
-        to[len] = pattern[len % 4];
-}
-
-#endif
+#include "memset_pattern4.h"
 
 typedef uint32_t (*athena_tga_read_data)(const unsigned char **p_data, int *size);
 
