@@ -30,6 +30,13 @@ static int athena_ui_draw_buttons(struct Athena_ButtonList *buttons, struct Athe
         onto->h = buttons->button.h;
         Athena_DrawDefaultWindowStyle(onto);
         WriteString(GetSystemFont(), buttons->button.text, onto->image, buttons->button.x + 2, buttons->button.y + 2);
+
+        if(buttons->button.clicked){
+            Athena_BlendViewport(onto, Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF), Athena_RGBARawMultiply);
+        }
+
+        buttons->button.clicked = 0;
+
         return athena_ui_draw_buttons(buttons->next, onto);
     }
 }
@@ -39,7 +46,8 @@ static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const st
         return 0;
     }
     else{
-        if(buttons->button.callback && Athena_IsWithin(buttons->button, event->x, event->y)){
+        buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y);
+        if(buttons->button.callback && buttons->button.clicked){
             buttons->button.callback(buttons->button.arg);
         }
         return athena_ui_process_buttons(buttons->next, event);

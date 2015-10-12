@@ -7,6 +7,7 @@ struct Athena_Button{
 
     void *arg;
     void (*callback)(void *);
+    unsigned clicked;
 };
 
 
