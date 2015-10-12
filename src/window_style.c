@@ -10,9 +10,9 @@ static const unsigned char ul_corner[16] = {
 
 static const unsigned char ur_corner[16] = {
     3, 3, 3, 2,
-    4, 4, 3, 1,
-    5, 3, 2, 1,
-    5, 4, 2, 1
+    4, 3, 2, 1,
+    4, 3, 2, 1,
+    4, 3, 2, 1
 };
 
 static const unsigned char dr_corner[16] = {
@@ -23,9 +23,9 @@ static const unsigned char dr_corner[16] = {
 };
 
 static const unsigned char dl_corner[16] = {
-    3, 4, 5, 5,
-    3, 4, 3, 4,
-    3, 3, 2, 2,
+    3, 4, 4, 4,
+    3, 3, 3, 3,
+    3, 2, 2, 2,
     2, 1, 1, 1
 };
 
@@ -70,13 +70,13 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
     Athena_Blit(&corner_buffer, to->image, to->x, to->y);
 
     Athena_ImageFromPalette(&corner_buffer, ur_corner, colors);
-    Athena_Blit(&corner_buffer, to->image, to->x + to->w - 5, to->y);
+    Athena_Blit(&corner_buffer, to->image, to->x + to->w - 4, to->y);
 
     Athena_ImageFromPalette(&corner_buffer, dr_corner, colors);
-    Athena_Blit(&corner_buffer, to->image, to->x + to->w - 5, to->y + to->h - 5);
+    Athena_Blit(&corner_buffer, to->image, to->x + to->w - 4, to->y + to->h - 4);
 
     Athena_ImageFromPalette(&corner_buffer, dl_corner, colors);
-    Athena_Blit(&corner_buffer, to->image, to->x, to->y + to->h - 5);
+    Athena_Blit(&corner_buffer, to->image, to->x, to->y + to->h - 4);
 
     /* Draw the sides */
     /* Left */
@@ -85,10 +85,10 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
     Athena_FillRect(to->image, to->x + 2, to->y + 4, 2, to->h - 8, colorF);
 
     /* Right */
-    Athena_FillRect(to->image, to->x + to->w - 1, to->y + 4, 1, to->h - 8, colorA);
-    Athena_FillRect(to->image, to->x + to->w - 2, to->y + 4, 1, to->h - 8, colorB);
-    Athena_FillRect(to->image, to->x + to->w - 3, to->y + 4, 1, to->h - 8, colorC);
-    Athena_FillRect(to->image, to->x + to->w - 4, to->y + 4, 1, to->h - 8, colorD);
+    Athena_FillRect(to->image, to->x + to->w - 1, to->y + 4, 1, to->h - 8, colorB);
+    Athena_FillRect(to->image, to->x + to->w - 2, to->y + 4, 1, to->h - 8, colorC);
+    Athena_FillRect(to->image, to->x + to->w - 3, to->y + 4, 1, to->h - 8, colorD);
+    Athena_FillRect(to->image, to->x + to->w - 4, to->y + 4, 1, to->h - 8, colorE);
     
     /* Top */
     Athena_FillRect(to->image, to->x + 4, to->y,     to->w - 8, 1, colorD);
@@ -96,10 +96,10 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
     Athena_FillRect(to->image, to->x + 4, to->y + 2, to->w - 8, 2, colorF);
 
     /* Bottom */
-    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 1, to->w - 8, 1, colorA);
-    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 2, to->w - 8, 1, colorB);
-    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 3, to->w - 8, 1, colorC);
-    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 4, to->w - 8, 1, colorD);
+    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 1, to->w - 8, 1, colorB);
+    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 2, to->w - 8, 1, colorC);
+    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 3, to->w - 8, 1, colorD);
+    Athena_FillRect(to->image, to->x + 4, to->y + to->h - 4, to->w - 8, 1, colorE);
 
     /* Draw the center. */
     Athena_FillRect(to->image, to->x + 4, to->y + 4, to->w - 8, to->h - 8, colorF);
