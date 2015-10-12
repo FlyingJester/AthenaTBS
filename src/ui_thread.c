@@ -4,6 +4,8 @@
 #include "time/ticks.h"
 #include "font.h"
 #include "viewport.h"
+#include "window_style.h"
+#include <stdlib.h>
 
 void Athena_UIThreadWrapper(void *that){
     Athena_UIThread(that);
@@ -15,6 +17,21 @@ int Athena_UIThread(struct Athena_GameState *that){
         Athena_MillisecondSleep(1);
 
     return 0;
+}
+
+static int athena_ui_draw_buttons(struct Athena_ButtonList *buttons, struct Athena_Viewport *onto){
+    if(!buttons){
+        return 0;
+    }
+    else{
+        onto->x = buttons->button.x;
+        onto->y = buttons->button.y;
+        onto->w = buttons->button.w;
+        onto->h = buttons->button.h;
+        Athena_DrawDefaultWindowStyle(onto);
+        WriteString(GetSystemFont(), buttons->button.text, onto->image, buttons->button.x + 2, buttons->button.y + 2);
+        return athena_ui_draw_buttons(buttons->next, onto);
+    }
 }
 
 static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const struct Athena_Event *event){
@@ -98,7 +115,11 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
             Athena_DrawWindowStyle(&style, &port);
 */
         } /* End info bar Drawing */
-        
+        { /* Draw buttons */
+            struct Athena_Viewport onto;
+            onto.image = &that->ui.framebuffer;
+            athena_ui_draw_buttons(that->ui.buttons, &onto);
+        }      
         athena_do_fps_drawing(&that->ui.framebuffer);
     } /* End Drawing. */
     Athena_DrawImage(that->ui.window, 0, 0, that->ui.framebuffer.w, that->ui.framebuffer.h, 0, that->ui.framebuffer.pixels);
@@ -119,4 +140,35 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
         Athena_UnlockMonitor(that->monitor);
         return status;
     }
+}
+
+/*
+
+struct Athena_Button{
+    int x, y;
+    unsigned w, h;
+    const char *text;
+
+    void *arg;
+    void (*callback)(void *);
+};
+
+
+struct Athena_ButtonList{
+    struct Athena_Button button;
+    struct Athena_ButtonList *next;
+};
+
+*/
+
+static void athena_end_turn_callback(void *arg){
+
+}
+
+static struct Athena_Button end_turn_button = { 128, 0, 64, 20, "End Turn", NULL, athena_end_turn_callback };
+
+void Athena_UIInit(struct Athena_UI *ui){
+    ui->buttons = malloc(sizeof(struct Athena_ButtonList));
+    ui->buttons->button = end_turn_button;
+    ui->buttons->next = NULL;
 }

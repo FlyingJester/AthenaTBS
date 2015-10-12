@@ -13,9 +13,10 @@
  * 
  * 
  */
-
 void Athena_UIThreadWrapper(void *that);
 int Athena_UIThread(struct Athena_GameState *that);
 
 /* This should be called once per frame. Athena_UIThread[Wrapper] does this, sort of. */
 int Athena_UIThreadFrame(struct Athena_GameState *that);
+
+void Athena_UIInit(struct Athena_UI *ui);

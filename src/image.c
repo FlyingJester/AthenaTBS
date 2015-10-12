@@ -57,7 +57,7 @@ void Athena_LowerBlitScanLine(const struct Athena_Image *src, struct Athena_Imag
 
 static unsigned athena_find_solid_block(const struct Athena_Image *src, unsigned x, unsigned y){
 /* the > 0xFA is a Slightly greedy fudge to improve performance. */
-    if(x < src->w && Athena_RawToA( *Athena_PixelConst(src, x, y) ) > 0xFA)
+    if(x < src->w && Athena_RawToA( *Athena_PixelConst(src, x, y) ) > 0xFC)
         return athena_find_solid_block(src, x+1, y);
 
     return x;
@@ -65,7 +65,7 @@ static unsigned athena_find_solid_block(const struct Athena_Image *src, unsigned
 
 static unsigned athena_find_empty_block(const struct Athena_Image *src, unsigned x, unsigned y){
 /* the < 0x08 is a Slightly greedy fudge to improve performance. */
-    if(x < src->w && Athena_RawToA( *Athena_PixelConst(src, x, y) ) < 0x08)
+    if(x < src->w && Athena_RawToA( *Athena_PixelConst(src, x, y) ) < 0x04)
         return athena_find_empty_block(src, x+1, y);
 
     return x;
@@ -338,8 +338,8 @@ uint32_t Athena_RGBAReplace(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t
 
 static void athena_image_from_palette(uint32_t *to, const uint8_t *data, const uint32_t *palette, unsigned len){
     if(len){
-        to[0] = palette[ *data ];
-        athena_image_from_palette(to+1, data+1, palette, len - 1);
+        to[0] = palette[data[0]];
+        athena_image_from_palette(to + 1, data + 1, palette, len - 1);
     }
 }
 
