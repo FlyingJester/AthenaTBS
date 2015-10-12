@@ -168,6 +168,12 @@ int Athena_LoadTileArrayFromTurboValue(const struct Turbo_Value *value, unsigned
                 }
                 else{
                     struct Athena_Tile tile;
+                    
+                    if(!to->tile_width)
+                        to->tile_width = image.w;
+                    if(!to->tile_height)
+                        to->tile_height = image.h;
+
                     tile.image_index = Athena_AddImage(to, &image);
                     tile.obstruction_value = obstruction_value->value.number;
 

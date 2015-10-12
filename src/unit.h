@@ -6,8 +6,9 @@
 
 struct Athena_Class {
     float defense, attack;
-    unsigned speed;
+    unsigned movement, attacks;
     unsigned range;
+    const char *name;
     struct Athena_Spriteset *spriteset;
 };
 
@@ -26,3 +27,4 @@ struct Athena_UnitList {
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
 struct Athena_Unit *Athena_UnitsCollide(struct Athena_UnitList *list, const unsigned x, const unsigned y);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);
+void Athena_RenewUnit(struct Athena_Unit *unit);

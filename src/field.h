@@ -17,6 +17,9 @@ unsigned Athena_MovementCost(unsigned x, unsigned y, const struct Athena_Field *
 int Athena_DrawField(const struct Athena_Field *field, struct Athena_Image *to, int x, int y);
 int Athena_LoadFieldFromFile(const char *file, struct Athena_Field *to);
 
+int Athena_FieldTileXYToPixelXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to);
+int Athena_FieldPixelXYToTileXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to);
+
 /* Semi-private helper functions */
 unsigned short Athena_TileIndexAt(const struct Athena_Field *field, unsigned x, unsigned y);
 int Athena_LoadFieldFromMemory(const void *data, unsigned len, struct Athena_Field *to, const char *directory);

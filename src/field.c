@@ -157,3 +157,15 @@ int Athena_LoadFieldFromTurboValue(const struct Turbo_Value *value, struct Athen
 
     return ret;
 }
+
+int Athena_FieldTileXYToPixelXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to){
+    x_to[0] = x*field->tileset->tile_width;
+    y_to[0] = y*field->tileset->tile_height;
+    return 0;
+}
+
+int Athena_FieldPixelXYToTileXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to){
+    x_to[0] = x/field->tileset->tile_width;
+    y_to[0] = y/field->tileset->tile_height;
+    return 0;
+}

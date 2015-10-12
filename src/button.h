@@ -10,8 +10,15 @@ struct Athena_Button{
     unsigned clicked;
 };
 
-
 struct Athena_ButtonList{
     struct Athena_Button button;
     struct Athena_ButtonList *next;
 };
+
+struct Athena_Menu{
+    struct Athena_ButtonList *buttons;
+    int x, y;
+    unsigned w, h;
+};
+
+void Athena_OrganizeMenu(struct Athena_Menu *menu);

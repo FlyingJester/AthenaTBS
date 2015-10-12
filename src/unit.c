@@ -21,3 +21,8 @@ unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Un
         delta_y = a->y - b->y;
     return sqrt(delta_x * delta_x + delta_y * delta_y);
 }
+
+void Athena_RenewUnit(struct Athena_Unit *unit){
+    unit->movement = unit->clazz->movement;
+    unit->attacks = unit->clazz->attacks;
+}

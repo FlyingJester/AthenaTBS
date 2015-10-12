@@ -150,6 +150,20 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
     }
 }
 
+int Athena_UIClickAt(const struct Athena_UI *ui, int * /* in/out */ x, int * /* in/out */ y){
+    x[0] += ui->camera_x;
+    y[0] += ui->camera_y;
+    return 0;
+}
+
+int Athena_UIClickAt2(const struct Athena_UI *ui, int x_in, int y_in, int *x_out, int *y_out){
+    const int err = Athena_UIClickAt(ui, &x_in, &y_in);
+    x_out[0] = x_in;
+    y_out[0] = y_in;
+    
+    return err;
+}
+
 /*
 
 struct Athena_Button{

@@ -1,0 +1,18 @@
+[
+    {
+        "name":"Wormer",
+        "attack":1.0,
+        "defense":1.0,
+        "range":1.0,
+        "movement":8.0,
+        "attacks":1.0
+    },
+    {
+        "name":"Black Coat",
+        "attack":2.0,
+        "defense":1.0,
+        "range":2.0,
+        "movement":10.0,
+        "attacks":2.0
+    }
+]
