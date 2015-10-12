@@ -55,9 +55,20 @@ uint32_t Athena_RGBABlend(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t s
 uint32_t Athena_RGBARawMultiply(uint32_t src, uint32_t dst);
 uint32_t Athena_RGBAMultiply(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
 
+uint32_t Athena_RGBARawAverage(uint32_t src, uint32_t dst);
+uint32_t Athena_RGBAAverage(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
+
+uint32_t Athena_RGBARawReplace(uint32_t src, uint32_t dst);
+uint32_t Athena_RGBAReplace(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
+
 void Athena_BlendRect(struct Athena_Image *to, int x, int y, unsigned w, unsigned h, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst));
 void Athena_BlendViewport(struct Athena_Viewport *v, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst));
 void Athena_BlendPixel(struct Athena_Image *to, int x, int y, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst));
+
+void Athena_MaskImage(struct Athena_Image *image, uint32_t color);
+
+/* It's up to the caller to know that the palette is big enough and that data can cover the entire image. */
+void Athena_ImageFromPalette(struct Athena_Image *to, const uint8_t *data, const uint32_t *palette);
 
 #define ATHENA_LOADPNG_SUCCESS 0u
 #define ATHENA_LOADPNG_NO_FILE 1u

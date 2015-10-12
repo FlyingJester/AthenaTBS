@@ -20,6 +20,8 @@ const char field_src[] = "{\
 }\
 ";
 
+static const char * const flag_1 = "res/images/jest.png";
+
 int main(int argc, char *argv[]){
     struct Athena_Window * const window = Athena_CreateWindow(scr_width, scr_height, "Athena Test");
     struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF}};
@@ -37,6 +39,14 @@ int main(int argc, char *argv[]){
         }
     }
     
+    {
+        const int err = Athena_LoadAuto(&players[0].flag, flag_1);
+        if(err!=ATHENA_LOADPNG_SUCCESS){
+            fprintf(stderr, "[athena_camera_test][main]Could not load flag %s. Error code %i\n", flag_1, err);
+            players[0].flag.pixels = NULL;
+        }
+    }
+
     Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
 
     return 0;

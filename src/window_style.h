@@ -14,3 +14,4 @@ struct Athena_WindowStyle{
 
 void Athena_DefaultWindowStyle(struct Athena_WindowStyle *into);
 void Athena_DrawWindowStyle(struct Athena_WindowStyle *style, struct Athena_Viewport *onto);
+void Athena_DrawDefaultWindowStyle(struct Athena_Viewport *onto);

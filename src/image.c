@@ -1,5 +1,6 @@
 #include "image.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <assert.h>
 #include <string.h>
@@ -177,17 +178,27 @@ void Athena_FillViewport(struct Athena_Viewport *v, uint32_t color){
 void Athena_FillRect(struct Athena_Image *to, int x, int y, unsigned w, unsigned h, uint32_t color){
     if(!w || !h)
         return;
-    if(x < 0 || y < 0 || x >= to->w || y >= to->h)
+    if(x + (int)w < 0 || y + (int)h < 0 || x >= to->w || y >= to->h)
         return;
-    if(w == 1){
-        Athena_SetPixel(to, x, y, color);
-        if(h > 1){
-            Athena_FillRect(to, x, y+1, 1, h-1, color); 
+    
+    if(x < 0 || y < 0){
+        if(x < 0){
+            w += x;
+            x = 0;
         }
+        if(y < 0){
+            h += y;
+            y = 0;
+        }
+        Athena_FillRect(to, x, y, w, h, color);
+        return;
+    }
+    else if(w == 1){
+        Athena_SetPixel(to, x, y, color);
+        Athena_FillRect(to, x, y+1, 1, h-1, color); 
     }
     else{
         memset_pattern4(Athena_Pixel(to, x, y), &color, ATHENA_MIN(w, to->w - x)<<2);
-
         Athena_FillRect(to, x, y+1, w, h-1, color);
     }
 }
@@ -204,14 +215,19 @@ static int athena_blend_rect_iter(struct Athena_Viewport *to, uint32_t color, un
 }
 
 void Athena_BlendRect(struct Athena_Image *dst, int x, int y, unsigned w, unsigned h, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
-    struct Athena_Viewport to;
-    to.image = dst;
-    to.x = x;
-    to.y = y;
-    to.w = w;
-    to.h = h;
-    
-    Athena_BlendViewport(&to, color, blend_func);
+    if(w == 1 && h == 1){
+        Athena_BlendPixel(dst, x, y, color, blend_func);
+    }
+    else{
+        struct Athena_Viewport to;
+        to.image = dst;
+        to.x = x;
+        to.y = y;
+        to.w = w;
+        to.h = h;
+
+        Athena_BlendViewport(&to, color, blend_func);
+    }
 }
 
 void Athena_BlendViewport(struct Athena_Viewport *v, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
@@ -221,6 +237,10 @@ void Athena_BlendViewport(struct Athena_Viewport *v, uint32_t color, uint32_t (*
 void Athena_BlendPixel(struct Athena_Image *to, int x, int y, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
     uint32_t *to_pixel = Athena_Pixel(to, x, y);
     to_pixel[0] = blend_func(*to_pixel, color);
+}
+
+void Athena_MaskImage(struct Athena_Image *image, uint32_t color){
+    Athena_BlendRect(image, 0, 0, image->w, image->h, color, Athena_RGBARawMultiply);
 }
 
 uint32_t *Athena_Pixel(struct Athena_Image *to, int x, int y){
@@ -273,6 +293,12 @@ uint32_t Athena_RGBARaw ## NAME(uint32_t src, uint32_t dst){\
 
 ATHENA_DECONSTRUCT_BLENDER(Blend)
 ATHENA_DECONSTRUCT_BLENDER(Multiply)
+ATHENA_DECONSTRUCT_BLENDER(Average)
+
+/* Slight shortcut. We don't need to disassemble the RGBA, since it's just a replacement. */
+uint32_t Athena_RGBARawReplace(uint32_t src, uint32_t dst){
+    return src;
+}
 
 #undef ATHENA_DECONSTRUCT_BLENDER
 
@@ -294,7 +320,31 @@ uint32_t Athena_RGBAMultiply(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_
         mul_b = src_b * dst_b, 
         mul_a = src_a * dst_a;
 
-    return Athena_RGBAToRaw(mul_r / 65025, mul_g / 65025, mul_b / 65025, mul_a / 65025);
+    return Athena_RGBAToRaw(mul_r / 0xFF, mul_g / 0xFF, mul_b / 0xFF, mul_a / 0xFF);
+}
+
+uint32_t Athena_RGBAAverage(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
+    const uint16_t ave_r = src_r + dst_r, 
+        ave_g = src_g + dst_g, 
+        ave_b = src_b + dst_b, 
+        ave_a = src_a + dst_a;
+
+    return Athena_RGBAToRaw(ave_r >> 1, ave_g >> 1, ave_b >> 1, ave_a >> 1);
+}
+
+uint32_t Athena_RGBAReplace(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
+    return Athena_RGBAToRaw(src_r, src_g, src_b, src_a);
+}
+
+static void athena_image_from_palette(uint32_t *to, const uint8_t *data, const uint32_t *palette, unsigned len){
+    if(len){
+        to[0] = palette[ *data ];
+        athena_image_from_palette(to+1, data+1, palette, len - 1);
+    }
+}
+
+void Athena_ImageFromPalette(struct Athena_Image *to, const uint8_t *data, const uint32_t *palette){
+    athena_image_from_palette(to->pixels, data, palette, to->w * to->h);
 }
 
 unsigned Athena_LoadAuto(struct Athena_Image *to, const char *path){
