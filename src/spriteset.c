@@ -1,6 +1,9 @@
 #include "spriteset.h"
 #include <stdlib.h>
 #include <string.h>
+#include <TurboJSON/value.h>
+#include <TurboJSON/object.h>
+#include "turbo_json_helpers.h"
 
 const struct Athena_AnimationFrame *athena_get_matching_direction(
     const struct Athena_SpriteAction *action, const char *direction, unsigned i){
@@ -84,6 +87,15 @@ const struct Athena_AnimationFrame *Athena_GetSpritesetDirection(
         diag_p[0] = ATHENA_ANIMATION_NO_MATCH;
         return spriteset->actions->directions->frames;
     }
+
+}
+
+int Athena_LoadSpritesetFromFile(const char *file, struct Athena_Spriteset *to);
+int Athena_LoadSpritesetFromMemory(const void *data, unsigned len, struct Athena_Spriteset *to, const char *directory);
+
+struct Turbo_Value;
+/* value->type _must_ be Object */
+int Athena_LoadSpritesetFromTurboValue(const struct Turbo_Value *value, struct Athena_Spriteset *to, const char *directory){
 
 }
 

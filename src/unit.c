@@ -26,3 +26,7 @@ void Athena_RenewUnit(struct Athena_Unit *unit){
     unit->movement = unit->clazz->movement;
     unit->attacks = unit->clazz->attacks;
 }
+
+void Athena_LoadSpriteset(struct Athena_Class *class){
+
+}

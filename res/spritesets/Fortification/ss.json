@@ -1,0 +1,8 @@
+{
+    "directions":[
+        "building":[
+            {"delay":1, "frame":0}
+        ]
+    ],
+    "images":["Fortification.png"]
+}

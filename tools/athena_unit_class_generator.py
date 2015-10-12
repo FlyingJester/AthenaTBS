@@ -20,8 +20,8 @@ def gen_int_to_str(i):
 
 def GenerateAthenaClassDictionary(that):
     return dict(
-        defense = gen_int_to_str(that["defense"]),
-        attack  = gen_int_to_str(that["attack"]),
+        defense = str(that["defense"]),
+        attack  = str(that["attack"]),
         movement= gen_int_to_str(that["movement"]),
         attacks = gen_int_to_str(that["attacks"]),
         range   = gen_int_to_str(that["range"]),

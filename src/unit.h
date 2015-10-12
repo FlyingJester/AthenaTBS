@@ -24,6 +24,8 @@ struct Athena_UnitList {
     struct Athena_UnitList *next;
 };
 
+void Athena_LoadSpriteset(struct Athena_Class *class);
+
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
 struct Athena_Unit *Athena_UnitsCollide(struct Athena_UnitList *list, const unsigned x, const unsigned y);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);

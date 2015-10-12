@@ -18,6 +18,14 @@ struct Athena_Spriteset{
     unsigned num_actions, actions_capacity;
 };
 
+
+int Athena_LoadSpritesetFromFile(const char *file, struct Athena_Spriteset *to);
+int Athena_LoadSpritesetFromMemory(const void *data, unsigned len, struct Athena_Spriteset *to, const char *directory);
+
+struct Turbo_Value;
+/* value->type _must_ be Object */
+int Athena_LoadSpritesetFromTurboValue(const struct Turbo_Value *value, struct Athena_Spriteset *to, const char *directory);
+
 #define ATHENA_ANIMATION_EXACT_MATCH 0
 #define ATHENA_ANIMATION_ACTION_MATCH_DIRECTION_PARTIAL 1
 #define ATHENA_ANIMATION_ACTION_MATCH_DIRECTION_WRONG 2
