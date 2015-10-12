@@ -2,7 +2,7 @@
 #include "game.h"
 #include "player.h"
 
-const unsigned scr_width = 400, scr_height = 300;
+const unsigned scr_width = 800, scr_height = 600;
 
 const char field_src[] = "{\
     \"tileset\":\"res/tilesets/field1/ts.json\",\

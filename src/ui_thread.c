@@ -3,6 +3,7 @@
 #include "time/sleep.h"
 #include "time/ticks.h"
 #include "font.h"
+#include "viewport.h"
 
 void Athena_UIThreadWrapper(void *that){
     Athena_UIThread(that);
@@ -16,12 +17,25 @@ int Athena_UIThread(struct Athena_GameState *that){
     return 0;
 }
 
-int athena_ui_thread_handle_event(struct Athena_GameState *that, struct Athena_Event *event){
+static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const struct Athena_Event *event){
+    if(!buttons){
+        return 0;
+    }
+    else{
+        if(buttons->button.callback && Athena_IsWithin(buttons->button, event->x, event->y)){
+            buttons->button.callback(buttons->button.arg);
+        }
+        return athena_ui_process_buttons(buttons->next, event);
+    }
+}
+
+static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct Athena_Event *event){
     if(!Athena_GetEvent(that->ui.window, event))
         return 0;
     else{
         switch(event->type){
             case athena_click_event:
+                athena_ui_process_buttons(that->ui.buttons, event);
                 break;
             case athena_unknown_event:
                 break;

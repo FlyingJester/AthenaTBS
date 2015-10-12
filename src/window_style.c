@@ -121,5 +121,6 @@ void Athena_DefaultWindowStyle(struct Athena_WindowStyle *into){
 }
 
 void Athena_DrawWindowStyle(struct Athena_WindowStyle *style, struct Athena_Viewport *onto){
-    style->callback(onto, style->arg, style->mask);
+    if(style->callback)
+        style->callback(onto, style->arg, style->mask);
 }

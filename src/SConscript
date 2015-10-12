@@ -5,7 +5,7 @@ platform = SConscript(dirs = ["platform"], exports = ["environment"])
 libathena = environment.StaticLibrary("athena", 
     [
         "game.c", "ai.c", "unit.c", "tile.c", "tileset.c", "spriteset.c", "field.c", "collision.c", "player.c",
-        "animation.c", "image.c", "load_png.c", "load_tga.c", "window_style.c", "container.c", "font.c",
+        "animation.c", "image.c", "load_png.c", "load_tga.c", "window_style.c", "container.c", "font.c", "viewport.c",
         "turbo_json_helpers.c",
         "server_thread.c", "ui_thread.c"
     ],

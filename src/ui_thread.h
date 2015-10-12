@@ -10,8 +10,8 @@
  * We use the same API as the server thread for consistency, and so that we could,
  * if we wanted, run this on a different thread. But don't do that unless you really
  * know what you are doing!
- *
- *
+ * 
+ * 
  */
 
 void Athena_UIThreadWrapper(void *that);

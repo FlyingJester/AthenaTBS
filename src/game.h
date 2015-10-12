@@ -1,6 +1,7 @@
 #pragma once
 #include "field.h"
 #include "image.h"
+#include "button.h"
 #include "monitor/monitor.h"
 #include "window/window.h"
 #include <TurboJSON/value.h>
@@ -20,6 +21,7 @@ struct Athena_UI{
     int camera_x, camera_y;
     struct Athena_Image framebuffer;
     struct Athena_Window *window;
+    struct Athena_ButtonList *buttons;
 };
 
 struct Athena_GameState{
