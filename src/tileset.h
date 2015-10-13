@@ -23,9 +23,8 @@ void Athena_DestroyTileset(struct Athena_Tileset *ts);
 
 /* Returns the index of the inserted object */
 unsigned Athena_AddTile(struct Athena_Tileset *ts, struct Athena_Tile *tile);
-unsigned Athena_AddImage(struct Athena_Tileset *ts, struct Athena_Image *image);
+unsigned Athena_AddImageTileset(struct Athena_Tileset *ts, struct Athena_Image *image);
 
-void Athena_AddImageCopy(struct Athena_Tileset *ts, const struct Athena_Image *image);
 void Athena_DrawTileIndex(const struct Athena_Tileset *ts, struct Athena_Image *onto, unsigned index, int x, int y);
 void Athena_DrawImageIndex(const struct Athena_Tileset *ts, struct Athena_Image *onto, unsigned index, int x, int y);
 void Athena_DrawTileRow(const struct Athena_Tileset *ts, struct Athena_Image *onto, 

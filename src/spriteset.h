@@ -16,8 +16,12 @@ struct Athena_SpriteAction {
 struct Athena_Spriteset{
     struct Athena_SpriteAction *actions;
     unsigned num_actions, actions_capacity;
+    
+    struct Athena_Image *images;
+    unsigned num_images, images_capacity;
 };
 
+unsigned Athena_AddImageSpriteset(struct Athena_Spriteset *ss, struct Athena_Image *image);
 
 int Athena_LoadSpritesetFromFile(const char *file, struct Athena_Spriteset *to);
 int Athena_LoadSpritesetFromMemory(const void *data, unsigned len, struct Athena_Spriteset *to, const char *directory);

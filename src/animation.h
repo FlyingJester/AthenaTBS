@@ -3,7 +3,7 @@
 
 struct Athena_AnimationFrame {
     unsigned time;
-    struct Athena_Image frame;
+    struct Athena_Image *frame;
     struct Athena_AnimationFrame *next;
 };
 

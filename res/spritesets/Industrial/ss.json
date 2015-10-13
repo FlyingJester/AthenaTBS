@@ -1,8 +1,15 @@
 {
-    "directions":[
-        "building":[
-            {"delay":1, "frame":0}
-        ]
-    ],
+    "actions":{
+        "building":{
+            "south":[
+                {"delay":1, "image":0}
+            ]
+        },
+        "idle":{
+            "south":[
+                {"delay":1, "image":0}
+            ]
+        }
+    },
     "images":["Industrial.png"]
 }

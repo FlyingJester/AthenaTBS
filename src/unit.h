@@ -4,6 +4,11 @@
 /* For an equal attack and defense, this is the number of attacks it takes to defeat a unit. */
 #define ATTACK_CONSTANT 4.0f
 
+struct Athena_Unit;
+struct Athena_Field;
+
+typedef int (*Athena_Ability)(struct Athena_Unit *that, struct Athena_Field *field);
+
 struct Athena_Class {
     float defense, attack;
     unsigned movement, attacks;

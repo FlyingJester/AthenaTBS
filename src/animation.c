@@ -9,5 +9,6 @@ void Athena_AnimationTick(struct Athena_Animation *animation, unsigned ticks){
 }
 
 void Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y){
-    Athena_Blit(&animation->frames->frame, onto, x, y);
+    if(animation->frames->frame)
+        Athena_Blit(animation->frames->frame, onto, x, y);
 }

@@ -1,9 +1,18 @@
 #include "spriteset.h"
-#include <stdlib.h>
-#include <string.h>
+#include "container.h"
 #include <TurboJSON/value.h>
 #include <TurboJSON/object.h>
 #include "turbo_json_helpers.h"
+#include "bufferfile/bufferfile.h"
+#include "path/path.h"
+#include <stdlib.h>
+#include <string.h>
+
+unsigned Athena_AddImageSpriteset(struct Athena_Spriteset *ss, struct Athena_Image *image){
+    ss->images = Athena_AssureCapacity(ss->images, sizeof(struct Athena_Image), ss->num_images+1, &(ss->images_capacity));
+    ss->images[ss->num_images++] = *image;
+    return ss->num_images-1;
+}
 
 const struct Athena_AnimationFrame *athena_get_matching_direction(
     const struct Athena_SpriteAction *action, const char *direction, unsigned i){
@@ -90,13 +99,102 @@ const struct Athena_AnimationFrame *Athena_GetSpritesetDirection(
 
 }
 
-int Athena_LoadSpritesetFromFile(const char *file, struct Athena_Spriteset *to);
-int Athena_LoadSpritesetFromMemory(const void *data, unsigned len, struct Athena_Spriteset *to, const char *directory);
+int Athena_LoadSpritesetFromFile(const char *file, struct Athena_Spriteset *to){
+    int size, ret = -1;
+    void * const data = BufferFile(file, &size);
+    
+    if(data){
+        char * const directory = Athena_GetContainingDirectory(file);
+        ret = Athena_LoadSpritesetFromMemory(data, size, to, directory);
+        free(directory);
+        FreeBufferFile(data, size);
+    }
+    
+    return ret;
+}
 
-struct Turbo_Value;
+int Athena_LoadSpritesetFromMemory(const void *data, unsigned len, struct Athena_Spriteset *to, const char *directory){
+    struct Turbo_Value value;
+    const char * const source = data;
+    Turbo_Value(&value, source, source + len);
+    if(value.type==TJ_Object)
+        return Athena_LoadSpritesetFromTurboValue(&value, to, directory);
+    return -1;
+}
+
+/*
+Example spriteset:
+{
+    "actions":{
+        "building":{
+            "south":[
+                {"delay":1, "image":0}
+            ]
+        },
+        "idle":{
+            "south":[
+                {"delay":1, "image":0}
+            ]
+        }
+    },
+    "images":["Fortification.png"]
+}
+*/
+
+static int athena_load_tileset_images(const struct Turbo_Value *val_array, unsigned long len, struct Athena_Image *images, const char *directory){
+    if(!len)
+        return 0;
+    else{
+        const unsigned dir_length = strlen(directory);
+        char * const filename = malloc(val_array->length + dir_length + 2);
+
+        memcpy(filename, directory, dir_length);
+        memcpy(filename + dir_length + 1, val_array->value.string, val_array->length);
+        filename[dir_length] = '/';
+        filename[dir_length + 1 + val_array->length] = '\0';
+
+        {
+            const int err = Athena_LoadAuto(images, filename);
+            free(filename);
+            if(err!=0){
+                /* Do you remember Tetris for the Gameboy? Remember the sound it made 
+                 * when you lost and it filled the screen with little X's?
+                 * Imagine that sound when this line is executed:
+                 */
+                memset(images, 0, len * sizeof(struct Athena_Image));
+                return -1;
+            }
+        }
+        return athena_load_tileset_images(val_array + 1, len - 1, images + 1, directory);
+    }
+}
+
+static int athena_load_tileset_action(const struct Turbo_Value *val_array, unsigned long num_actions, struct Athena_Image *images, struct Athena_SpriteAction *actions){
+    if(!num_actions)
+        return 0;
+    else{
+        
+        
+        return athena_load_tileset_action(val_array + 1, num_actions - 1, images, actions + 1);
+    }
+}
+
 /* value->type _must_ be Object */
 int Athena_LoadSpritesetFromTurboValue(const struct Turbo_Value *value, struct Athena_Spriteset *to, const char *directory){
+    const struct Turbo_Value 
+        * const images = Turbo_Helper_GetConstObjectElement(value, "images"),
+        * const actions = Turbo_Helper_GetConstObjectElement(value, "actions");
+    
+    to->num_actions = actions->length;
+    to->actions = Athena_AssureCapacity(to->actions, sizeof(struct Athena_SpriteAction), to->num_actions, &to->actions_capacity);
 
+    to->num_images = images->length;
+    to->images = Athena_AssureCapacity(to->images, sizeof(struct Athena_Image), to->num_images, &to->images_capacity);
+
+    athena_load_tileset_images(images->value.array, images->length, to->images, directory);
+    athena_load_tileset_action(actions->value.array,actions->length,to->images, to->actions);
+    
+    return 0;
 }
 
 /* ========================================================================== */

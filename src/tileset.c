@@ -40,16 +40,10 @@ unsigned Athena_AddTile(struct Athena_Tileset *ts, struct Athena_Tile *tile){
     return ts->tiles.num_tiles-1;
 }
 
-unsigned Athena_AddImage(struct Athena_Tileset *ts, struct Athena_Image *image){
+unsigned Athena_AddImageTileset(struct Athena_Tileset *ts, struct Athena_Image *image){
     ts->images.images = Athena_AssureCapacity(ts->images.images, sizeof(struct Athena_Image), ts->images.num_images+1, &(ts->images.images_capacity));
     ts->images.images[ts->images.num_images++] = *image;
     return ts->images.num_images-1;
-}
-
-void Athena_AddImageCopy(struct Athena_Tileset *ts, const struct Athena_Image *a_image){
-    ts->images.images = Athena_AssureCapacity(ts->images.images, sizeof(struct Athena_Image), ts->images.num_images+1, &(ts->images.images_capacity));
-    Athena_CloneImage(ts->images.images + ts->images.num_images, a_image);
-    ts->images.num_images++;
 }
 
 void Athena_DrawTileIndex(const struct Athena_Tileset *ts, struct Athena_Image *onto, unsigned index, int x, int y){
@@ -174,7 +168,7 @@ int Athena_LoadTileArrayFromTurboValue(const struct Turbo_Value *value, unsigned
                     if(!to->tile_height)
                         to->tile_height = image.h;
 
-                    tile.image_index = Athena_AddImage(to, &image);
+                    tile.image_index = Athena_AddImageTileset(to, &image);
                     tile.obstruction_value = obstruction_value->value.number;
 
                     Athena_AddTile(to, &tile);
@@ -196,7 +190,7 @@ int Athena_Test_TilesetAddSingleImage(){
     struct Athena_Image image = { (void *)(0xBEEFDEAD), 16, 24 };
     memset(&ts, 0, sizeof(struct Athena_Tileset));
 
-    Athena_AddImage(&ts, &image);
+    Athena_AddImageTileset(&ts, &image);
     
     return ts.images.images[0].pixels == (void *)(0xBEEFDEAD) &&
         ts.images.num_images==1;
@@ -208,8 +202,8 @@ int Athena_Test_TilesetAddMultipleImages(){
     struct Athena_Image images[2] = {{ (void *)(0xBEEFDEAD), 16, 24 }, {(void *)(0xDEED5555), 16, 16 }};
     memset(&ts, 0, sizeof(struct Athena_Tileset));
 
-    Athena_AddImage(&ts, images);
-    Athena_AddImage(&ts, images+1);
+    Athena_AddImageTileset(&ts, images);
+    Athena_AddImageTileset(&ts, images+1);
     
     return ts.images.images[0].pixels == (void *)(0xBEEFDEAD) &&
         ts.images.images[1].pixels == (void *)(0xDEED5555) &&
