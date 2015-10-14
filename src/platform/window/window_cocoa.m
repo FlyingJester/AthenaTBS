@@ -1,122 +1,24 @@
-#include "window.h"
-#include "window_defs.h"
+#include "private_window.h"
 #import <Cocoa/Cocoa.h>
-#import <Foundation/NSLock.h>
-#include <stdio.h>
+#import "window_cocoa.h"
 
-struct Athena_EventList{
-    struct Athena_Event event;
-    struct Athena_EventList *next;
-};
-
-/* Responder to export events to Athena proper. */
-@interface Athena_WindowListener : NSResponder <NSWindowDelegate>
-    {
-        struct Athena_EventList *events;
-        NSLock *lock;
+@implementation Athena_ApplicationDelegate
+     - (void) applicationDidFinishLaunching:(NSNotification *)notification{
+        
     }
-     - (id) init;
-     - (void) mouseDown:(NSEvent *) event;
-     - (void) rightMouseDown:(NSEvent *) event;
-     - (void) otherMouseDown:(NSEvent *) event;
-     
-     - (BOOL) popEvent: (struct Athena_Event *)to;
-     - (void) pushEvent: (struct Athena_Event *)event;
-     
-     + (void) mousePosition: (struct Athena_Event *)to
-                whichWindow:(NSWindow *)window;
-
-@end
-
-@implementation Athena_WindowListener
-
-      - (id) init{
-         self = [super init];
-         
-         lock = [[NSLock alloc] init];
-         events = NULL;
-         
-         return self;
-     }
-     
-      - (void) mouseDown:(NSEvent *) event{
-         struct Athena_Event athena_event = { athena_click_event };
-         athena_event.which = athena_left_mouse_button;
-
-         [Athena_WindowListener mousePosition:&athena_event whichWindow:[event window]];
-         
-         [self pushEvent:&athena_event];
-     }
-          
-      - (void) rightMouseDown:(NSEvent *) event{
-         struct Athena_Event athena_event = { athena_click_event };
-         athena_event.which = athena_right_mouse_button;
-         
-         [Athena_WindowListener mousePosition:&athena_event whichWindow:[event window]];
-         
-         [self pushEvent:&athena_event];
-     }
-          
-      - (void) otherMouseDown:(NSEvent *) event{
-         struct Athena_Event athena_event = { athena_click_event };
-         athena_event.which = athena_middle_mouse_button;
-         
-         [Athena_WindowListener mousePosition:&athena_event whichWindow:[event window]];
-         
-         [self pushEvent:&athena_event];
-     }
-     
-      - (void) pushEvent: (struct Athena_Event *)event{
-         
-         [lock lock];
-         {
-             struct Athena_EventList **next_event = &events;
-             while(next_event[0])
-                 next_event = &(next_event[0]->next);
-
-             next_event[0] = malloc(sizeof(struct Athena_EventList));
-             next_event[0]->next = NULL;
-             memcpy(&next_event[0]->event, event, sizeof(struct Athena_Event));
-         }
-         [lock unlock];
-     }
-     
-     
-      - (BOOL) popEvent: (struct Athena_Event *)to{
-         BOOL succeeded = NO;
-         [lock lock];
-         
-         if(events){
-             struct Athena_EventList *next = events->next;
-             memcpy(to, &(events->event), sizeof(struct Athena_Event));
-
-             free(events);
-             events = next;
-             succeeded = YES;
-         }
-         
-         [lock unlock];
-         return succeeded;
-     }
-
-
-      + (void) mousePosition: (struct Athena_Event *)to whichWindow:(NSWindow *)window{
-         NSPoint p = [NSEvent mouseLocation];
-         NSPoint origin = [window frame].origin;
-         to->x = p.x - origin.x;
-         to->y = p.y - origin.y;
-     }
-
-@end
-
-@interface Athena_Window : NSWindow
-     - (BOOL)canBecomeKeyWindow;
-     - (BOOL)canBecomeMainWindow;
-     - (void)sendEvent:(NSEvent *)event;
-     - (void)doCommandBySelector:(SEL)aSelector;
+     - (void)userTapQuitMenu:(id)sender{
+        [[NSApplication sharedApplication] terminate:self];
+    }
 @end
 
 @implementation Athena_Window
+     - (NSUInteger)getWidth{
+        return  [[self contentView] frame].size.width;
+    }
+     - (NSUInteger)getHeight{
+        return  [[self contentView] frame].size.height;
+    }
+
      - (BOOL)canBecomeKeyWindow{
         return YES;
     }
@@ -124,90 +26,149 @@ struct Athena_EventList{
      - (BOOL)canBecomeMainWindow{
         return YES;
     }
-     - (void)sendEvent:(NSEvent *)event{
-     
-     
-    }
-     - (void)doCommandBySelector:(SEL)aSelector{
 
+     - (BOOL)wantsPeriodicDraggingUpdates{
+        return NO;
+    }
+    
+     - (void)sendEvent:(NSEvent *)event{
+        [super sendEvent:event];
+    }
+
+     - (void)drawAthenaImage:(const void *)rgba position:(NSRect)at{
+        
+    }
+
+     - (void)initViews{
+        const size_t backing_size = [self getWidth] * [self getHeight] << 2;
+        uint8_t *data_backing = malloc(backing_size);
+        
+        _image_data = [[NSMutableData alloc] initWithBytesNoCopy:data_backing length:backing_size];
+        
+        _lock = [[NSLock alloc] init];
+        _color_space_ref = CGColorSpaceCreateDeviceRGB();
+        _provider_ref = CGDataProviderCreateWithCFData((__bridge CFDataRef)_image_data);
+        
+        _image_ref = CGImageCreate([self getWidth], [self getHeight],
+            8,   /* bits per channel */
+            32,  /* bits per pixel */
+            [self getWidth] << 2, /* Pitch */
+            _color_space_ref,
+            kCGBitmapByteOrder32Little,
+            _provider_ref,
+            NULL,
+            YES,
+            kCGRenderingIntentDefault);
+        _image = [[NSImage alloc] initWithCGImage:_image_ref size:NSZeroSize];
+            
+        _image_view = [[NSImageView alloc] initWithFrame:NSMakeRect(0, 0, [self getWidth], [self getHeight])];
+        [_image_view setImage:_image];
+        [[self contentView] addSubview: _image_view];
+    }
+@end
+
+@implementation Athena_WindowDelegate
+     - (void)listen:(Athena_Window*)window{
+        [window setDelegate:self];
+        [window setNextResponder:self];
+        [window setListener:self];
     }
 @end
 
 void *Athena_Private_CreateHandle(){
-    [NSApplication sharedApplication];
-
+    if(NSApp == nil){
+        [NSApplication sharedApplication];
+        [NSApp setMainMenu:[[NSMenu alloc] init]];
+        [NSApp activateIgnoringOtherApps:YES];
+        [NSApp finishLaunching];
+    }
     return [Athena_Window alloc];
 }
 
-int Athena_Private_DestroyHandle(void *arg){
-    Athena_Window *window = arg;
-    [window release];
+int Athena_Private_DestroyHandle(void *handle){
+    [(Athena_Window *)handle release];
     return 0;
 }
 
-int Athena_Private_CreateWindow(void *arg, int x, int y, unsigned w, unsigned h, const char *title){
-    Athena_Window * const window = arg;
+int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned h, const char *title){
+    Athena_Window *const window = handle;
     @try {
         [window initWithContentRect:NSMakeRect(x, y, w, h)
-                styleMask:NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask
-                backing:NSBackingStoreBuffered
-                defer:NO];
+            styleMask:NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask
+            backing:NSBackingStoreBuffered
+            defer:NO];
     }
     @catch(NSException *e){
         fprintf(stderr, "%s\n", [[e reason] UTF8String]);
         return 1;
     }
-    
     {
         NSString * const ns_string = [[NSString alloc]initWithUTF8String:title];
         [window setTitle:ns_string];
         [ns_string release];
     }
-
-    [window setBackgroundColor:[NSColor blackColor]];
     
-    {
-
-    }
+    [[[Athena_WindowDelegate alloc] init] listen:window];
+    [window initViews];
     
     return 0;
 }
 
-int Athena_Private_ShowWindow(void *arg){
-    Athena_Window * const window = arg;
-    [NSApp activateIgnoringOtherApps:YES];
-    [window makeKeyAndOrderFront:nil];
+int Athena_Private_ShowWindow(void *handle){
+    puts("FRONT");
+    [(Athena_Window *)handle makeKeyAndOrderFront:nil];
     return 0;
 }
 
-int Athena_Private_HideWindow(void *arg){
-    Athena_Window * const window = arg;
-    [window orderOut:nil];
+int Athena_Private_HideWindow(void *handle){
+    [(Athena_Window *)handle orderOut:nil];
     return 0;
 }
 
-int Athena_Private_DrawImage(void *arg, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
-
+int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
+    
     return 0;
 }
 
-int Athena_Private_DrawRect(void *arg, int x, int y, unsigned w, unsigned h, const struct Athena_Color *color){
-
+int Athena_Private_FlipWindow(void *handle){
+    
     return 0;
 }
 
-int Athena_Private_DrawLine(void *arg, int x1, int y1, int x2, int y2, const struct Athena_Color *color){
+unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
+    NSEvent *event = nil;
+    do{
+        NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES];
+        if([event window])
+            printf("Window %p (%p)\n", [event window], handle);
+        if([event window] == handle){
+            puts("Event captured...");
+            /* Set Type */
+            switch([event type]){
+                case NSLeftMouseDown:
+                case NSRightMouseDown:
+                case NSOtherMouseDown:
+                    to->type = athena_click_event;
+                    break;
+                default:
+                    to->type = athena_unknown_event;
+            }
 
-    return 0;
-}
-
-int Athena_Private_FlipWindow(void *arg){
-
-    return 0;
-}
-
-unsigned Athena_Private_GetEvent(void *arg, struct Athena_Event *to){
-
+            if([event type] == NSLeftMouseDown)
+                to->which = athena_left_mouse_button;
+            else if([event type] == NSRightMouseDown)
+                to->which = athena_right_mouse_button;
+            else if([event type] == NSRightMouseDown)
+                to->which = athena_middle_mouse_button;
+                /*
+                    ...
+                */
+        }
+        else{
+            [NSApp sendEvent:event];
+        }
+    }while(event != nil);
+    
     return 0;
 }
 
