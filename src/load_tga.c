@@ -1,173 +1,217 @@
 #include "image.h"
 #include "bufferfile/bufferfile.h"
-#include <stdint.h>
-#include <string.h>
 #include "memset_pattern4.h"
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-typedef uint32_t (*athena_tga_read_data)(const unsigned char **p_data, int *size);
-
-#define ATHENA_TGA_COLOURMAP 1
-#define ATHENA_TGA_RGBA 2
-#define ATHENA_TGA_BW 3
-
-struct Athena_TGAHeader{
-    unsigned char id_length;
-    unsigned char colourmap_type;
-    unsigned short colourmap_origin;
-    unsigned short colourmap_length;
-    unsigned char colourmap_depth;
+/*
+    Technically the largest possible TGA image would need 35 bits for the field itself.
+    It would consist of a 0xFFFF by 0xFFFF field, encoded with RLE, but with each pixel
+    encoded as not-RLE, and in runs of 1 only.
     
-    short x_origin;
-    short y_origin;
-    short width;
-    short height;
+    I don't particularly care. Such a TGA is highly unlikely, as it would require either
+    an entirely incompetent encoder (using RLE-encoding but refusing to actually encode
+    runs) or a moderately competent encoder (it's easier to encode each non-RLE pixel as
+    an individual run of 1 pixel) and a very odd TGA.
+    
+    We don't handle that. Actually, we refuse to open a TGA with a width or height of 
+    more than 0xFFFE, which precludes anything higher than a 33-bit map.
+    
+    We include all sizes as 32-bit values since the need for more bits is a seriously
+    edge case, and we are probably being fed garbage data (or utterly poorly encoded
+    real data) if we encounter a larger field.
+*/
 
-    unsigned char bits_per_pixel;
-    char image_descriptor;
+enum Athena_TGAFormat { Nothing, RGBA, Mapped, BlackWhite };
 
-    /* Only RLE and raw is supported */
-    unsigned char compression;
-    unsigned char colour_type;
+struct Athena_TGAHeader {
+    const char *id;
+    uint8_t id_length;
+    unsigned is_rle, has_map;
+    enum Athena_TGAFormat format;
+
+    const uint8_t *color_map;
+    uint16_t color_map_entries;
+    uint16_t x_origin, y_origin, w, h;
+    
+    uint8_t bits_per_map_entry, bits_per_pixel;
+
 };
 
-struct Athena_TGAImage{
-    struct Athena_TGAHeader header;
-    char id[0x100];
+/* return how many bytes read */
+typedef uint8_t (*athena_tga_pixel_reader)(uint32_t *to, const uint8_t *from);
 
-    struct Athena_Image image;
-};
-
-static unsigned short athena_lo_hi_bytes(const unsigned char *that){
-    return ((unsigned short)that[0]) | (((unsigned short)that[1])<<8);
+static uint16_t athena_lo_hi_short(const void *z_){
+    const uint8_t *z = z_;
+    uint16_t r = z[1];
+    r <<= 8;
+    r |= z[0];
+    return r;
 }
 
-static void athena_tga_format_byte(struct Athena_TGAImage *image, unsigned char type){
-    image->header.colour_type = type & 3;
-    image->header.compression = (type & 8)!=0;
-}
-
-static void athena_tga_header_from_buffer(struct Athena_TGAImage *image, const unsigned char **p_data, int *size){
-    const unsigned char *data = p_data[0];
-    if(!data || !size || size[0] < 18)
-        return;
-
-    image->header.id_length = data[0];
-    image->header.colourmap_type = data[1];
-    
-    athena_tga_format_byte(image, data[2]);
-
-    image->header.colourmap_origin = athena_lo_hi_bytes(data + 3);
-    image->header.colourmap_length = athena_lo_hi_bytes(data + 5);
-    image->header.colourmap_depth = data[7];
-    image->header.x_origin = athena_lo_hi_bytes(data + 8);
-    image->header.y_origin = athena_lo_hi_bytes(data + 10);
-    image->header.width = athena_lo_hi_bytes(data + 12);
-    image->header.height = athena_lo_hi_bytes(data + 14);
-    image->header.bits_per_pixel = data[16];
-    image->header.image_descriptor = data[17];
-
-    size[0] -= 18;
-    data += 18;
-}
-
-static uint32_t athena_tga_read_rgba32(const unsigned char **p_data, int *size){
-    const unsigned long color = (((unsigned long)athena_lo_hi_bytes(p_data[0] + 2))<<16) | athena_lo_hi_bytes(p_data[0]);
-    p_data[0]+=4;
-    size[0]--;
-    return color;
-}
-
-static uint32_t athena_tga_read_rgba24(const unsigned char **p_data, int *size){
-    const unsigned long color = (((unsigned long)athena_lo_hi_bytes(p_data[0] + 1))<<8) | p_data[0][0];
-    p_data[0]+=3;
-    size[0]--;
-    return color;
-}
-
-static void athena_tga_read_raw(uint32_t **to, athena_tga_read_data reader, const unsigned char **p_data, int *size){
-
-    if(!size[0])
-        return;
+/* All reader functions return how many bytes they have consumed. A value of zero indicates an error. 
+ * The accumulator exists because Solaris Studio will not perform TCO if we just put the addition on
+ * the result of the next call.
+ */
+static uint32_t athena_tga_read_raw(struct Athena_Image *to, uint16_t x, uint16_t y, const uint8_t *field, athena_tga_pixel_reader pixel_reader, uint32_t accumulator){
+    if(x >= to->w)
+        return athena_tga_read_raw(to, 0, y + 1, field, pixel_reader, accumulator);
+    else if(y >= to->h)
+        return accumulator;
     else{
-        to[0][0] = reader(p_data, size);
-        to[0]++;
-        size[0]--;
-        athena_tga_read_raw(to, reader, p_data, size);
+        const uint32_t z = pixel_reader(Athena_Pixel(to, x, y), field);
+        return athena_tga_read_raw(to, x+1, y, field + z, pixel_reader, accumulator + z);
     }
-    
 }
 
-static void athena_tga_read_rle(uint32_t **to, athena_tga_read_data reader, const unsigned char **p_data, int *size){
+static int athena_tga_read_raw_inner(uint32_t *to, const uint8_t *field, unsigned pixels_remaining, athena_tga_pixel_reader pixel_reader, unsigned accumulator){
+    if(pixels_remaining){
+        const int size = pixel_reader(to, field);
+        return athena_tga_read_raw_inner(to + 1, field + size, pixels_remaining - 1, pixel_reader, accumulator + size);
+    }
+    else{
+        return accumulator;
+    }
+}
 
-    if(size[0]){
-        const unsigned char *data = p_data[0],
-            rle_value = data[0],
-            num_pixels = rle_value & 0x7F;
+static uint8_t athena_read_tga_black_and_white(uint32_t *to, const uint8_t *from){
+    to[0] = Athena_RGBAToRaw(*from, *from, *from, 0xFF);
+    return 1;
+}
 
-        size[0]--;
-        
-        if(size[0]<=num_pixels)
-            return;
+static uint8_t athena_read_tga_15(uint32_t *to, const uint8_t *from){
+    const uint16_t concat = athena_lo_hi_short(from);
+    to[0] = Athena_RGBAToRaw(
+        ((concat >> 10) & 0x1F) << 3, 
+        ((concat >> 5)  & 0x1F) << 3, 
+         (concat & 0x1F) << 3, 
+         0xFF);
+    return 2;
+}
 
-        if(rle_value){
-            const uint32_t color = reader(p_data, size);
-            memset_pattern4(to[0], &color, num_pixels);
-            to[0] += num_pixels;
+static uint8_t athena_read_tga_16(uint32_t *to, const uint8_t *from){
+    const uint16_t concat = athena_lo_hi_short(from);
+    to[0] = Athena_RGBAToRaw(
+        ((concat >> 10) & 0x1F) << 3, 
+        ((concat >> 5)  & 0x1F) << 3, 
+         (concat & 0x1F) << 3, 
+        ((concat & 0x80) == 0x80) ? 0xFF : 0);
+    return 2;
+}
+
+static uint8_t athena_read_tga_24(uint32_t *to, const uint8_t *from){
+    to[0] = Athena_RGBAToRaw(from[2], from[1], from[0], 0xFF);
+    return 3;
+}
+
+static uint8_t athena_read_tga_32(uint32_t *to, const uint8_t *from){
+    to[0] = Athena_RGBAToRaw(from[3], from[2], from[1], from[0]);
+    return 3;
+}
+
+static uint32_t athena_tga_read_rle(struct Athena_Image *to, uint16_t x, uint16_t y, const uint8_t *field, athena_tga_pixel_reader pixel_reader, uint32_t accumulator){
+    if(x >= to->w)
+        return athena_tga_read_rle(to, x - to->w, y + 1, field, pixel_reader, accumulator);
+    else if(y >= to->h)
+        return accumulator;
+    else{
+        const uint8_t run_size = field[0] & 0x7F;
+        if(field[0] & 0x80){
+            const int size = athena_tga_read_raw_inner(Athena_Pixel(to, x, y), field + 1, run_size, pixel_reader, 0);
+            return athena_tga_read_rle(to, x + run_size, y, field + 1 + size, pixel_reader, accumulator + 1 + size);
         }
         else{
-            int n = num_pixels;
-            athena_tga_read_raw(to, reader, p_data, &n);
-            size[0] -= num_pixels; 
+            uint32_t pattern;
+            const int size = pixel_reader(&pattern, field);
+            
+            memset_pattern4(Athena_Pixel(to, x, y), &pattern, run_size << 2);
+            return athena_tga_read_rle(to, x + run_size, y, field + 1 + size, pixel_reader, accumulator + 1 + size);
         }
-           
-        athena_tga_read_rle(to, reader, p_data, size);
+        
     }
+}
+
+static int athena_tga_header_from_buffer(struct Athena_TGAHeader *header, const uint8_t *buffer){
+
+    header->id = (char *)buffer + 0x12;
+    header->id_length = buffer[0x00];
+    header->has_map   = buffer[0x01] != 0;
+    header->is_rle    = (buffer[0x02] & 8) != 0;
+    header->format    = buffer[0x02] & 3;
+
+    header->color_map = buffer + athena_lo_hi_short(buffer + 0x03);
+    header->color_map_entries = athena_lo_hi_short(buffer + 0x05);
+    header->bits_per_map_entry = buffer[0x07];
+
+    header->x_origin = athena_lo_hi_short(buffer + 0x08);
+    header->y_origin = athena_lo_hi_short(buffer + 0x0A);
+    header->w = athena_lo_hi_short(buffer + 0x0C);
+    header->h = athena_lo_hi_short(buffer + 0x0E);
+    
+    header->bits_per_pixel = buffer[0x10];
+    
+    return buffer[0x11];
 }
 
 unsigned Athena_LoadTGA(struct Athena_Image *to, const char *path){
-    struct Athena_TGAImage tga_image;
-    void (*image_reader)(uint32_t **, athena_tga_read_data, const unsigned char **, int *) = NULL;
-    athena_tga_read_data pixel_reader = NULL;
-    const unsigned char *data;
     int size;
-
+    void * data = NULL;
+    
     if(!to || !path)
         return ATHENA_LOADPNG_IS_NULL;
-
+    
     data = BufferFile(path, &size);
-    if(!data)
+    
+    if(!data){
         return ATHENA_LOADPNG_NO_FILE;
-
-    athena_tga_header_from_buffer(&tga_image, &data, &size);
-    
-    data += tga_image.header.id_length;
-    size -= tga_image.header.id_length;
-    
-    if(tga_image.header.bits_per_pixel==32){
-        pixel_reader = athena_tga_read_rgba32;
     }
-    else if(tga_image.header.bits_per_pixel==24){
-        pixel_reader = athena_tga_read_rgba24;
-    }
-    else {
-        return ATHENA_LOADPNG_NFORMAT;
-    }
-    
-    if(tga_image.header.compression){
-        image_reader = athena_tga_read_rle;
+    else if(size < 0x12){
+        FreeBufferFile(data, size);  
+        return ATHENA_LOADPNG_BADFILE;  
     }
     else{
-        image_reader = athena_tga_read_raw;
-    }
-    
-    {
-        int len = size;
-        len/=(tga_image.header.bits_per_pixel/8);
-        image_reader(&(to->pixels), pixel_reader, &data, &len);
+        struct Athena_TGAHeader header;
+        athena_tga_pixel_reader pixel_reader;
+
+        athena_tga_header_from_buffer(&header, data);
+
+        switch(header.bits_per_pixel){
+            case 8:
+                pixel_reader = athena_read_tga_black_and_white;
+                break;
+            case 15:
+                pixel_reader = athena_read_tga_15;
+                break;
+            case 16:
+                pixel_reader = athena_read_tga_16;
+                break;
+            case 24:
+                pixel_reader = athena_read_tga_24;
+                break;
+            case 32:
+                pixel_reader = athena_read_tga_32;
+                break;
+            default:
+                FreeBufferFile(data, size);
+                return ATHENA_LOADPNG_NFORMAT;
+        }
+
+        Athena_CreateImage(to, header.w, header.h);
+
+        {
+            const uint8_t *field = ((const uint8_t *)data) + 0x12 + header.id_length;
+            
+            if(header.is_rle){
+                athena_tga_read_rle(to, 0, 0, field, pixel_reader, 0);
+            }
+            else{
+                athena_tga_read_raw(to, 0, 0, field, pixel_reader, 0);
+            }
+        }
+
+        FreeBufferFile(data, size);   
     }
 
-    FreeBufferFile((void *)data, size);
-    
     return ATHENA_LOADPNG_SUCCESS;
-
 }

@@ -1,4 +1,11 @@
+import os
+
 Import("environment turbojson")
+
+s_env = environment.Clone()
+
+if os.name == "posix":
+    environment.Append(CCFLAGS = " -Wno-unused-result ")
 
 platform = SConscript(dirs = ["platform"], exports = ["environment"])
 
@@ -17,5 +24,8 @@ athena = environment.Program("athena", ["athena.c"], LIBS = athena_libs)
 athena_test = environment.Program("athena_test", ["athena_test.c"], LIBS = athena_libs)
 athena_image_test = environment.Program("athena_image_test", ["athena_image_test.c"], LIBS = athena_libs)
 athena_camera_test = environment.Program("athena_camera_test", ["athena_camera_test.c"], LIBS = athena_libs)
+
+
+environment = s_env.Clone()
 
 Return("athena")
