@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
     {
         int err[2];
         err[0] = Athena_LoadAuto(&players[0].flag, flag_1);
-        err[0] = Athena_LoadAuto(&players[1].flag, flag_2);
+        err[1] = Athena_LoadAuto(&players[1].flag, flag_2);
         if(err[0]!=ATHENA_LOADPNG_SUCCESS){
             fprintf(stderr, "[athena_camera_test][main]Could not load flag %s. Error code %i\n", flag_1, err[0]);
             players[0].flag.pixels = NULL;
