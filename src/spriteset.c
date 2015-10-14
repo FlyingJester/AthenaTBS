@@ -119,6 +119,7 @@ int Athena_LoadSpritesetFromMemory(const void *data, unsigned len, struct Athena
     Turbo_Value(&value, source, source + len);
     if(value.type==TJ_Object)
         return Athena_LoadSpritesetFromTurboValue(&value, to, directory);
+    Turbo_FreeParse(&value);
     return -1;
 }
 
