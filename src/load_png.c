@@ -68,10 +68,12 @@ unsigned Athena_LoadPNG(struct Athena_Image *to, const char *path){
     to->w = png_get_image_width(png_ctx, png_info);
     to->h = png_get_image_height(png_ctx, png_info);
     
+    bit_depth = png_get_bit_depth(png_ctx, png_info);
+    
     if((color_type = png_get_color_type(png_ctx, png_info)) == PNG_COLOR_TYPE_PALETTE){
         png_set_expand(png_ctx);
     }
-    else if((bit_depth = png_get_bit_depth(png_ctx, png_info))<8){
+    else if(bit_depth<8){
         png_set_expand(png_ctx);
     }
 
