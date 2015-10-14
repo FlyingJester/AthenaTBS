@@ -24,7 +24,7 @@ elif os.name == "posix" or prefer_x11:
         window_environment.Append(CPPPATH = ["/opt/X11/include"], LIBPATH = ["/opt/X11/lib"])
     athena_window = window_environment.SharedLibrary("athena_window",
         ["window.c", "window_x11.c"],
-        LIBS = ["x11"])
+        LIBS = ["xcb"])
 else:
     print "WARNING: Using the dummy windowing backend"
     athena_window = window_environment.Library("athena_window", ["window.c", "window_dummy.c"])
