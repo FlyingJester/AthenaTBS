@@ -5,6 +5,7 @@
 #include "thread/thread.h"
 #include "time/sleep.h"
 #include <string.h>
+#include <stdlib.h>
 
 unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players){
     /* A player is winning if they have any units at all. If we have more than one, we have no winner yet. */
@@ -80,8 +81,16 @@ athena_game_start:
 }
 
 void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_MessageList *next){
-    if(to==NULL)
+    if(to[0]==NULL)
         to[0] = next;
     else
         Athena_AppendMessageList(&(to[0]->next), next);
+}
+
+static const char athena_end_turn_message_string[] = "{\n\"type\":\"EndTurn\"\n}";
+const char *Athena_CreateEndTurnMessage(int *size){
+    char * const message_string = malloc(size[0] = (sizeof athena_end_turn_message_string));
+    memcpy(message_string, athena_end_turn_message_string, *size);
+    size[0]--;
+    return message_string;
 }

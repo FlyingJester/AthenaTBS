@@ -7,6 +7,8 @@
 #include <TurboJSON/value.h>
 
 struct Athena_MessageList{
+    /* This is the owning pointer to this text */
+    const char *msg_text;
     struct Turbo_Value value;
     struct Athena_MessageList *next;
 };
@@ -39,3 +41,6 @@ unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num
 
 int Athena_Game(struct Athena_Field *field, unsigned num_players, struct Athena_Player *players, struct Athena_Window *window, athena_field_condition win_condition);
 void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_MessageList *next);
+
+/* Message Creation facilities */
+const char *Athena_CreateEndTurnMessage(int *size);

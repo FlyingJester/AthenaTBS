@@ -14,7 +14,7 @@ struct Athena_Window *Athena_CreateWindow(unsigned w, unsigned h, const char *ti
     window->handle = Athena_Private_CreateHandle();
     if(!window)
         return NULL;
-    if(Athena_Private_CreateWindow(window->handle, 0, 0, w, h, title)<0)
+    if(Athena_Private_CreateWindow(window->handle, 200, 200, w, h, title)<0)
         return NULL;
     
     window->w = w;

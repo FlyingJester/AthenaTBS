@@ -3,33 +3,47 @@
 #include <TurboJSON/parse.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 void Athena_ServerThreadWrapper(void *that){
     Athena_ServerThread(that);
 }
 
-#define ATHENA_MESSAGE_TYPE(TYPE_2) Athena_ ## TYPE_2 ## MessageType
+const char * const Athena_ServerMessageTypeString(enum Athena_ServerMessageTypes e){
+    switch(e){
+        case EndTurn:
+            return "EndTurn";
+        case MoveUnit:
+            return "MoveUnit";
+        case AttackUnit:
+            return "AttackUnit";
+        case BuildUnit:
+            return "BuildUnit";
+        case BuildTile:
+            return "BuildTile";
+        case NumServerMessageTypes:
+            return "NumServerMessageTypes";
+        case Nothing:
+        default:
+            return "Nothing";
+    }
+}
 
-#define ATHENA_MESSAGE_TYPE_STRING(TYPE_1)\
-const char ATHENA_MESSAGE_TYPE(TYPE_1) [] = #TYPE_1
+enum Athena_ServerMessageTypes Athena_ServerMessageTypeEnum(const char *str){
+    return Athena_ServerMessageTypeEnumN(str, strlen(str));
+}
 
-ATHENA_MESSAGE_TYPE_STRING(EndTurn);
-ATHENA_MESSAGE_TYPE_STRING(MoveUnit);
-ATHENA_MESSAGE_TYPE_STRING(AttackUnit);
-ATHENA_MESSAGE_TYPE_STRING(BuildUnit);
-ATHENA_MESSAGE_TYPE_STRING(BuildTile);
-
-#undef ATHENA_MESSAGE_TYPE_STRING
-
-enum Athena_ServerMessageTypes { 
-    Nothing,
-    EndTurn,
-    MoveUnit,
-    AttackUnit,
-    BuildUnit,
-    BuildTile,
-    NumServerMessageTypes
-};
+enum Athena_ServerMessageTypes Athena_ServerMessageTypeEnumN(const char *str, unsigned len){
+    int i = 0;
+    while(i<NumServerMessageTypes){
+        const char * const that = Athena_ServerMessageTypeString(i);
+        if(strlen(that) == len && memcmp(that, str, len) == 0)
+            break;
+        else
+            i++;
+    }
+    return i;
+}
 
 struct Athena_InternalServerMessage{
     enum Athena_ServerMessageTypes type;
@@ -43,10 +57,18 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
     }
     else{
         const struct Turbo_Value *type = Turbo_Helper_GetConstObjectElement(&msg->value, "type");
-        if(type){
-            if(Turbo_Helper_CompareStringConstant(type, ATHENA_MESSAGE_TYPE(EndTurn))){
-                that->whose_turn = (that->whose_turn+1) % that->num_players;
+        if(type && 
+            type->type == TJ_String){
+
+            const enum Athena_ServerMessageTypes msg_type = Athena_ServerMessageTypeEnumN(type->value.string, type->length);
+            switch(msg_type){
+                case EndTurn:
+                    that->whose_turn = (that->whose_turn+1) % that->num_players;
+                    break;
+                default:
+                    fprintf(stderr, "[athena_handle_message_iter]Dropping message of type \"%s\" (%i)\n", Athena_ServerMessageTypeString(msg_type), msg_type);
             }
+            
         }
         return athena_handle_message_iter(msg->next, that);
     }

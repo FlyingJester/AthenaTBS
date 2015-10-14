@@ -1,12 +1,14 @@
 #pragma once
 
+struct Athena_MessageList;
+
 struct Athena_Button{
     int x, y;
     unsigned w, h;
     const char *text;
 
     void *arg;
-    void (*callback)(void *);
+    void (*callback)(void *, struct Athena_MessageList *);
     unsigned clicked;
 };
 

@@ -5,6 +5,8 @@
 #include "font.h"
 #include "viewport.h"
 #include "window_style.h"
+#include <TurboJSON/value.h>
+#include <TurboJSON/object.h>
 #include <stdlib.h>
 
 void Athena_UIThreadWrapper(void *that){
@@ -40,29 +42,28 @@ static int athena_ui_draw_buttons(struct Athena_ButtonList *buttons, struct Athe
     }
 }
 
-static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const struct Athena_Event *event){
+static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const struct Athena_Event *event, struct Athena_MessageList *messages){
     if(!buttons){
         return 0;
     }
     else{
-        ;
         if(
             (buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y) << 2) &&
             buttons->button.callback){
 
-            buttons->button.callback(buttons->button.arg);
+            buttons->button.callback(buttons->button.arg, messages);
         }
-        return athena_ui_process_buttons(buttons->next, event);
+        return athena_ui_process_buttons(buttons->next, event, messages);
     }
 }
 
-static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct Athena_Event *event){
+static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct Athena_Event *event, struct Athena_MessageList *messages){
     if(!Athena_GetEvent(that->ui.window, event))
         return 0;
     else{
         switch(event->type){
             case athena_click_event:
-                athena_ui_process_buttons(that->ui.buttons, event);
+                athena_ui_process_buttons(that->ui.buttons, event, messages);
                 break;
             case athena_unknown_event:
                 break;
@@ -71,7 +72,7 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
                 return 1;
         }
 
-        return athena_ui_thread_handle_event(that, event);
+        return athena_ui_thread_handle_event(that, event, messages);
     }
 }
 
@@ -100,7 +101,8 @@ static void athena_do_fps_drawing(struct Athena_Image *to){/* Finally do FPS inf
 }/* End FPS info drawing */
 
 int Athena_UIThreadFrame(struct Athena_GameState *that){
-    struct Athena_MessageList *messages = NULL;
+    struct Athena_MessageList messages;
+    messages.next = NULL;
     
     { /* Start Drawing. Maybe someday move this out of here. Who knows. Not me. */
 
@@ -138,14 +140,14 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
     Athena_LockMonitor(that->monitor);
     {
         struct Athena_Event event;
-        athena_ui_thread_handle_event(that, &event);
+        athena_ui_thread_handle_event(that, &event, &messages);
     }
 
     {
         const int status = that->status;
-        if(messages){
+        if( messages.next){
             Athena_NotifyMonitor(that->monitor);
-            Athena_AppendMessageList(&that->event.msg, messages);  
+            Athena_AppendMessageList(&that->event.msg,  messages.next);  
         }
         Athena_UnlockMonitor(that->monitor);
         return status;
@@ -185,11 +187,22 @@ struct Athena_ButtonList{
 
 */
 
-static void athena_end_turn_callback(void *arg){
-    struct Athena_GameState * const state = arg;
-    
-    state->whose_turn = (state->whose_turn + 1) % state->num_players;
+static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messages){
+    if(messages->next)
+        athena_end_turn_callback(arg, messages->next);
+    else{
+        struct Athena_MessageList * const msg = malloc(sizeof(struct Athena_MessageList)); 
 
+        int size;
+
+        msg->msg_text = Athena_CreateEndTurnMessage(&size);
+        Turbo_Object(&msg->value, msg->msg_text, msg->msg_text + size);
+
+        msg->next = NULL;
+        
+        messages->next = msg;
+
+    }
 }
 
 static struct Athena_Button end_turn_button = { 128, 0, 64, 20, "End Turn", NULL, athena_end_turn_callback };
