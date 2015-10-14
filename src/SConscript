@@ -18,7 +18,7 @@ libathena = environment.StaticLibrary("athena",
     ],
     LIBS = [platform, "png", turbojson], CPPDEFINES = ["EMBED_CYNICAL"])
 
-athena_libs = [platform, libathena, "png", turbojson]
+athena_libs = [libathena, platform, "png", turbojson]
 
 athena = environment.Program("athena", ["athena.c"], LIBS = athena_libs)
 athena_test = environment.Program("athena_test", ["athena_test.c"], LIBS = athena_libs)
