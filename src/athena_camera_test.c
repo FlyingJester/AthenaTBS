@@ -20,11 +20,11 @@ const char field_src[] = "{\
 }\
 ";
 
-static const char * const flag_1 = "res/images/jest.png";
+static const char * const flag_1 = "res/images/jest.png", * const flag_2 = "res/images/legend.png";
 
 int main(int argc, char *argv[]){
     struct Athena_Window * const window = Athena_CreateWindow(scr_width, scr_height, "Athena Test");
-    struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF}};
+    struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0}};
     struct Athena_Field field;
     
     Athena_ShowWindow(window);
@@ -40,10 +40,16 @@ int main(int argc, char *argv[]){
     }
     
     {
-        const int err = Athena_LoadAuto(&players[0].flag, flag_1);
-        if(err!=ATHENA_LOADPNG_SUCCESS){
-            fprintf(stderr, "[athena_camera_test][main]Could not load flag %s. Error code %i\n", flag_1, err);
+        int err[2];
+        err[0] = Athena_LoadAuto(&players[0].flag, flag_1);
+        err[0] = Athena_LoadAuto(&players[1].flag, flag_2);
+        if(err[0]!=ATHENA_LOADPNG_SUCCESS){
+            fprintf(stderr, "[athena_camera_test][main]Could not load flag %s. Error code %i\n", flag_1, err[0]);
             players[0].flag.pixels = NULL;
+        }
+        if(err[1]!=ATHENA_LOADPNG_SUCCESS){
+            fprintf(stderr, "[athena_camera_test][main]Could not load flag %s. Error code %i\n", flag_1, err[1]);
+            players[1].flag.pixels = NULL;
         }
     }
 

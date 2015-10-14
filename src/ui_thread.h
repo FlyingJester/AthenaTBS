@@ -19,7 +19,7 @@ int Athena_UIThread(struct Athena_GameState *that);
 /* This should be called once per frame. Athena_UIThread[Wrapper] does this, sort of. */
 int Athena_UIThreadFrame(struct Athena_GameState *that);
 
-void Athena_UIInit(struct Athena_UI *ui);
+void Athena_UIInit(struct Athena_GameState *state);
 
 /* Returns the X/Y on the field of a click point indicated as x, y */
 int Athena_UIClickAt(const struct Athena_UI *ui, int * /* in/out */ x, int * /* in/out */ y);

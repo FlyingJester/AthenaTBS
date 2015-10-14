@@ -32,10 +32,9 @@ static int athena_ui_draw_buttons(struct Athena_ButtonList *buttons, struct Athe
         WriteString(GetSystemFont(), buttons->button.text, onto->image, buttons->button.x + 2, buttons->button.y + 2);
 
         if(buttons->button.clicked){
+            buttons->button.clicked--;
             Athena_BlendViewport(onto, Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF), Athena_RGBARawMultiply);
         }
-
-        buttons->button.clicked = 0;
 
         return athena_ui_draw_buttons(buttons->next, onto);
     }
@@ -46,8 +45,11 @@ static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const st
         return 0;
     }
     else{
-        buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y);
-        if(buttons->button.callback && buttons->button.clicked){
+        ;
+        if(
+            (buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y) << 2) &&
+            buttons->button.callback){
+
             buttons->button.callback(buttons->button.arg);
         }
         return athena_ui_process_buttons(buttons->next, event);
@@ -184,13 +186,19 @@ struct Athena_ButtonList{
 */
 
 static void athena_end_turn_callback(void *arg){
+    struct Athena_GameState * const state = arg;
+    
+    state->whose_turn = (state->whose_turn + 1) % state->num_players;
 
 }
 
 static struct Athena_Button end_turn_button = { 128, 0, 64, 20, "End Turn", NULL, athena_end_turn_callback };
 
-void Athena_UIInit(struct Athena_UI *ui){
-    ui->buttons = malloc(sizeof(struct Athena_ButtonList));
-    ui->buttons->button = end_turn_button;
-    ui->buttons->next = NULL;
+void Athena_UIInit(struct Athena_GameState *state){
+    state->ui.buttons = malloc(sizeof(struct Athena_ButtonList));
+    
+    state->ui.buttons->button = end_turn_button;
+    state->ui.buttons->button.arg = state;
+
+    state->ui.buttons->next = NULL;
 }
