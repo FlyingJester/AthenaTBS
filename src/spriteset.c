@@ -1,6 +1,6 @@
 #include "spriteset.h"
 #include "container.h"
-#include <TurboJSON/value.h>
+#include <TurboJSON/parse.h>
 #include <TurboJSON/object.h>
 #include "turbo_json_helpers.h"
 #include "bufferfile/bufferfile.h"

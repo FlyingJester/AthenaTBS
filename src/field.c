@@ -2,7 +2,7 @@
 #include "tileset.h"
 #include "path/path.h"
 #include "bufferfile/bufferfile.h"
-#include <TurboJSON/value.h>
+#include <TurboJSON/parse.h>
 #include <TurboJSON/object.h>
 #include "turbo_json_helpers.h"
 #include <string.h>
@@ -57,6 +57,9 @@ int Athena_LoadFieldFromMemory(const void *data, unsigned len, struct Athena_Fie
     Turbo_Value(&value, source, source + len);
     if(value.type==TJ_Object)
         return Athena_LoadFieldFromTurboValue(&value, to, directory);
+
+    Turbo_FreeParse(&value);
+    
     return -1;
 }
 

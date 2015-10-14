@@ -5,7 +5,7 @@
 #include "turbo_json_helpers.h"
 #include "bufferfile/bufferfile.h"
 #include "path/path.h"
-#include <TurboJSON/value.h>
+#include <TurboJSON/parse.h>
 #include <TurboJSON/object.h>
 #include <stdlib.h>
 #include <string.h>
@@ -99,7 +99,11 @@ int Athena_LoadTilesetFromMemory(const void *z_data, unsigned len, struct Athena
     struct Turbo_Value value;
     Turbo_Value(&value, data, data+len);
     
-    return Athena_LoadTilesetFromTurboValue(&value, to, directory);
+    {
+        const int err = Athena_LoadTilesetFromTurboValue(&value, to, directory);
+        Turbo_FreeParse(&value);
+        return err;
+    }
 }
 
 int Athena_LoadTilesetFromTurboValue(const struct Turbo_Value *value, struct Athena_Tileset *to, const char *directory){
