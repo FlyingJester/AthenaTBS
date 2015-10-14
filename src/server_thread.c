@@ -84,6 +84,8 @@ static void athena_free_message_json(struct Athena_MessageList *msg){
 static void athena_free_message_array(struct Athena_MessageList *msg){
     if(msg){
         struct Athena_MessageList * const next = msg->next;
+        free(msg->msg_text);
+        Turbo_FreeParse(&msg->value);
         free(msg);
         athena_free_message_array(next);
     }

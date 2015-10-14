@@ -88,7 +88,7 @@ void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_Mess
 }
 
 static const char athena_end_turn_message_string[] = "{\n\"type\":\"EndTurn\"\n}";
-const char *Athena_CreateEndTurnMessage(int *size){
+char *Athena_CreateEndTurnMessage(int *size){
     char * const message_string = malloc(size[0] = (sizeof athena_end_turn_message_string));
     memcpy(message_string, athena_end_turn_message_string, *size);
     size[0]--;

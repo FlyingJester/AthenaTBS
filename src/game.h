@@ -8,7 +8,7 @@
 
 struct Athena_MessageList{
     /* This is the owning pointer to this text */
-    const char *msg_text;
+    char *msg_text;
     struct Turbo_Value value;
     struct Athena_MessageList *next;
 };
@@ -43,4 +43,4 @@ int Athena_Game(struct Athena_Field *field, unsigned num_players, struct Athena_
 void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_MessageList *next);
 
 /* Message Creation facilities */
-const char *Athena_CreateEndTurnMessage(int *size);
+char *Athena_CreateEndTurnMessage(int *size);
