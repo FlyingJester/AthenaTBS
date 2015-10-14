@@ -66,6 +66,8 @@ void Athena_BlendViewport(struct Athena_Viewport *v, uint32_t color, uint32_t (*
 void Athena_BlendPixel(struct Athena_Image *to, int x, int y, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst));
 
 void Athena_MaskImage(struct Athena_Image *image, uint32_t color);
+/* From and to can be the same image safely. */
+void Athena_FlipImageVertically(const struct Athena_Image *from, struct Athena_Image *to);
 
 /* It's up to the caller to know that the palette is big enough and that data can cover the entire image. */
 void Athena_ImageFromPalette(struct Athena_Image *to, const uint8_t *data, const uint32_t *palette);

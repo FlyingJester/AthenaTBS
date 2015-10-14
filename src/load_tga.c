@@ -36,6 +36,7 @@ struct Athena_TGAHeader {
     uint16_t x_origin, y_origin, w, h;
     
     uint8_t bits_per_map_entry, bits_per_pixel;
+    uint8_t flipped_vertically;
 
 };
 
@@ -54,27 +55,7 @@ static uint16_t athena_lo_hi_short(const void *z_){
  * The accumulator exists because Solaris Studio will not perform TCO if we just put the addition on
  * the result of the next call.
  */
-static uint32_t athena_tga_read_raw(struct Athena_Image *to, uint16_t x, uint16_t y, const uint8_t *field, athena_tga_pixel_reader pixel_reader, uint32_t accumulator){
-    if(x >= to->w)
-        return athena_tga_read_raw(to, 0, y + 1, field, pixel_reader, accumulator);
-    else if(y >= to->h)
-        return accumulator;
-    else{
-        const uint32_t z = pixel_reader(Athena_Pixel(to, x, y), field);
-        return athena_tga_read_raw(to, x+1, y, field + z, pixel_reader, accumulator + z);
-    }
-}
-
-static int athena_tga_read_raw_inner(uint32_t *to, const uint8_t *field, unsigned pixels_remaining, athena_tga_pixel_reader pixel_reader, unsigned accumulator){
-    if(pixels_remaining){
-        const int size = pixel_reader(to, field);
-        return athena_tga_read_raw_inner(to + 1, field + size, pixels_remaining - 1, pixel_reader, accumulator + size);
-    }
-    else{
-        return accumulator;
-    }
-}
-
+ 
 static uint8_t athena_read_tga_black_and_white(uint32_t *to, const uint8_t *from){
     to[0] = Athena_RGBAToRaw(*from, *from, *from, 0xFF);
     return 1;
@@ -106,8 +87,29 @@ static uint8_t athena_read_tga_24(uint32_t *to, const uint8_t *from){
 }
 
 static uint8_t athena_read_tga_32(uint32_t *to, const uint8_t *from){
-    to[0] = Athena_RGBAToRaw(from[3], from[2], from[1], from[0]);
-    return 3;
+    to[0] = Athena_RGBAToRaw(from[2], from[1], from[0], from[3]);
+    return 4;
+}
+
+static uint32_t athena_tga_read_raw(struct Athena_Image *to, uint16_t x, uint16_t y, const uint8_t *field, athena_tga_pixel_reader pixel_reader, uint32_t accumulator){
+    if(x >= to->w)
+        return athena_tga_read_raw(to, 0, y + 1, field, pixel_reader, accumulator);
+    else if(y >= to->h)
+        return accumulator;
+    else{
+        const uint32_t z = pixel_reader(Athena_Pixel(to, x, y), field);
+        return athena_tga_read_raw(to, x + 1, y, field + z, pixel_reader, accumulator + 1);
+    }
+}
+
+static int athena_tga_read_raw_inner(uint32_t *to, const uint8_t *field, unsigned pixels_remaining, athena_tga_pixel_reader pixel_reader, unsigned accumulator){
+    if(pixels_remaining){
+        const int size = pixel_reader(to, field);
+        return athena_tga_read_raw_inner(to + 1, field + size, pixels_remaining - 1, pixel_reader, accumulator + size);
+    }
+    else{
+        return accumulator;
+    }
 }
 
 static uint32_t athena_tga_read_rle(struct Athena_Image *to, uint16_t x, uint16_t y, const uint8_t *field, athena_tga_pixel_reader pixel_reader, uint32_t accumulator){
@@ -116,17 +118,19 @@ static uint32_t athena_tga_read_rle(struct Athena_Image *to, uint16_t x, uint16_
     else if(y >= to->h)
         return accumulator;
     else{
-        const uint8_t run_size = field[0] & 0x7F;
-        if(field[0] & 0x80){
-            const int size = athena_tga_read_raw_inner(Athena_Pixel(to, x, y), field + 1, run_size, pixel_reader, 0);
-            return athena_tga_read_rle(to, x + run_size, y, field + 1 + size, pixel_reader, accumulator + 1 + size);
+        const uint8_t run_size = (field[0] & 0x7F) + 1,
+            rle_packet = field[0] & 0x80;
+        field ++;
+        if(!rle_packet){
+            const int size = athena_tga_read_raw_inner(Athena_Pixel(to, x, y), field, run_size, pixel_reader, 0);
+            return athena_tga_read_rle(to, x + run_size, y, field + size, pixel_reader, accumulator + 1 + size);
         }
         else{
             uint32_t pattern;
             const int size = pixel_reader(&pattern, field);
             
             memset_pattern4(Athena_Pixel(to, x, y), &pattern, run_size << 2);
-            return athena_tga_read_rle(to, x + run_size, y, field + 1 + size, pixel_reader, accumulator + 1 + size);
+            return athena_tga_read_rle(to, x + run_size, y, field + size, pixel_reader, accumulator + 1 + size);
         }
         
     }
@@ -151,7 +155,9 @@ static int athena_tga_header_from_buffer(struct Athena_TGAHeader *header, const 
     
     header->bits_per_pixel = buffer[0x10];
     
-    return buffer[0x11];
+    header->flipped_vertically = !(buffer[0x11] & 0x20);
+    
+    return 0;
 }
 
 unsigned Athena_LoadTGA(struct Athena_Image *to, const char *path){
@@ -200,7 +206,7 @@ unsigned Athena_LoadTGA(struct Athena_Image *to, const char *path){
         Athena_CreateImage(to, header.w, header.h);
 
         {
-            const uint8_t *field = ((const uint8_t *)data) + 0x12 + header.id_length;
+            const uint8_t *field = ((const uint8_t *)header.id) + header.id_length;
             
             if(header.is_rle){
                 athena_tga_read_rle(to, 0, 0, field, pixel_reader, 0);
@@ -209,8 +215,12 @@ unsigned Athena_LoadTGA(struct Athena_Image *to, const char *path){
                 athena_tga_read_raw(to, 0, 0, field, pixel_reader, 0);
             }
         }
-
+        
         FreeBufferFile(data, size);   
+
+        /* TGA is upside down. So we need to reverse it. */
+        if(header.flipped_vertically)
+            Athena_FlipImageVertically(to, to);
     }
 
     return ATHENA_LOADPNG_SUCCESS;

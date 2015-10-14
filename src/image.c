@@ -347,6 +347,27 @@ void Athena_ImageFromPalette(struct Athena_Image *to, const uint8_t *data, const
     athena_image_from_palette(to->pixels, data, palette, to->w * to->h);
 }
 
+void athena_flip_image_vertically_iter(const struct Athena_Image *from, struct Athena_Image *to, uint32_t *buffer, unsigned line){
+    if(line > from->h >> 1){
+        return;
+    }
+
+    memcpy(buffer, Athena_PixelConst(from, 0, line), from->w << 2);
+    memcpy(Athena_Pixel(to, 0, line), Athena_PixelConst(from, 0, from->h - line - 1), from->w << 2);
+    memcpy(Athena_Pixel(to, 0, from->h - line - 1), buffer, from->w << 2);
+    athena_flip_image_vertically_iter(from, to, buffer, line + 1);
+}
+
+void Athena_FlipImageVertically(const struct Athena_Image *from, struct Athena_Image *to){
+    if(from->w > to->w || from->h > to->h)
+        return;
+    else{
+        uint32_t * const row_buffer = calloc(4, from->w);
+        athena_flip_image_vertically_iter(from, to, row_buffer, 0);
+        free(row_buffer);
+    }
+}
+
 unsigned Athena_LoadAuto(struct Athena_Image *to, const char *path){
     const char * const end = path + strlen(path), *str = end;
     while(str[0] != '.'){
