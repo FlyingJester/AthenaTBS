@@ -13,6 +13,7 @@ struct Athena_Class {
     float defense, attack;
     unsigned movement, attacks;
     unsigned range;
+    unsigned is_building, can_build;
     const char *name;
     struct Athena_Spriteset *spriteset;
 };

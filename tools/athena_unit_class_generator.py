@@ -18,14 +18,26 @@ autogen_warning =  """
 def gen_int_to_str(i):
     return str(i).split('.')[0]
 
-def GenerateAthenaClassDictionary(that):
+def gen_bool_to_int(n, that):
+    if ((n in that) and that[n]):
+        return 1
+    else:
+        return 0
+
+def gen_bool_to_str(n, dict):
+    return gen_int_to_str(gen_bool_to_int(n, dict))
+
+def GenerateAthenaClassDictionary(that, n):
     return dict(
         defense = str(that["defense"]),
         attack  = str(that["attack"]),
         movement= gen_int_to_str(that["movement"]),
         attacks = gen_int_to_str(that["attacks"]),
         range   = gen_int_to_str(that["range"]),
-        name    = gen_int_to_str(that["name"])
+        is_building = gen_bool_to_str("is_building", that),
+        can_build = gen_bool_to_str("can_build", that),
+        name    = str(that["name"]),
+        i = n
     )
 
 def CreateAthenaClassesSource(classes, paths):
@@ -42,27 +54,50 @@ def CreateAthenaClassesSource(classes, paths):
     header_preamble = "#pragma once\n" + autogen_warning + "#include \"unit.h\"\n"
     source_preamble = autogen_warning + "#include \"unit.h\"\n"
     
+    init_definition = "int Athena_UnitClassesInit()"
+    
     source.write(source_preamble)
     header.write(header_preamble)
     
     header.write("\n#define ATHENA_NUM_UNIT_CLASSES " + str(len(classes)) + "\n\n")
     
-    source.write( "#include \"" + header_path.split('/')[-1] + "\"\n\n")
+    source.write( "#include \"" + header_path.split('/')[-1] + "\"\n")
+    source.write( "#include \"spriteset.h\"\n\n")
     
-    class_array_def = "const struct Athena_Class classes[ATHENA_NUM_UNIT_CLASSES]"
+    class_array_def = "const struct Athena_Class athena_unit_classes[ATHENA_NUM_UNIT_CLASSES]"
+    
+    source.write("static struct Athena_Spriteset athena_unit_classes_spritesets[ATHENA_NUM_UNIT_CLASSES];\n")
     
     header.write("extern " + class_array_def + ";\n")
     source.write(class_array_def + " = {\n")
     
-    class_template = Template(" $defense, $attack, $movement, $attacks, $range, \"$name\", NULL ")
+    class_template = Template(" $defense, $attack, $movement, $attacks, $range, $is_building, $can_build, \"$name\",\n        athena_unit_classes_spritesets + $i ")
     
+    i = 0
     for that in classes:
-        source.write("    {" + class_template.substitute(GenerateAthenaClassDictionary(that)) + "}")
+        source.write("    {" + class_template.substitute(GenerateAthenaClassDictionary(that, i)) + "}")
         if not (that == classes[-1]):
             source.write(",")
         source.write("\n")
+        i = i+1
         
     source.write("};\n")
+    
+    header.write(init_definition + ";\n")
+    source.write(init_definition + "{\n")
+    
+    source.write("    int err = 0;\n")
+    
+    i = 0
+    for that in classes:
+        if "spriteset" in that:
+            spriteset = str(that["spriteset"])
+        else:
+            spriteset = str(that["name"])
+        source.write("    err = Athena_LoadSpritesetFromFile(\"res/spritesets/" + spriteset + "\", athena_unit_classes_spritesets + " + gen_int_to_str(i) + ")\n        || err;\n")
+        i = i+1
+    
+    source.write("    return err;\n}\n")
     
     source.flush()
     source.close()

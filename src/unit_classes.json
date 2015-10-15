@@ -5,7 +5,8 @@
         "defense":1.0,
         "range":1.0,
         "movement":8.0,
-        "attacks":1.0
+        "attacks":1.0,
+        "is_building":true
     },
     {
         "name":"Fortification",
@@ -13,7 +14,8 @@
         "defense":1.0,
         "range":1.0,
         "movement":8.0,
-        "attacks":1.0
+        "attacks":1.0,
+        "is_building":true
     },
     {
         "name":"Wormer",
@@ -29,7 +31,8 @@
         "defense":1.0,
         "range":2.0,
         "movement":10.0,
-        "attacks":2.0
+        "attacks":2.0,
+        "spriteset":"Pluto"
     },
     {
         "name":"Conscript",

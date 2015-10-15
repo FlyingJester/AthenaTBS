@@ -170,13 +170,20 @@ static int athena_load_tileset_images(const struct Turbo_Value *val_array, unsig
     }
 }
 
-static int athena_load_tileset_action(const struct Turbo_Value *val_array, unsigned long num_actions, struct Athena_Image *images, struct Athena_SpriteAction *actions){
+/*
+struct Athena_SpriteAction {
+    const char *name;
+    struct Athena_SpriteDirection *directions;
+    unsigned num_directions, directions_capacity;
+};
+*/
+
+static int athena_load_tileset_action(const struct Turbo_Property *action_values, unsigned long num_actions, struct Athena_Image *images, struct Athena_SpriteAction *actions){
     if(!num_actions)
         return 0;
     else{
         
-        
-        return athena_load_tileset_action(val_array + 1, num_actions - 1, images, actions + 1);
+        return athena_load_tileset_action(action_values + 1, num_actions - 1, images, actions + 1);
     }
 }
 
@@ -193,7 +200,7 @@ int Athena_LoadSpritesetFromTurboValue(const struct Turbo_Value *value, struct A
     to->images = Athena_AssureCapacity(to->images, sizeof(struct Athena_Image), to->num_images, &to->images_capacity);
 
     athena_load_tileset_images(images->value.array, images->length, to->images, directory);
-    athena_load_tileset_action(actions->value.array,actions->length,to->images, to->actions);
+    athena_load_tileset_action(actions->value.object,actions->length,to->images, to->actions);
     
     return 0;
 }

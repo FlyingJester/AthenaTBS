@@ -114,7 +114,8 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
         return 1;
     }
 
-    if(event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONDOWN){
+    /* We check x/y just to stop out-of-window clicks on OS X, particularly on the titlebar or menubar */
+    if(event.type == SDL_MOUSEBUTTONDOWN && event.button.x && event.button.y){
         to->type = athena_click_event;
         to->x = event.button.x;
         to->y = event.button.y;

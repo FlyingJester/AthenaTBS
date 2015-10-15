@@ -2,7 +2,7 @@
 #include "game.h"
 #include "player.h"
 
-const unsigned scr_width = 800, scr_height = 600;
+const unsigned scr_width = 720, scr_height = 450;
 
 const char field_src[] = "{\
     \"tileset\":\"res/tilesets/field1/ts.json\",\
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
     
     Athena_ShowWindow(window);
     {
-        const int err = Athena_LoadFieldFromFile("res/maps/cam_test.json", &field);
+        const int err = Athena_LoadFieldFromFile("res/maps/cam_test2.json", &field);
 /*
         const int err = Athena_LoadFieldFromMemory(field_src, sizeof(field_src), &field, "");
 */
