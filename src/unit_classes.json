@@ -5,7 +5,7 @@
         "defense":1.0,
         "range":1.0,
         "movement":8.0,
-        "attacks":1.0,
+        "actions":1.0,
         "is_building":true
     },
     {
@@ -14,7 +14,7 @@
         "defense":1.0,
         "range":1.0,
         "movement":8.0,
-        "attacks":1.0,
+        "actions":1.0,
         "is_building":true
     },
     {
@@ -23,7 +23,7 @@
         "defense":1.0,
         "range":1.0,
         "movement":8.0,
-        "attacks":1.0
+        "actions":1.0
     },
     {
         "name":"Black Coat",
@@ -31,8 +31,17 @@
         "defense":1.0,
         "range":2.0,
         "movement":10.0,
-        "attacks":2.0,
+        "actions":2.0,
         "spriteset":"Pluto"
+    },
+    {
+        "name":"Coalition Builder",
+        "attack":0.2,
+        "defense":0.5,
+        "range":1.0,
+        "movement":10.0,
+        "actions":1.0,
+        "spriteset":"CoalitionBuilder"
     },
     {
         "name":"Conscript",
@@ -40,7 +49,7 @@
         "defense":1.0,
         "range":1.0,
         "movement":8.0,
-        "attacks":1.0
+        "actions":1.0
     },
     {
         "name":"Captain",
@@ -48,6 +57,6 @@
         "defense":2.0,
         "range":1.0,
         "movement":10.0,
-        "attacks":1.0
+        "actions":1.0
     }
 ]

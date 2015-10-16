@@ -1,6 +1,7 @@
 #include "window/window.h"
 #include "game.h"
 #include "player.h"
+#include "unit_classes.h"
 
 const unsigned scr_width = 720, scr_height = 450;
 
@@ -52,7 +53,9 @@ int main(int argc, char *argv[]){
             players[1].flag.pixels = NULL;
         }
     }
-
+    
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), 0, 8, 8);
+    
     Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
 
     return 0;

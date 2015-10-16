@@ -11,7 +11,7 @@ typedef int (*Athena_Ability)(struct Athena_Unit *that, struct Athena_Field *fie
 
 struct Athena_Class {
     float defense, attack;
-    unsigned movement, attacks;
+    unsigned movement, actions;
     unsigned range;
     unsigned is_building, can_build;
     const char *name;
@@ -22,7 +22,7 @@ struct Athena_Unit {
     const struct Athena_Class *clazz;
     unsigned owner;
     float health;
-    unsigned x, y, movement, attacks;
+    unsigned x, y, movement, actions;
 };
 
 struct Athena_UnitList {
@@ -30,9 +30,16 @@ struct Athena_UnitList {
     struct Athena_UnitList *next;
 };
 
-void Athena_LoadSpriteset(struct Athena_Class *class);
+struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units);
+void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, unsigned owner, unsigned x, unsigned y);
+
+#define Athena_SpawnUnit(A_LIST_, A_CLAZZ_, A_OWNER_, A_X_, A_Y_)\
+    Athena_CreateUnit(Athena_AppendUnit(A_LIST_), A_CLAZZ_, A_OWNER_, A_X_, A_Y_)
 
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
 struct Athena_Unit *Athena_UnitsCollide(struct Athena_UnitList *list, const unsigned x, const unsigned y);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);
 void Athena_RenewUnit(struct Athena_Unit *unit);
+void Athena_DepleteUnit(struct Athena_Unit *unit);
+
+const struct Athena_Class *Athena_BuiltinClass(const char *name);
