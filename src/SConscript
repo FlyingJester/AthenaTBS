@@ -20,7 +20,7 @@ libathena = environment.StaticLibrary("athena",
     ],
     LIBS = athena_libs, CPPDEFINES = ["EMBED_CYNICAL"])
 
-athena_libs += [libathena]
+athena_libs = [libathena] + athena_libs
 
 athena = environment.Program("athena", ["athena.c"], LIBS = athena_libs)
 athena_test = environment.Program("athena_test", ["athena_test.c"], LIBS = athena_libs)
