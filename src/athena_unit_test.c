@@ -2,6 +2,7 @@
 #include "game.h"
 #include "player.h"
 #include "unit_classes.h"
+#include <string.h>
 
 const unsigned scr_width = 720, scr_height = 450;
 
@@ -27,6 +28,10 @@ int main(int argc, char *argv[]){
     struct Athena_Window * const window = Athena_CreateWindow(scr_width, scr_height, "Athena Test");
     struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0}};
     struct Athena_Field field;
+
+    memset(&field, 0, sizeof(struct Athena_Field));
+
+    Athena_UnitClassesInit();
     
     Athena_ShowWindow(window);
     {

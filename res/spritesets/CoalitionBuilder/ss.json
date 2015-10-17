@@ -1,0 +1,15 @@
+{
+    "actions":{
+        "idle":{
+            "south":[
+                {"delay":1, "image":1}
+            ]
+        }
+    },
+    "images":[
+        "CBuilderIdleNorth.png",
+        "CBuilderIdleSouth.png",
+        "CBuilderIdleEast.png",
+        "CBuilderIdleWest.png"
+    ]
+}

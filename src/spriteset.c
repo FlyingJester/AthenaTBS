@@ -100,7 +100,7 @@ const struct Athena_AnimationFrame *Athena_GetSpritesetDirection(
 }
 
 int Athena_LoadSpritesetFromFile(const char *file, struct Athena_Spriteset *to){
-    int size, ret = -1;
+    int size, ret = -2;
     void * const data = BufferFile(file, &size);
     
     if(data){
@@ -120,7 +120,7 @@ int Athena_LoadSpritesetFromMemory(const void *data, unsigned len, struct Athena
     if(value.type==TJ_Object)
         return Athena_LoadSpritesetFromTurboValue(&value, to, directory);
     Turbo_FreeParse(&value);
-    return -1;
+    return -2015;
 }
 
 /*
@@ -163,7 +163,7 @@ static int athena_load_tileset_images(const struct Turbo_Value *val_array, unsig
                  * Imagine that sound when this line is executed:
                  */
                 memset(images, 0, len * sizeof(struct Athena_Image));
-                return -1;
+                return -17;
             }
         }
         return athena_load_tileset_images(val_array + 1, len - 1, images + 1, directory);

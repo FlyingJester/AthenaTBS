@@ -94,7 +94,11 @@ def CreateAthenaClassesSource(classes, paths):
             spriteset = str(that["spriteset"])
         else:
             spriteset = str(that["name"])
-        source.write("    err = Athena_LoadSpritesetFromFile(\"res/spritesets/" + spriteset + "\", athena_unit_classes_spritesets + " + gen_int_to_str(i) + ")\n        || err;\n")
+        load_command =  "Athena_LoadSpritesetFromFile(\"res/spritesets/" + spriteset + "/ss.json\", athena_unit_classes_spritesets + " + gen_int_to_str(i) + ")"
+        source.write("    {\n        const int n_err = " + load_command + ";\n");
+        source.write("        if(n_err) fprintf(stderr, \"[Athena_UnitClassesInit]Error %i loading spriteset " + spriteset + "\\n\", n_err);\n");
+        source.write("        err = n_err || err;\n")
+        source.write("    }\n")
         i = i+1
     
     source.write("    return err;\n}\n")
