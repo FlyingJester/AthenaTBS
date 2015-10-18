@@ -2,6 +2,7 @@
 #include "field.h"
 #include "image.h"
 #include "button.h"
+#include "menu.h"
 #include "monitor/monitor.h"
 #include "window/window.h"
 #include <TurboJSON/value.h>

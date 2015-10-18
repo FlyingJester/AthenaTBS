@@ -1,18 +1,25 @@
 #include "button.h"
+#include "image.h"
+#include "window_style.h"
+#include "font.h"
 
-static int athena_set_menu_position(struct Athena_ButtonList *buttons, int x, int last_y, int w, int h){
+int Athena_UIDrawButtons(struct Athena_ButtonList *buttons, struct Athena_Viewport *onto){
     if(!buttons){
         return 0;
     }
     else{
-        buttons->button.x = x;
-        buttons->button.y = last_y;
-        buttons->button.w = w;
-        buttons->button.h = h;
-        return athena_set_menu_position(buttons->next, x, last_y + h, w, h);
-    }
-}
+        onto->x = buttons->button.x;
+        onto->y = buttons->button.y;
+        onto->w = buttons->button.w;
+        onto->h = buttons->button.h;
+        Athena_DrawDefaultWindowStyle(onto);
+        WriteString(GetSystemFont(), buttons->button.text, onto->image, buttons->button.x + 2, buttons->button.y + 2);
 
-void Athena_OrganizeMenu(struct Athena_Menu *menu){
-    athena_set_menu_position(menu->buttons, menu->x + 4, menu->y + 4, menu->w - 8, 20);
+        if(buttons->button.clicked){
+            buttons->button.clicked--;
+            Athena_BlendViewport(onto, Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF), Athena_RGBARawMultiply);
+        }
+
+        return Athena_UIDrawButtons(buttons->next, onto);
+    }
 }

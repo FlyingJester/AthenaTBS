@@ -1,4 +1,5 @@
 #pragma once
+#include "viewport.h"
 
 struct Athena_MessageList;
 
@@ -23,4 +24,4 @@ struct Athena_Menu{
     unsigned w, h;
 };
 
-void Athena_OrganizeMenu(struct Athena_Menu *menu);
+int Athena_UIDrawButtons(struct Athena_ButtonList *buttons, struct Athena_Viewport *onto);
