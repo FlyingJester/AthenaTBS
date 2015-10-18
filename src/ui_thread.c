@@ -43,6 +43,8 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
         switch(event->type){
             case athena_click_event:
                 athena_ui_process_buttons(that->ui.buttons, event, messages);
+                if(that->ui.menu)
+                    athena_ui_process_buttons(that->ui.menu->buttons, event, messages);
                 break;
             case athena_unknown_event:
                 break;
@@ -107,9 +109,14 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
 */
         } /* End info bar Drawing */
         { /* Draw buttons */
-            struct Athena_Viewport onto;
+            struct Athena_Viewport onto = {NULL, 0, 0, 0, 0};
             onto.image = &that->ui.framebuffer;
+            onto.w = that->ui.framebuffer.w;
+            onto.h = that->ui.framebuffer.h;
+            
             Athena_UIDrawButtons(that->ui.buttons, &onto);
+            if(that->ui.menu)
+                Athena_DrawMenu(that->ui.menu, &onto);
         }      
         athena_do_fps_drawing(&that->ui.framebuffer);
     } /* End Drawing. */
@@ -152,6 +159,7 @@ static void athena_cancel_menu_callback(void *arg, struct Athena_MessageList *me
     if(ui->menu){
         Athena_FreeButtonList(ui->menu->buttons);
         free(ui->menu);
+        ui->menu = NULL;
     }
 }
 static const struct Athena_Button athena_cancel_button = { 0, 0, 64, 20, "Cancel", NULL, athena_cancel_menu_callback };
@@ -167,9 +175,10 @@ static void athena_open_end_turn_menu(void *arg, struct Athena_MessageList *mess
         free(ui->menu);
     }
     ui->menu = malloc(sizeof(struct Athena_Menu));
-    ui->menu->w = 64;
+    ui->menu->w = 80;
     ui->menu->y = ui->framebuffer.h >> 1;
     ui->menu->x = (ui->framebuffer.w - ui->menu->w) >> 1;
+    ui->menu->text = "End Turn?";
 
     {
         struct Athena_ButtonList * const buttons = ui->menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
@@ -198,7 +207,8 @@ static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messa
         msg->next = NULL;
         
         messages->next = msg;
-
+        
+        athena_cancel_menu_callback(arg, messages);
     }
 }
 

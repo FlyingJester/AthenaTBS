@@ -4,7 +4,7 @@
 
 static int athena_set_menu_position(struct Athena_ButtonList *buttons, int x, int last_y, int w, int h){
     if(!buttons){
-        return last_y + h;
+        return last_y + 4;
     }
     else{
         buttons->button.x = x;

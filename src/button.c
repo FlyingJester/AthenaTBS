@@ -14,7 +14,7 @@ int Athena_UIDrawButtons(struct Athena_ButtonList *buttons, struct Athena_Viewpo
         onto->w = buttons->button.w;
         onto->h = buttons->button.h;
         Athena_DrawDefaultWindowStyle(onto);
-        WriteString(GetSystemFont(), buttons->button.text, onto->image, buttons->button.x + 2, buttons->button.y + 2);
+        WriteString(GetSystemFont(), buttons->button.text, onto->image, buttons->button.x + 4, buttons->button.y + 4);
 
         if(buttons->button.clicked){
             buttons->button.clicked--;
