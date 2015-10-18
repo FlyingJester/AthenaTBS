@@ -5,16 +5,28 @@ from tools import athena_unit_class_generator
 
 environment = Environment(ENV = os.environ)
 
+use_intel_cc = False
+
+AddOption('--use-intel-cc', dest="use-intel-cc", nargs=1, action='store')
+
+if GetOption('use-intel-cc') == 'y':
+    use_intel_cc = True
+
 if os.name=="posix":
     environment.Append(
         CFLAGS = " -ansi -Wno-long-long ", 
         CXXFLAGS = " -std=c++11 -fno-rtti -fno-exceptions ",
         LINKFLAGS = " -g ")
     environment.Prepend(CCFLAGS = " -pedantic -Wall -Werror -g -fstrict-aliasing -pipe -fPIC ")
+    if not use_intel_cc:
+         environment.Prepend(CCFLAGS = " -Wno-unused-result ")
 
     if False and sys.platform == "darwin":
         XFlag = " -arch x86_64 -arch i586 "
         environment.Append(CCFLAGS = XFlag, LINKFLAGS = XFlag)
+
+if use_intel_cc:
+    environment.Replace(CC = "icc")
 
 environment.Prepend(
     CPPPATH = [os.path.join(os.getcwd(), "TurboJSON_src"), os.path.join(os.getcwd(), "lib")], 

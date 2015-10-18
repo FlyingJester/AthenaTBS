@@ -9,7 +9,7 @@ void Athena_ServerThreadWrapper(void *that){
     Athena_ServerThread(that);
 }
 
-const char * const Athena_ServerMessageTypeString(enum Athena_ServerMessageTypes e){
+const char *Athena_ServerMessageTypeString(enum Athena_ServerMessageTypes e){
     switch(e){
         case EndTurn:
             return "EndTurn";

@@ -11,7 +11,7 @@ enum Athena_ServerMessageTypes {
     NumServerMessageTypes
 };
 
-const char * const Athena_ServerMessageTypeString(enum Athena_ServerMessageTypes);
+const char *Athena_ServerMessageTypeString(enum Athena_ServerMessageTypes);
 
 /* Returns NumServerMessageTypes on error */
 enum Athena_ServerMessageTypes Athena_ServerMessageTypeEnumN(const char *str, unsigned len);

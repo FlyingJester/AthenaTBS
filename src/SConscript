@@ -4,9 +4,6 @@ Import("environment turbojson")
 
 s_env = environment.Clone()
 
-if os.name == "posix":
-    environment.Append(CCFLAGS = " -Wno-unused-result ")
-
 platform = SConscript(dirs = ["platform"], exports = ["environment"])
 
 athena_libs = [platform, "png", turbojson, "m"]
