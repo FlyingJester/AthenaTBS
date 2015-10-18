@@ -25,6 +25,9 @@ struct Athena_UI{
     struct Athena_Image framebuffer;
     struct Athena_Window *window;
     struct Athena_ButtonList *buttons;
+    
+    /* Yes, we have only one menu open at a time. */
+    struct Athena_Menu *menu;
 };
 
 struct Athena_GameState{

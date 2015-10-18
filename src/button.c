@@ -2,6 +2,7 @@
 #include "image.h"
 #include "window_style.h"
 #include "font.h"
+#include <stdlib.h>
 
 int Athena_UIDrawButtons(struct Athena_ButtonList *buttons, struct Athena_Viewport *onto){
     if(!buttons){
@@ -21,5 +22,15 @@ int Athena_UIDrawButtons(struct Athena_ButtonList *buttons, struct Athena_Viewpo
         }
 
         return Athena_UIDrawButtons(buttons->next, onto);
+    }
+}
+
+int Athena_FreeButtonList(struct Athena_ButtonList *buttons){
+    if(!buttons)
+        return 0;
+    else {
+        struct Athena_ButtonList *next = buttons->next;
+        free(buttons);
+        return Athena_FreeButtonList(next);
     }
 }

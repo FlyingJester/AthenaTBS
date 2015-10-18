@@ -147,24 +147,42 @@ int Athena_UIClickAt2(const struct Athena_UI *ui, int x_in, int y_in, int *x_out
     return err;
 }
 
-/*
+static void athena_cancel_menu_callback(void *arg, struct Athena_MessageList *messages){
+    struct Athena_UI *const ui = &((struct Athena_GameState *)arg)->ui;
+    if(ui->menu){
+        Athena_FreeButtonList(ui->menu->buttons);
+        free(ui->menu);
+    }
+}
+static const struct Athena_Button athena_cancel_button = { 0, 0, 64, 20, "Cancel", NULL, athena_cancel_menu_callback };
 
-struct Athena_Button{
-    int x, y;
-    unsigned w, h;
-    const char *text;
+static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messages);
 
-    void *arg;
-    void (*callback)(void *);
-};
+static const struct Athena_Button athena_end_turn_yes_button = { 0, 0, 64, 20, "End Turn", NULL, athena_end_turn_callback };
 
+static void athena_open_end_turn_menu(void *arg, struct Athena_MessageList *messages){
+    struct Athena_UI *const ui = &((struct Athena_GameState *)arg)->ui;
+    if(ui->menu){
+        Athena_FreeButtonList(ui->menu->buttons);
+        free(ui->menu);
+    }
+    ui->menu = malloc(sizeof(struct Athena_Menu));
+    ui->menu->w = 64;
+    ui->menu->y = ui->framebuffer.h >> 1;
+    ui->menu->x = (ui->framebuffer.w - ui->menu->w) >> 1;
 
-struct Athena_ButtonList{
-    struct Athena_Button button;
-    struct Athena_ButtonList *next;
-};
+    {
+        struct Athena_ButtonList * const buttons = ui->menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
+            * const next = buttons->next = malloc(sizeof(struct Athena_ButtonList));
+        buttons->button = athena_end_turn_yes_button;
+        buttons->button.arg = arg;
 
-*/
+        next->button = athena_cancel_button;
+        next->button.arg = arg;
+        next->next = NULL;
+    }
+    Athena_OrganizeMenu(ui->menu);
+}
 
 static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messages){
     if(messages->next)
@@ -184,7 +202,7 @@ static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messa
     }
 }
 
-static struct Athena_Button end_turn_button = { 128, 0, 64, 20, "End Turn", NULL, athena_end_turn_callback };
+static struct Athena_Button end_turn_button = { 128, 0, 64, 20, "End Turn", NULL, athena_open_end_turn_menu };
 
 void Athena_UIInit(struct Athena_GameState *state){
     state->ui.buttons = malloc(sizeof(struct Athena_ButtonList));

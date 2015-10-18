@@ -18,10 +18,5 @@ struct Athena_ButtonList{
     struct Athena_ButtonList *next;
 };
 
-struct Athena_Menu{
-    struct Athena_ButtonList *buttons;
-    int x, y;
-    unsigned w, h;
-};
-
 int Athena_UIDrawButtons(struct Athena_ButtonList *buttons, struct Athena_Viewport *onto);
+int Athena_FreeButtonList(struct Athena_ButtonList *buttons);
