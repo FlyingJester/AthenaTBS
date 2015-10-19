@@ -3,6 +3,7 @@
 #include "image.h"
 #include "button.h"
 #include "menu.h"
+#include "audio/audio.h"
 #include "monitor/monitor.h"
 #include "window/window.h"
 #include <TurboJSON/value.h>
@@ -25,7 +26,8 @@ struct Athena_UI{
     struct Athena_Image framebuffer;
     struct Athena_Window *window;
     struct Athena_ButtonList *buttons;
-    
+    struct Athena_Sound *click_sound;
+
     /* Yes, we have only one menu open at a time. */
     struct Athena_Menu *menu;
 };

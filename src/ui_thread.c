@@ -2,6 +2,8 @@
 #include "player.h"
 #include "time/sleep.h"
 #include "time/ticks.h"
+#include "load_opus.h"
+#include "audio/audio.h"
 #include "font.h"
 #include "viewport.h"
 #include "window_style.h"
@@ -21,7 +23,7 @@ int Athena_UIThread(struct Athena_GameState *that){
     return 0;
 }
 
-static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const struct Athena_Event *event, struct Athena_MessageList *messages){
+static int athena_ui_process_buttons(struct Athena_GameState *that, struct Athena_ButtonList *buttons, const struct Athena_Event *event, struct Athena_MessageList *messages){
     if(!buttons){
         return 0;
     }
@@ -29,10 +31,11 @@ static int athena_ui_process_buttons(struct Athena_ButtonList *buttons, const st
         if(
             (buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y) << 2) &&
             buttons->button.callback){
-
+            if(that->ui.click_sound)
+                Athena_SoundPlay(that->ui.click_sound);
             buttons->button.callback(buttons->button.arg, messages);
         }
-        return athena_ui_process_buttons(buttons->next, event, messages);
+        return athena_ui_process_buttons(that, buttons->next, event, messages);
     }
 }
 
@@ -42,9 +45,9 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
     else{
         switch(event->type){
             case athena_click_event:
-                athena_ui_process_buttons(that->ui.buttons, event, messages);
+                athena_ui_process_buttons(that, that->ui.buttons, event, messages);
                 if(that->ui.menu)
-                    athena_ui_process_buttons(that->ui.menu->buttons, event, messages);
+                    athena_ui_process_buttons(that, that->ui.menu->buttons, event, messages);
                 break;
             case athena_unknown_event:
                 break;
@@ -215,6 +218,15 @@ static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messa
 static struct Athena_Button end_turn_button = { 128, 0, 64, 20, "End Turn", NULL, athena_open_end_turn_menu };
 
 void Athena_UIInit(struct Athena_GameState *state){
+    state->ui.click_sound = Athena_LoadOpusFile("res/sounds/bloop.opus");
+    
+    {
+        struct Athena_SoundConfig config;
+        Athena_SoundGetConfig(state->ui.click_sound, &config);
+        config.volume = 0.10;
+        Athena_SoundSetConfig(state->ui.click_sound, &config);
+    }
+
     state->ui.buttons = malloc(sizeof(struct Athena_ButtonList));
     
     state->ui.buttons->button = end_turn_button;

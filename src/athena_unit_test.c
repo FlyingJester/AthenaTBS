@@ -32,7 +32,11 @@ int main(int argc, char *argv[]){
     struct Athena_Field field;
 
     struct Athena_Sound *sound = Athena_LoadOpusFile("res/sounds/night_at_the_river.opus");
-
+    struct Athena_SoundConfig config;
+    Athena_SoundGetConfig(sound, &config);
+    config.loop = 1;
+    
+    Athena_SoundSetConfig(sound, &config);
     Athena_SoundPlay(sound);
 
     memset(&field, 0, sizeof(struct Athena_Field));
