@@ -178,6 +178,15 @@ struct Athena_SpriteAction {
 };
 */
 
+static struct Athena_AnimationFrame *athena_last_spriteset_frame(struct Athena_AnimationFrame *frame){
+    if(!frame)
+        return NULL;
+    else if(frame->next)
+        return athena_last_spriteset_frame(frame->next);
+    else 
+        return frame;
+}
+
 static int athena_load_spriteset_frame(const struct Turbo_Value *properties, unsigned long num_properties,
     struct Athena_Image *images, struct Athena_AnimationFrame **frame_p){
     if(!num_properties){
@@ -232,8 +241,9 @@ static int athena_load_spriteset_direction(const struct Turbo_Property *directio
         directions->name = direction_name;
 
         athena_load_spriteset_frame(direction_values->value.value.array, direction_values->value.length, images, &directions->frames);
+        athena_last_spriteset_frame(directions->frames)->next = directions->frames;
 
-        return 0;
+        return athena_load_spriteset_direction(direction_values + 1, num_directions - 1, images, directions + 1);
     }
 }
 
