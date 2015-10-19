@@ -2,9 +2,11 @@
 #include "game.h"
 #include "player.h"
 #include "unit_classes.h"
+#include "load_opus.h"
+#include "audio/audio.h"
 #include <string.h>
 
-const unsigned scr_width = 720, scr_height = 450;
+const unsigned scr_width = 400, scr_height = 300;
 
 const char field_src[] = "{\
     \"tileset\":\"res/tilesets/field1/ts.json\",\
@@ -28,6 +30,10 @@ int main(int argc, char *argv[]){
     struct Athena_Window * const window = Athena_CreateWindow(scr_width, scr_height, "Athena Test");
     struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0}};
     struct Athena_Field field;
+
+    struct Athena_Sound *sound = Athena_LoadOpusFile("res/sounds/night_at_the_river.opus");
+
+    Athena_SoundPlay(sound);
 
     memset(&field, 0, sizeof(struct Athena_Field));
 
