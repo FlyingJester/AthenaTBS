@@ -31,8 +31,9 @@ struct Athena_UnitList {
     struct Athena_UnitList *next;
 };
 
-int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, int x, int y);
-int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, int x, int y);
+int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
+int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
+#define Athena_DrawUnits Athena_DrawUnitList
 
 struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units);
 void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, unsigned owner, unsigned x, unsigned y);

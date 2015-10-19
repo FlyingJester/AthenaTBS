@@ -232,8 +232,6 @@ static int athena_load_spriteset_direction(const struct Turbo_Property *directio
         return -112;
     else{
         
-        
-        
         char *direction_name = malloc(direction_values->name_length + 1);
         memcpy(direction_name, direction_values->name, direction_values->name_length);
         direction_name[direction_values->name_length] = '\0';

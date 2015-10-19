@@ -14,7 +14,7 @@ int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena
     if(!(animation && image))
         return 1;
     else{
-        Athena_Blit(animation->frames->frame, image, x, y);
+        Athena_BlitBlended(animation->frames->frame, image, x, y);
         return 0;
     }
 }

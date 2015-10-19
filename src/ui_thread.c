@@ -92,7 +92,8 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
 
         { /* Field Drawing, requires a lock. */
             Athena_DrawField(that->field, &that->ui.framebuffer, that->ui.camera_x, that->ui.camera_y);
-
+            Athena_DrawUnits(that->field->units, &that->ui.framebuffer, 
+                that->field->tileset->tile_width, that->field->tileset->tile_height, that->ui.camera_x, that->ui.camera_y);
         } /* End Field Drawing */
         { /* Draw info bar */
 
