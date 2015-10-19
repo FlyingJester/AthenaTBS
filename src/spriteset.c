@@ -142,7 +142,7 @@ Example spriteset:
 }
 */
 
-static int athena_load_tileset_images(const struct Turbo_Value *val_array, unsigned long len, struct Athena_Image *images, const char *directory){
+static int athena_load_spriteset_images(const struct Turbo_Value *val_array, unsigned long len, struct Athena_Image *images, const char *directory){
     if(!len)
         return 0;
     else{
@@ -166,7 +166,7 @@ static int athena_load_tileset_images(const struct Turbo_Value *val_array, unsig
                 return -17;
             }
         }
-        return athena_load_tileset_images(val_array + 1, len - 1, images + 1, directory);
+        return athena_load_spriteset_images(val_array + 1, len - 1, images + 1, directory);
     }
 }
 
@@ -178,12 +178,92 @@ struct Athena_SpriteAction {
 };
 */
 
-static int athena_load_tileset_action(const struct Turbo_Property *action_values, unsigned long num_actions, struct Athena_Image *images, struct Athena_SpriteAction *actions){
-    if(!num_actions)
+static int athena_load_spriteset_frame(const struct Turbo_Value *properties, unsigned long num_properties,
+    struct Athena_Image *images, struct Athena_AnimationFrame **frame_p){
+    if(!num_properties){
+        frame_p[0] = NULL;
         return 0;
+    }
+    else{
+        const struct Turbo_Value 
+            * const image = Turbo_Helper_GetConstObjectElement(properties, "image"),
+            * const delay = Turbo_Helper_GetConstObjectElement(properties, "delay");
+        if(!(image && delay))
+            return -131;
+        else if(image->type != TJ_Number)
+            return -132;
+        else if(delay->type != TJ_Number)
+            return -132;
+        else{
+            /*
+            struct Athena_AnimationFrame {
+                unsigned time;
+                struct Athena_Image *frame;
+                struct Athena_AnimationFrame *next;
+            };
+            */
+        
+            struct Athena_AnimationFrame * const frame = frame_p[0] = malloc(sizeof(struct Athena_AnimationFrame));
+            frame->time = (int)delay->value.number;
+            frame->frame = images + (int)image->value.number;
+            
+            return athena_load_spriteset_frame(properties + 1, num_properties - 1, images, &frame->next);
+        }
+    }
+}
+
+static int athena_load_spriteset_direction(const struct Turbo_Property *direction_values, unsigned long num_directions, 
+    struct Athena_Image *images, struct Athena_SpriteDirection *directions){
+
+    if(!num_directions)
+        return 0;
+    else if(direction_values->value.type != TJ_Array)
+        return -111;
+    else if(!direction_values->value.length)
+        return -112;
     else{
         
-        return athena_load_tileset_action(action_values + 1, num_actions - 1, images, actions + 1);
+        
+        
+        char *direction_name = malloc(direction_values->name_length + 1);
+        memcpy(direction_name, direction_values->name, direction_values->name_length);
+        direction_name[direction_values->name_length] = '\0';
+        
+        directions->name = direction_name;
+
+        athena_load_spriteset_frame(direction_values->value.value.array, direction_values->value.length, images, &directions->frames);
+
+        return 0;
+    }
+}
+
+static int athena_load_spriteset_action(const struct Turbo_Property *action_values, unsigned long num_actions, 
+    struct Athena_Image *images, struct Athena_SpriteAction *actions){
+
+    if(!num_actions)
+        return 0;
+    else if(action_values->value.type != TJ_Object)
+        return -101;
+    else{
+
+        char *action_name = malloc(action_values->name_length + 1);
+        memcpy(action_name, action_values->name, action_values->name_length);
+        action_name[action_values->name_length] = '\0';
+        
+        actions->name = action_name;
+        
+        actions->num_directions = action_values->value.length;
+        actions->directions_capacity = 0;
+
+        actions->directions = Athena_AssureCapacity(NULL, sizeof(struct Athena_SpriteDirection), actions->num_directions, &actions->directions_capacity);
+        
+        {
+            const int err = athena_load_spriteset_direction(action_values->value.value.object, action_values->value.length, images, actions->directions);
+            if (err!=0)
+                return err;
+            else
+                return athena_load_spriteset_action(action_values + 1, num_actions - 1, images, actions + 1);
+        }
     }
 }
 
@@ -193,14 +273,19 @@ int Athena_LoadSpritesetFromTurboValue(const struct Turbo_Value *value, struct A
         * const images = Turbo_Helper_GetConstObjectElement(value, "images"),
         * const actions = Turbo_Helper_GetConstObjectElement(value, "actions");
     
+    if(!(images && actions))
+        return -1;
+    
     to->num_actions = actions->length;
-    to->actions = Athena_AssureCapacity(to->actions, sizeof(struct Athena_SpriteAction), to->num_actions, &to->actions_capacity);
+    to->actions_capacity = 0;
+    to->actions = Athena_AssureCapacity(NULL, sizeof(struct Athena_SpriteAction), to->num_actions, &to->actions_capacity);
 
     to->num_images = images->length;
-    to->images = Athena_AssureCapacity(to->images, sizeof(struct Athena_Image), to->num_images, &to->images_capacity);
+    to->images_capacity = 0;
+    to->images = Athena_AssureCapacity(NULL, sizeof(struct Athena_Image), to->num_images, &to->images_capacity);
 
-    athena_load_tileset_images(images->value.array, images->length, to->images, directory);
-    athena_load_tileset_action(actions->value.object,actions->length,to->images, to->actions);
+    athena_load_spriteset_images(images->value.array, images->length, to->images, directory);
+    athena_load_spriteset_action(actions->value.object,actions->length,to->images, to->actions);
     
     return 0;
 }

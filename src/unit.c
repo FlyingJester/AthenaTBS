@@ -35,6 +35,8 @@ void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz,
     to->x = x;
     to->y = y;
     Athena_DepleteUnit(to);
+    to->sprite.frames = Athena_GetSpritesetDirection(clazz->spriteset, "idle", "south", NULL);
+    to->sprite.last_time = 0;
 }
 
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other){

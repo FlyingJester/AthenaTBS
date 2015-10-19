@@ -11,7 +11,7 @@ struct Athena_AnimationFrame {
 struct Athena_Animation {
     unsigned long last_time;
     /* frames _must_ be a circular linked list. */
-    struct Athena_AnimationFrame *frames;
+    const struct Athena_AnimationFrame *frames;
 };
 
 int Athena_AnimationTick(struct Athena_Animation *animation);
