@@ -21,6 +21,11 @@ struct Athena_Spriteset{
     unsigned num_images, images_capacity;
 };
 
+struct Athena_Sprite{
+    unsigned last_time;
+    const struct Athena_AnimationFrame *frames;
+};
+
 unsigned Athena_AddImageSpriteset(struct Athena_Spriteset *ss, struct Athena_Image *image);
 
 int Athena_LoadSpritesetFromFile(const char *file, struct Athena_Spriteset *to);

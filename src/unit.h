@@ -23,12 +23,16 @@ struct Athena_Unit {
     unsigned owner;
     float health;
     unsigned x, y, movement, actions;
+    struct Athena_Animation sprite;
 };
 
 struct Athena_UnitList {
     struct Athena_Unit unit;
     struct Athena_UnitList *next;
 };
+
+int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, int x, int y);
+int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, int x, int y);
 
 struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units);
 void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, unsigned owner, unsigned x, unsigned y);

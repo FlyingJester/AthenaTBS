@@ -4,6 +4,22 @@
 #include <string.h>
 #include <math.h>
 
+int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, int x, int y){
+    if(!unit)
+        return 1;
+    else if(!Athena_DrawAnimation(&unit->sprite, to, unit->x - x, unit->y - y))
+        return 1;
+    else
+        return Athena_AnimationTick(&unit->sprite);
+}
+
+int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, int x, int y){
+    if(!units)
+        return 0;
+    else
+        return Athena_DrawUnit(&units->unit, to, x, y) || Athena_DrawUnitList(units->next, to, x, y);
+}
+
 struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units){
     if(units[0])
         return Athena_AppendUnit(&(units[0]->next));

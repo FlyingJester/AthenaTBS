@@ -1,6 +1,7 @@
 #pragma once
 #include "image.h"
 
+/* Circularly linked... */
 struct Athena_AnimationFrame {
     unsigned time;
     struct Athena_Image *frame;
@@ -8,10 +9,10 @@ struct Athena_AnimationFrame {
 };
 
 struct Athena_Animation {
-    unsigned time;
+    unsigned long last_time;
     /* frames _must_ be a circular linked list. */
     struct Athena_AnimationFrame *frames;
 };
 
-void Athena_AnimationTick(struct Athena_Animation *animation, unsigned ticks);
-void Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y);
+int Athena_AnimationTick(struct Athena_Animation *animation);
+int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y);

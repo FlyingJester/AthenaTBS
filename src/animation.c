@@ -1,14 +1,20 @@
 #include "animation.h"
+#include "time/ticks.h"
 
-void Athena_AnimationTick(struct Athena_Animation *animation, unsigned ticks){
-    animation->time += ticks;
-    if(animation->time > animation->frames->time){
+int Athena_AnimationTick(struct Athena_Animation *animation){
+    const unsigned long t = Athena_GetMillisecondTicks();
+    if(t - animation->last_time > animation->frames->time){
         animation->frames = animation->frames->next;
-        animation->time = 0;
+        animation->last_time = t;
     }
+    return 0;
 }
 
-void Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y){
-    if(animation->frames->frame)
-        Athena_Blit(animation->frames->frame, onto, x, y);
+int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *image, int x, int y){
+    if(!(animation && image))
+        return 1;
+    else{
+        Athena_Blit(animation->frames->frame, image, x, y);
+        return 0;
+    }
 }
