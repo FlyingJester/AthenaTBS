@@ -14,6 +14,7 @@ if (sys.platform == "darwin" or use_cocoa) and not prefer_pthreads:
     libathena_thread = environment.SharedLibrary("athena_thread", ["thread_cocoa.m"], FRAMEWORKS = ["Foundation"])
 elif os.name == "posix" or prefer_pthreads:
     libathena_thread = environment.SharedLibrary("athena_thread", ["thread_pthreads.c"], LIBS = ["pthread"])
-    
+elif sys.platform.startswith("win"):
+    libathena_thread = environment.Library("athena_thread", ["thread_win32.c"])    
     
 Return("libathena_thread")
