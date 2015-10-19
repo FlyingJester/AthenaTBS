@@ -31,15 +31,14 @@ struct Athena_SoundContext{
     ALCcontext *context;
 };
 
+
+
 struct Athena_Sound{
     struct Athena_SoundConfig config;
     struct Athena_SoundContext *context;
 
     unsigned format, num_channels, samples_per_second;
     float length;    
-
-    ALuint *buffers;
-    unsigned num_buffers, used_buffers;
     
     ALuint source;
 };
@@ -96,28 +95,37 @@ struct Athena_Sound *Athena_CreateSound(struct Athena_SoundContext *ctx){
     sound->context = ctx;
 
     athena_make_context_current(ctx);
-
-    sound->num_buffers = DEFAULT_STARTING_BUFFERS;
-    if(!sound->num_buffers)
-        sound->num_buffers = 1;
-    sound->buffers = calloc(sizeof(ALuint), sound->num_buffers);
-
-    alGenBuffers(sound->num_buffers, sound->buffers);
+    
     alGenSources(1, &sound->source);
     
     return sound;
 
 }
 
+static void athena_free_buffers(struct Athena_Sound *sound){
+    ALuint buffers[16];
+    int n;
+
+    alGetSourcei(sound->source, AL_BUFFERS_PROCESSED, &n);
+    if(n==0)
+        return;
+
+    if(n>16)
+        n = 16;
+
+    alSourceUnqueueBuffers(sound->source, n, buffers);
+    alDeleteBuffers(n, buffers);
+
+    athena_free_buffers(sound);
+}
+
 void Athena_DestroySound(struct Athena_Sound *sound){
     
     athena_make_context_current(sound->context);
 
-    alSourceStop(sound->source);
-    alDeleteBuffers(sound->num_buffers, sound->buffers);
+    athena_free_buffers(sound);
     alDeleteSources(1, &sound->source);
 
-    free(sound->buffers);
     free(sound);
 }
 
@@ -174,57 +182,32 @@ const void *Athena_SoundGetContext(const struct Athena_Sound *sound){
     return sound->context->context;
 }
 
-static int athena_find_matching_buffer_index(ALuint inner, unsigned max, unsigned i, const ALuint *buffers){
-    if(i==max)
-        return -1;
-    else if(buffers[i]==inner)
-        return i;
-    else
-        return athena_find_matching_buffer_index(inner, max, i+1, buffers);
-}
+static ALuint athena_get_buffer(struct Athena_Sound *sound){
+    ALuint buffer = 0;
 
-static void athena_return_used_buffers(struct Athena_Sound *sound, unsigned num_buffers){
-    if(num_buffers && sound->used_buffers){
-        ALuint temp_buffer;
-        alSourceUnqueueBuffers(sound->source, 1, &temp_buffer);
-        {
-            const int at = athena_find_matching_buffer_index(temp_buffer, sound->num_buffers, 0, sound->buffers);
-            /* This really should be true, but we check just in case. */
-            if(at < sound->used_buffers){
-                /* We swap the now open buffer to the position that was previously the last used buffer, and decrease the number of used buffers. */
-                sound->used_buffers--;
-                sound->buffers[at] = sound->buffers[sound->used_buffers];
-                sound->buffers[sound->used_buffers] = temp_buffer;
-            }
-        }
-        athena_return_used_buffers(sound, num_buffers-1);
+    ALint i;
+
+    alGetSourcei(sound->source, AL_BUFFERS_PROCESSED, &i);
+    if(i){
+        alSourceUnqueueBuffers(sound->source, 1, &buffer);
     }
+    else{
+        alGenBuffers(1, &buffer);
+    }
+    
+    return buffer;
 }
 
 unsigned Athena_SoundPost(struct Athena_Sound *sound, const void *data, unsigned length){
-    athena_make_context_current(sound->context);
-    
-    /* Unlike Cinnamon, we always try to return buffers when new data is posted. */
-    if(sound->used_buffers){
-        ALint num_buffers;
-        alGetSourcei(sound->source, AL_BUFFERS_PROCESSED, &num_buffers);
-        athena_return_used_buffers(sound, num_buffers);
+    athena_make_context_current(sound->context); 
+   
+    {
+        const ALuint buffer = athena_get_buffer(sound);
+
+        alBufferData(buffer, sound->format, data, length, sound->samples_per_second);
+        alSourceQueueBuffers(sound->source, 1, &buffer);
     }
 
-    /* Very unlikely, but in case we really have no free buffers, we allocate some more. */
-    while(!(sound->used_buffers<sound->num_buffers)){
-        sound->buffers = realloc(sound->buffers, sound->num_buffers << 1);
-
-        alGenBuffers(sound->num_buffers, sound->buffers + sound->num_buffers);
-
-        sound->num_buffers<<=1;
-    }
-
-    alBufferData(sound->buffers[sound->used_buffers], sound->format, data, length, sound->samples_per_second);
-    alSourceQueueBuffers(sound->source, 1, sound->buffers + sound->used_buffers);
-
-    sound->used_buffers++;
-    
     return 0;
 }
 
