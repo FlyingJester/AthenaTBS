@@ -142,3 +142,13 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
     to->type = athena_unknown_event;
     return 1;    
 }
+
+int Athena_Private_IsKeyPressed(void *handle, unsigned key){
+    if(key >= 0x80)
+        return 0;
+    else{
+        char code[2] = {0, '\0'};
+        code[0] = key;
+        return SDL_GetKeyboardState(NULL)[SDL_GetKeyFromName(code)];
+    }
+}

@@ -26,3 +26,6 @@ int Athena_FlipWindow(struct Athena_Window *that);
  * All 'handle' arguments can be ignored when calling from outside the Athena window library.
  */
 int Athena_Bresenhams(void *handle, void *arg, int x1, int y1, int x2, int y2, athena_point_callback callback);
+
+/* key is the UTF8 codepoint for the key. It may or may not be case sensitive. */
+int Athena_IsKeyPressed(struct Athena_Window *that, unsigned key);

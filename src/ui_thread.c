@@ -45,9 +45,14 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
     else{
         switch(event->type){
             case athena_click_event:
-                athena_ui_process_buttons(that, that->ui.buttons, event, messages);
-                if(that->ui.menu)
-                    athena_ui_process_buttons(that, that->ui.menu->buttons, event, messages);
+                if(event->which == athena_left_mouse_button || event->which == athena_unknown_mouse_button){
+                    athena_ui_process_buttons(that, that->ui.buttons, event, messages);
+                    if(that->ui.menu)
+                        athena_ui_process_buttons(that, that->ui.menu->buttons, event, messages);
+                }
+                else if(event->which == athena_right_mouse_button){
+                    
+                }
                 break;
             case athena_unknown_event:
                 break;

@@ -171,3 +171,7 @@ int Athena_Common_ColorToUnsignedShort(const struct Athena_Color *color, unsigne
         alpha[0] = athena_clamp_float(color->alpha) * 65535.0f;
     return 0;
 }
+
+int Athena_IsKeyPressed(struct Athena_Window *that, unsigned key){
+    return Athena_Private_IsKeyPressed(that->handle, key);
+}

@@ -28,6 +28,8 @@ int Athena_Common_Line(void *handle, void *arg, int x1, int y1, int x2, int y2, 
 int Athena_Common_ColorToUnsignedByte(const struct Athena_Color *color, unsigned char *red, unsigned char *greeb, unsigned char *blue, unsigned char *alpha);
 int Athena_Common_ColorToUnsignedShort(const struct Athena_Color *color, unsigned short *red, unsigned short *greeb, unsigned short *blue, unsigned short *alpha);
 
+int Athena_Private_IsKeyPressed(void *handle, unsigned key);
+
 #ifdef __cplusplus
 }
 #endif
