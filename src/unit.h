@@ -1,5 +1,6 @@
 #pragma once
 #include "spriteset.h"
+#include "menu.h"
 
 /* For an equal attack and defense, this is the number of attacks it takes to defeat a unit. */
 #define ATTACK_CONSTANT 4.0f
