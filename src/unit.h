@@ -41,8 +41,9 @@ void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz,
 #define Athena_SpawnUnit(A_LIST_, A_CLAZZ_, A_OWNER_, A_X_, A_Y_)\
     Athena_CreateUnit(Athena_AppendUnit(A_LIST_), A_CLAZZ_, A_OWNER_, A_X_, A_Y_)
 
+struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y);
+
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
-struct Athena_Unit *Athena_UnitsCollide(struct Athena_UnitList *list, const unsigned x, const unsigned y);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);
 void Athena_RenewUnit(struct Athena_Unit *unit);
 void Athena_DepleteUnit(struct Athena_Unit *unit);

@@ -45,12 +45,12 @@ void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other
         other->health = 0.0f;
 }
 
-struct Athena_Unit *Athena_UnitsCollide(struct Athena_UnitList *list, const unsigned x, const unsigned y){
+struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y){
     if(!list)
         return NULL;
     if(list->unit.x == x && list->unit.y == y)
         return &(list->unit);
-    return Athena_UnitsCollide(list->next, x, y);
+    return Athena_FindUnitAt(list->next, x, y);
 }
 
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b){

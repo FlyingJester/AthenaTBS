@@ -39,6 +39,32 @@ static int athena_ui_process_buttons(struct Athena_GameState *that, struct Athen
     }
 }
 
+static int athena_test_unit_index(struct Athena_UnitList *units, struct Athena_Unit *unit, int i){
+    if(!units)
+        return -1;
+    else if(unit == &units->unit)
+        return i;
+    else
+        return athena_test_unit_index(units->next, unit, i+1);
+}
+
+static int athena_ui_get_unit_menu(struct Athena_GameState *that, struct Athena_UnitList *units, const struct Athena_Event *event, struct Athena_MessageList *messages){
+    if(!units)
+        return 0;
+    else{
+        int x, y;
+        Athena_FieldPixelXYToTileXY(that->field, event->x - that->ui.camera_x, event->y - that->ui.camera_y, &x, &y);
+        
+        {
+            struct Athena_Unit *const unit = Athena_FindUnitAt(units, x, y);
+            const int i = athena_test_unit_index(units, unit, 0);
+            printf("[athena_ui_get_unit_menu]Selected unit %i\n", i);
+        }
+        
+        return athena_ui_get_unit_menu(that, units->next, event, messages);
+    }
+}
+
 static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct Athena_Event *event, struct Athena_MessageList *messages){
     if(!Athena_GetEvent(that->ui.window, event))
         return 0;
@@ -49,6 +75,7 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
                     athena_ui_process_buttons(that, that->ui.buttons, event, messages);
                     if(that->ui.menu)
                         athena_ui_process_buttons(that, that->ui.menu->buttons, event, messages);
+                    athena_ui_get_unit_menu(that, that->field->units, event, messages);
                 }
                 else if(event->which == athena_right_mouse_button){
                     
