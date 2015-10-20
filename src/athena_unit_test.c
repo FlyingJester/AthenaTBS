@@ -69,7 +69,9 @@ int main(int argc, char *argv[]){
         }
     }
     
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), 0, 8, 8);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"), 0, 6, 5);    
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"), 0, 7, 5);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), 0, 6, 5);
     
     Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
 
