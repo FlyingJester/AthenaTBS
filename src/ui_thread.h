@@ -21,5 +21,5 @@ int Athena_UIThreadFrame(struct Athena_GameState *that);
 
 void Athena_UIInit(struct Athena_GameState *state);
 
-void Athena_CancelMenuCallback(void *arg, struct Athena_MessageList *messages);
+void Athena_CancelMenuCallback(struct Athena_ButtonArgList *arg, struct Athena_MessageList *messages);
 extern const struct Athena_Button athena_cancel_button;

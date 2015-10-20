@@ -18,10 +18,10 @@ static struct Athena_Menu *athena_generate_unit_menu(struct Athena_GameState *ar
     struct Athena_ButtonList * const buttons = unit_menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
         * next = buttons->next = malloc(sizeof(struct Athena_ButtonList));
     buttons->button = athena_move_button;
-    buttons->button.arg = arg;
+    buttons->button.arg = Athena_DefaultButtonArgList(arg);
 
     next->button = athena_cancel_button;
-    next->button.arg = arg;
+    next->button.arg = Athena_DefaultButtonArgList(arg);
     next->next = NULL;
     
     unit_menu->w = 100;
@@ -80,7 +80,11 @@ static int athena_ui_get_unit_menu(struct Athena_GameState *that, struct Athena_
             const int i = athena_test_unit_index(units, unit, 0);
             printf("[athena_ui_get_unit_menu]Selected unit %i\n", i);
             if(unit){
-                Athena_CancelMenuCallback(that, messages);
+                {
+                    struct Athena_ButtonArgList arg_list = {NULL, NULL};
+                    arg_list.arg = that;
+                    Athena_CancelMenuCallback(&arg_list, messages);
+                }
                 that->ui.menu = athena_generate_unit_menu(that, unit);
                 that->ui.menu->x = event->x; that->ui.menu->y = event->y;
                 Athena_OrganizeMenu(that->ui.menu);
@@ -109,7 +113,11 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
                         break;
                 }
                 else if(event->which == athena_right_mouse_button){
-                    Athena_CancelMenuCallback(that, messages);
+                    {
+                        struct Athena_ButtonArgList arg_list = {NULL, NULL};
+                        arg_list.arg = that;
+                        Athena_CancelMenuCallback(&arg_list, messages);
+                    }
                 }
                 break;
             case athena_unknown_event:
@@ -199,8 +207,8 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
 }
 
 /* Generally all menu callbacks will first call this to ensure that any existing menu is taken down properly. */
-void Athena_CancelMenuCallback(void *arg, struct Athena_MessageList *messages){
-    struct Athena_UI *const ui = &((struct Athena_GameState *)arg)->ui;
+void Athena_CancelMenuCallback(struct Athena_ButtonArgList *arg, struct Athena_MessageList *messages){
+    struct Athena_UI *const ui = &((struct Athena_GameState *)(arg->arg))->ui;
     if(ui->menu){
         Athena_FreeButtonList(ui->menu->buttons);
         free(ui->menu);
@@ -210,13 +218,13 @@ void Athena_CancelMenuCallback(void *arg, struct Athena_MessageList *messages){
 
 const struct Athena_Button athena_cancel_button = { 0, 0, 64, 20, "Cancel", NULL, Athena_CancelMenuCallback };
 
-static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messages);
+static void athena_end_turn_callback(struct Athena_ButtonArgList *arg, struct Athena_MessageList *messages);
 
 static const struct Athena_Button athena_end_turn_yes_button = { 0, 0, 64, 20, "End Turn", NULL, athena_end_turn_callback };
 
-static void athena_open_end_turn_menu(void *arg, struct Athena_MessageList *messages){
-    struct Athena_UI *const ui = &((struct Athena_GameState *)arg)->ui;
-    
+static void athena_open_end_turn_menu(struct Athena_ButtonArgList *arg, struct Athena_MessageList *messages){
+    struct Athena_UI *const ui = &((struct Athena_GameState *)(arg->arg))->ui;
+
     Athena_CancelMenuCallback(arg, messages);
 
     ui->menu = malloc(sizeof(struct Athena_Menu));
@@ -231,16 +239,16 @@ static void athena_open_end_turn_menu(void *arg, struct Athena_MessageList *mess
         struct Athena_ButtonList * const buttons = ui->menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
             * const next = buttons->next = malloc(sizeof(struct Athena_ButtonList));
         buttons->button = athena_end_turn_yes_button;
-        buttons->button.arg = arg;
+        buttons->button.arg = Athena_DefaultButtonArgList(arg->arg);
 
         next->button = athena_cancel_button;
-        next->button.arg = arg;
+        next->button.arg = Athena_DefaultButtonArgList(arg->arg);
         next->next = NULL;
     }
     Athena_OrganizeMenu(ui->menu);
 }
 
-static void athena_end_turn_callback(void *arg, struct Athena_MessageList *messages){
+static void athena_end_turn_callback(struct Athena_ButtonArgList *arg, struct Athena_MessageList *messages){
     if(messages->next)
         athena_end_turn_callback(arg, messages->next);
     else{
@@ -274,7 +282,7 @@ void Athena_UIInit(struct Athena_GameState *state){
     state->ui.buttons = malloc(sizeof(struct Athena_ButtonList));
     
     state->ui.buttons->button = end_turn_button;
-    state->ui.buttons->button.arg = state;
+    state->ui.buttons->button.arg = Athena_DefaultButtonArgList(state);
 
     state->ui.buttons->next = NULL;
 }
