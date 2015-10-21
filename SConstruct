@@ -29,7 +29,7 @@ if use_intel_cc:
     environment.Replace(CC = "icc")
 
 environment.Prepend(
-    CPPPATH = [os.path.join(os.getcwd(), "TurboJSON_src"), os.path.join(os.getcwd(), "lib")], 
+    CPPPATH = [os.path.join(os.getcwd(), "TurboJSON_src"), os.path.join(os.getcwd(), "include")], 
     LIBPATH = [os.path.join(os.getcwd(), "lib")])
 
 saved_env = environment.Clone()
