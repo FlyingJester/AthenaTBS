@@ -20,6 +20,13 @@ struct Athena_EventData{
     struct Athena_MessageList *msg;
 };
 
+struct Athena_SelectingPosition{
+    struct Athena_Unit *unit;
+
+    /* In tile coordinates */
+    int x, y;
+};
+
 /* UI and graphics data. This must only ever be touched by the UI thread. */
 struct Athena_UI{
     int camera_x, camera_y;
@@ -27,6 +34,19 @@ struct Athena_UI{
     struct Athena_Window *window;
     struct Athena_ButtonList *buttons;
     struct Athena_Sound *click_sound;
+
+    /*
+     * When callback is not null, we are selecting a position on the map.
+     * The result is stored as Athena_SelectingPosition in the payload of
+     * the second arg in the arglist.
+     * The selection_arg is always freed after the callback is used, and
+     * the callback is nulled. We do not keep trying to get a selection if
+     * there was a failure.
+     */
+    struct {
+        struct Athena_ButtonArgList *selection_arg;
+        void (*selection_callback)(struct Athena_ButtonArgList *, struct Athena_MessageList *);
+    } selection;
 
     /* Yes, we have only one menu open at a time. */
     struct Athena_Menu *menu;

@@ -1,0 +1,12 @@
+{
+    "actions":{
+        "idle":{
+            "south":[
+                {"delay":1, "image":0}
+            ]
+        }
+    },
+    "images":[
+        "BlackCoatIdleSouth.png"
+    ]
+}
