@@ -1,7 +1,10 @@
-import os
+import sys
 
 Import("environment")
 
-athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], LIBS = ["openal"])
+if sys.platform.startswith("haiku"):
+    athena_audio = environment.SharedLibrary("athena_audio", ["audio_haiku.cpp"], LIBS = ["be"])
+else:
+    athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], LIBS = ["openal"])
 
 Return("athena_audio")

@@ -12,6 +12,8 @@ prefer_pthreads = False
 
 if (sys.platform == "darwin" or use_cocoa) and not prefer_pthreads:
     libathena_thread = environment.SharedLibrary("athena_thread", ["thread_cocoa.m"], FRAMEWORKS = ["Foundation"])
+elif sys.platform.startswith("haiku") and not prefer_pthreads:
+	libathena_thread = environment.SharedLibrary("athena_thread", ["thread_haiku.cpp"], LIBS = ["be"])
 elif os.name == "posix" or prefer_pthreads:
     libathena_thread = environment.SharedLibrary("athena_thread", ["thread_pthreads.c"], LIBS = ["pthread"])
 elif sys.platform.startswith("win"):
