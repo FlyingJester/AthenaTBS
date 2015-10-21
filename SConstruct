@@ -32,6 +32,7 @@ environment.Prepend(
     CPPPATH = [os.path.join(os.getcwd(), "TurboJSON_src"), os.path.join(os.getcwd(), "include")], 
     LIBPATH = [os.path.join(os.getcwd(), "lib")])
 
+ó
 saved_env = environment.Clone()
 
 turbojson = SConscript(dirs = ["TurboJSON_src/TurboJSON"], exports = ["environment"])

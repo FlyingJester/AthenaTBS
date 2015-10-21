@@ -1,4 +1,5 @@
 import os
+import sys
 
 Import("environment turbojson")
 
@@ -6,7 +7,10 @@ s_env = environment.Clone()
 
 platform = SConscript(dirs = ["platform"], exports = ["environment"])
 
-athena_libs = [platform, "png", turbojson, "m", "opus", "ogg"]
+athena_libs = [platform, "png", turbojson, "opus", "ogg"]
+
+if sys.platform.startswith("linux"):
+    athena_libs = athena_libs + ["m"]    
 
 libathena = environment.StaticLibrary("athena", 
     [
