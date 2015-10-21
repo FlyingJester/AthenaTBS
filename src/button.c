@@ -30,7 +30,35 @@ int Athena_FreeButtonList(struct Athena_ButtonList *buttons){
         return 0;
     else {
         struct Athena_ButtonList *next = buttons->next;
+        Athena_FreeButtonArgList(buttons->button.arg);
         free(buttons);
         return Athena_FreeButtonList(next);
+    }
+}
+
+int Athena_FreeButtonArgList(struct Athena_ButtonArgList *args){
+    if(!args)
+        return 0;
+    else {
+        struct Athena_ButtonArgList *arg = args->next;
+        free(args);
+        return Athena_FreeButtonArgList(arg);
+    }
+}
+
+struct Athena_ButtonArgList *Athena_DefaultButtonArgList(struct Athena_GameState *arg){
+    struct Athena_ButtonArgList *const arg_list = malloc(sizeof(struct Athena_ButtonArgList));
+    arg_list->arg = arg;
+    arg_list->next = NULL;
+    return arg_list;
+}
+
+void Athena_CopyButtonArgList(struct Athena_ButtonArgList **to, struct Athena_ButtonArgList *from){
+    if(!from)
+        to[0] = NULL;
+    else{
+        to[0] = malloc(sizeof(struct Athena_ButtonArgList));
+        to[0]->arg = from->arg;
+        Athena_CopyButtonArgList(&(to[0]->next), from->next);
     }
 }

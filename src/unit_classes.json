@@ -18,6 +18,15 @@
         "is_building":true
     },
     {
+        "name":"Path",
+        "attack":0.0,
+        "defense":255.0,
+        "range":0.0,
+        "movement":0.0,
+        "actions":0.0,
+        "is_building":true
+    },
+    {
         "name":"Wormer",
         "attack":1.0,
         "defense":1.0,
