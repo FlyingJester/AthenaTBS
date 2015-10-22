@@ -3,7 +3,7 @@ import sys
 Import("environment")
 
 if sys.platform.startswith("haiku"):
-    athena_audio = environment.SharedLibrary("athena_audio", ["audio_haiku.cpp"], LIBS = ["be"])
+    athena_audio = environment.SharedLibrary("athena_audio", ["audio_haiku.cpp"], LIBS = ["be", "game"])
 else:
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], LIBS = ["openal"])
 

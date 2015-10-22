@@ -60,7 +60,7 @@ public:
         Sync();
     }
     
-	int DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB);
+	int DrawImage(int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB);
 	int DrawRect(int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
 
     virtual void DirectConnected(direct_buffer_info* info) ATHENA_OVERRIDE;
@@ -120,7 +120,7 @@ int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h,
 	return static_cast<Athena_Window *>(handle)->DrawImage(x, y, w, h, format, RGB);
 }
 
-int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
+int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned format_x, const void *RGB){
     /* In terms of RGB */
     const int starting_x = std::max(0, -x),
         starting_y = std::max(0, -y),
@@ -130,7 +130,7 @@ int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned form
     uint8_t *row_start = screen + (starting_y * pitch);
     
     for(int i = starting_y; i < ending_y; i++){
-        ConvertColorSpaces(static_cast<uint32_t *>(RGB) + starting_x + (i * w), row_start + (x * depth), format);
+        ConvertColorSpaces(static_cast<const uint32_t *>(RGB) + starting_x + (i * w), row_start + (x * depth), ending_x - starting_x, this->format);
         row_start += pitch;
     }
     return 0;
@@ -145,10 +145,12 @@ int Athena_Private_DrawLine(void *handle, int x1, int y1, int x2, int y2, const 
 }
 
 int Athena_Private_FlipWindow(void *handle){
-
+	return 0;
 }
 
-unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to);
+unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
+	return 0;
+}
 
 int Athena_Private_IsKeyPressed(void *handle, unsigned key);
 
