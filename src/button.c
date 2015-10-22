@@ -53,6 +53,17 @@ struct Athena_ButtonArgList *Athena_DefaultButtonArgList(struct Athena_GameState
     return arg_list;
 }
 
+int Athena_AppendButtonArgList(struct Athena_ButtonArgList *list, void *arg){
+    if(list->next)
+        return Athena_AppendButtonArgList(list->next, arg);
+    else{
+        list->next = malloc(sizeof(struct Athena_ButtonArgList));
+        list->next->arg = arg;
+        list->next->next = NULL;
+        return 0;
+    }
+}
+
 void Athena_CopyButtonArgList(struct Athena_ButtonArgList **to, struct Athena_ButtonArgList *from){
     if(!from)
         to[0] = NULL;

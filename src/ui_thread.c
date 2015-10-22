@@ -59,6 +59,26 @@ static int athena_ui_process_buttons(struct Athena_GameState *that, struct Athen
     }
 }
 
+static int athena_process_selector(const struct Athena_Field *field, struct Athena_UI *ui, const struct Athena_Event *event, struct Athena_MessageList *messages){
+    if(!ui->selection_callback)
+        return 0;
+    else{
+        struct Athena_SelectingPosition *position = malloc(sizeof(struct Athena_SelectingPosition));
+        int x, y;
+        
+        Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
+        position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
+        Athena_AppendButtonArgList(ui->selection_arg, position);
+        
+        ui->selection_callback(ui->selection_arg, messages);
+        
+        ui->selection_callback = NULL;
+        Athena_FreeButtonArgList(ui->selection_arg);
+        
+        return 1;
+    }
+}
+
 static int athena_test_unit_index(struct Athena_UnitList *units, struct Athena_Unit *unit, int i){
     if(!units)
         return -1;
@@ -111,6 +131,9 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
 
                     if(athena_ui_get_unit_menu(that, that->field->units, event, messages))
                         break;
+
+                    if(athena_process_selector(that->field, &that->ui, event, messages))
+                        break;
                 }
                 else if(event->which == athena_right_mouse_button){
                     {
@@ -153,16 +176,31 @@ static void athena_do_fps_drawing(struct Athena_Image *to){/* Finally do FPS inf
         WriteString(GetSystemFont(), buffer, to, to->w - 64, 16);
     }
     s_tick = Athena_GetMillisecondTicks();
-}/* End FPS info drawing */
+}
+
+static void athena_draw_selector(const struct Athena_Field *field, struct Athena_UI *ui){
+    if(ui->selection_callback || Athena_IsKeyPressed(ui->window, 'o')){
+        int x, y, mouse_x, mouse_y;
+        Athena_GetMousePosition(ui->window, &mouse_x, &mouse_y);
+
+        Athena_FieldPixelXYToTileXY(field, mouse_x - ui->camera_x, mouse_y - ui->camera_y, &x, &y);
+        Athena_FieldTileXYToPixelXY(field, x, y, &x, &y);
+        
+        Athena_BlendRect(&ui->framebuffer, x, y, field->tileset->tile_width, field->tileset->tile_height, Athena_RGBAToRaw(0xE0, 0xE0, 0x30, 0xFF), Athena_RGBARawAverage);
+    }
+}
 
 int Athena_UIThreadFrame(struct Athena_GameState *that){
     struct Athena_MessageList messages;
     messages.next = NULL;
     
     { /* Start Drawing. Maybe someday move this out of here. Who knows. Not me. */
-
+        
+        Athena_LockMonitor(that->monitor);
+        
         { /* Field Drawing, requires a lock. */
             Athena_DrawField(that->field, &that->ui.framebuffer, that->ui.camera_x, that->ui.camera_y);
+            
             Athena_DrawUnits(that->field->units, &that->ui.framebuffer, 
                 that->field->tileset->tile_width, that->field->tileset->tile_height, that->ui.camera_x, that->ui.camera_y);
         } /* End Field Drawing */
@@ -174,6 +212,9 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
             Athena_DrawPlayerDataBox(that->players + that->whose_turn, &port);
 
         } /* End info bar Drawing */
+        { /* Selector... */            
+            athena_draw_selector(that->field, &that->ui);
+        }
         { /* Draw buttons */
             struct Athena_Viewport onto = {NULL, 0, 0, 0, 0};
             onto.image = &that->ui.framebuffer;
@@ -183,9 +224,13 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
             Athena_UIDrawButtons(that->ui.buttons, &onto);
             if(that->ui.menu)
                 Athena_DrawMenu(that->ui.menu, &onto);
-        }      
+        }
+
+        Athena_UnlockMonitor(that->monitor);        
+
         athena_do_fps_drawing(&that->ui.framebuffer);
     } /* End Drawing. */
+
     Athena_DrawImage(that->ui.window, 0, 0, that->ui.framebuffer.w, that->ui.framebuffer.h, 0, that->ui.framebuffer.pixels);
     Athena_FlipWindow(that->ui.window);
     

@@ -37,16 +37,14 @@ struct Athena_UI{
 
     /*
      * When callback is not null, we are selecting a position on the map.
-     * The result is stored as Athena_SelectingPosition in the payload of
-     * the second arg in the arglist.
-     * The selection_arg is always freed after the callback is used, and
+     * The result is stored as Athena_SelectingPosition appended to the end
+     * of the arglist that was given.
+     * The selection_arg is always freed _after_ the callback is used, and
      * the callback is nulled. We do not keep trying to get a selection if
      * there was a failure.
      */
-    struct {
-        struct Athena_ButtonArgList *selection_arg;
-        void (*selection_callback)(struct Athena_ButtonArgList *, struct Athena_MessageList *);
-    } selection;
+    struct Athena_ButtonArgList *selection_arg;
+    void (*selection_callback)(struct Athena_ButtonArgList *, struct Athena_MessageList *);
 
     /* Yes, we have only one menu open at a time. */
     struct Athena_Menu *menu;
