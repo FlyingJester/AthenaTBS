@@ -10,6 +10,7 @@
 #endif
 
 #include <vector>
+#include <queue>
 #include <algorithm>
 
 class Athena_Window : public BDirectWindow{
@@ -41,8 +42,11 @@ class Athena_Window : public BDirectWindow{
     clipping_rect bounds;
 
     std::vector<clipping_rect> clip_list;
+    std::queue<Athena_Event> queued_events;
     
     bool connected, connection_disabled;
+    
+    BPoint mouse_location;
     
     static void ConvertColorSpaces(const uint32_t *in, void *out, size_t num_pixels, color_space c);
     
@@ -64,7 +68,11 @@ public:
 	int DrawRect(int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
 
     virtual void DirectConnected(direct_buffer_info* info) ATHENA_OVERRIDE;
-
+    virtual void MessageReceived(BMessage* message) ATHENA_OVERRIDE;
+    
+    void GetMousePosition(int &x, int &y) const;
+    void GetMousePosition(int *x, int *y) const;
+    
 };
 
 void Athena_Window::ConvertColorSpaces(const uint32_t *in, void *out, size_t num_pixels, color_space c){
@@ -107,6 +115,45 @@ void Athena_Window::DirectConnected(direct_buffer_info *info){
         case B_DIRECT_STOP:
             connected = false;
     }
+}
+
+void Athena_Window::MessageReceived(BMessage* message){
+    if(message->what == B_MOUSE_DOWN){
+        struct Athena_Event event = { athena_click_event };
+        int32_t type;
+
+        message->FindInt32("buttons", &type);
+
+        if(type==B_PRIMARY_MOUSE_BUTTON)
+            event.which = athena_left_mouse_button;
+        else if(type==B_SECONDARY_MOUSE_BUTTON)
+            event.which = athena_right_mouse_button;
+        else if(type==B_TERTIARY_MOUSE_BUTTON)
+            event.which = athena_middle_mouse_button;
+        else
+            event.which = athena_unknown_mouse_button;
+    
+        BPoint point;
+        
+        message->FindPoint("where", &point);
+        
+        event.x = point.x;
+        event.y = point.y;
+    
+        queued_events.push(event);
+    }
+    else if(message->what == B_MOUSE_MOVED){
+        message->FindPoint("where", &mouse_location);
+    }
+}
+
+void Athena_Window::GetMousePosition(int &x, int &y) const{
+    GetMousePosition(&x, &y);
+}
+
+void Athena_Window::GetMousePosition(int *x, int *y) const{
+    x[0] = mouse_location.x;
+    y[0] = mouse_location.y;
 }
 
 struct Athena_WindowHandle{
@@ -183,3 +230,6 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
 
 int Athena_Private_IsKeyPressed(void *handle, unsigned key);
 
+int Athena_Private_GetMousePosition(void *handle, int *x, int *y){
+    static_cast<Athena_WindowHandle *>(that)->window->GetMousePosition(x, y);
+}
