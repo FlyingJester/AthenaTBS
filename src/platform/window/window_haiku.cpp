@@ -144,11 +144,6 @@ int Athena_Private_HideWindow(void *that){
 
 }
 
-/* Neither the BeBook nor the Haiku docs mention the composition of a clipping_rect :( */
-int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
-	return static_cast<Athena_Window *>(handle)->DrawImage(x, y, w, h, format, RGB);
-}
-
 int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned format_x, const void *RGB){
     /* In terms of RGB */
     const int starting_x = std::max(0, -x),
@@ -165,7 +160,12 @@ int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned form
     return 0;
 }
 
-int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const struct Athena_Color *color){
+/* Neither the BeBook nor the Haiku docs mention the composition of a clipping_rect :( */
+int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
+	return static_cast<Athena_WindowHandle *>(that)->window->DrawImage(x, y, w, h, format, RGB);
+}
+
+int Athena_Private_DrawRect(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const struct Athena_Color *color){
 	return 0;
 }
 
