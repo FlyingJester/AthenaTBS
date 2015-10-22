@@ -4,9 +4,9 @@
 
 // We really shouldn't be compiled with an older compiler to begin with...we need epic TCO to work properly...
 #if __cplusplus > 199711L
-    ATHENA_OVERRIDE override
+    #define ATHENA_OVERRIDE override
 #else
-    ATHENA_OVERRIDE
+    #define ATHENA_OVERRIDE
 #endif
 
 #include <vector>
@@ -48,21 +48,22 @@ class Athena_Window : public BDirectWindow{
     
 public:
     Athena_Window(int x, int y, unsigned w, unsigned h, const char *title)
-      : BDirectWindow(BRect(x, y, x + w, y + h), title, B_TITLED_WINDOW, B_NOT_RESIZABLE|B_QUIT_ON_WINDOW_CLOSE, B_CURRENT_WORKSPACE)
-      , locker("Athena Window Locker"){
+      : BDirectWindow(BRect(x, y, x + w, y + h), title, B_TITLED_WINDOW, B_NOT_RESIZABLE|B_QUIT_ON_WINDOW_CLOSE, B_CURRENT_WORKSPACE){
         
         
         
     }
 
     ~Athena_Window(){
-        fConnectionDisabled = false;
+        connection_disabled = false;
         Hide();
         Sync();
     }
+    
+	int DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB);
+	int DrawRect(int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
 
     virtual void DirectConnected(direct_buffer_info* info) ATHENA_OVERRIDE;
-
 
 };
 
@@ -76,8 +77,8 @@ void Athena_Window::ConvertColorSpaces(const uint32_t *in, void *out, size_t num
             break;
         case B_RGB24:
         case B_RGB24_BIG:
-            for(int i = 0; i<num_pixels; i++){
-                pixel = static_cast<uint8_t *>(out) + (3 * i);
+            for(unsigned i = 0; i<num_pixels; i++){
+                uint8_t *pixel = static_cast<uint8_t *>(out) + (3 * i);
                 pixel[0] = in[i] & 0xFF;
                 pixel[1] = (in[i] >> 8) & 0xFF;
                 pixel[2] = (in[i] >> 16) & 0xFF;
@@ -116,6 +117,10 @@ int Athena_Private_HideWindow(void *);
 
 /* Neither the BeBook nor the Haiku docs mention the composition of a clipping_rect :( */
 int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
+	return static_cast<Athena_Window *>(handle)->DrawImage(x, y, w, h, format, RGB);
+}
+
+int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
     /* In terms of RGB */
     const int starting_x = std::max(0, -x),
         starting_y = std::max(0, -y),
@@ -132,11 +137,15 @@ int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h,
     }
 }
 
-int Athena_Private_DrawRect(void *that, int x, int y, unsigned w, unsigned h, const struct Athena_Color *color){
+int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const struct Athena_Color *color){
+	return static_cast<Athena_Window *>(handle)->DrawRect(x, y, w, h, format, color);
+}
+
+int Athena_Window::DrawRect(int x, int y, unsigned w, unsigned h, const struct Athena_Color *color){
     const int starting_x = std::max(0, -x),
         starting_y = std::max(0, -y),
-        ending_x = std::min<int>(w, static_cast<int>(bounds.right) - x),
-        ending_y = std::min<int>(h, static_cast<int>(bounds.bottom) - y);
+        ending_x = std::min<int>(w, static_cast<int>(window->bounds.right) - x),
+        ending_y = std::min<int>(h, static_cast<int>(window->bounds.bottom) - y);
     
     uint8_t *row_start = screen + (starting_y * pitch);
     
