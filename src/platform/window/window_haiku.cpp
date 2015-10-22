@@ -1,6 +1,7 @@
 #include "private_window.h"
 
 #include <game/DirectWindow.h>
+#include <Application.h>
 
 // We really shouldn't be compiled with an older compiler to begin with...we need epic TCO to work properly...
 #if __cplusplus > 199711L
@@ -160,7 +161,54 @@ struct Athena_WindowHandle{
     Athena_Window *window;
 };
 
+struct Athena_Thread{
+	thread_id thread;
+	void *arg;
+	void (*callback)(void *);
+};
+
+athena_thread_wrapper(void *data){
+	Athena_Thread *thread = static_cast<Athena_Thread *>(data);
+	thread->callback(thread->arg);
+	return 0;
+}
+
+class Athena_Application : public BApplication {
+    thread_id runner_thread;
+
+    int32 RunnerThread(){
+        Run();
+    }
+    
+    static int32 athena_runner_thread(void *that){
+        return static_cast<Athena_Application *>(that)->RunnerThread();
+    }
+    static bool exists;
+    static BLocker ensure_locker;
+
+    Athena_Application(){
+        runner_thread = spawn_thread(athena_runner_thread, "athena_app_runner", B_NORMAL_PRIORITY, this);
+        resume_thread(runner_thread);
+        exists = true;
+    }
+
+public:
+
+    static void EnsureApplication(){
+        ensure_locker.lock();
+        if(!exists)
+            new Athena_Application();
+        ensure_locker.unlock();
+    }
+};
+
+bool Athena_Application::exists = false;
+ensure_locker Athena_Application::ensure_locker;
+
 void *Athena_Private_CreateHandle(){
+
+    Athena_Application::EnsureApplication();
+
     Athena_WindowHandle *handle = new Athena_WindowHandle();
     return handle;
 }
