@@ -29,3 +29,7 @@ int Athena_Bresenhams(void *handle, void *arg, int x1, int y1, int x2, int y2, a
 
 /* key is the UTF8 codepoint for the key. It may or may not be case sensitive. */
 int Athena_IsKeyPressed(struct Athena_Window *that, unsigned key);
+
+int Athena_GetMousePosition(struct Athena_Window *that, int *x, int *y);
+unsigned Athena_GetMouseX(struct Athena_Window *that);
+unsigned Athena_GetMouseY(struct Athena_Window *that);

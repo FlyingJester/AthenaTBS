@@ -20,6 +20,8 @@ int Athena_Private_DrawLine(void *that, int x1, int y1, int x2, int y2, const st
 int Athena_Private_FlipWindow(void *handle);
 unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to);
 
+int Athena_Private_GetMousePosition(void *handle, int *x, int *y);
+
 /* Athena_Common functions are common to all backends, but are private to this library.
  * These are intended to be used from the Athena_Private functions.
  * No Athena_Common function will call any Athena_Private function, to categorically avoid infinite mutual recursion.

@@ -149,6 +149,12 @@ int Athena_Private_IsKeyPressed(void *handle, unsigned key){
     else{
         char code[2] = {0, '\0'};
         code[0] = key;
-        return SDL_GetKeyboardState(NULL)[SDL_GetKeyFromName(code)];
+        
+        return SDL_GetKeyboardState(NULL)[SDL_GetScancodeFromKey(SDL_GetKeyFromName(code))];
     }
+}
+
+int Athena_Private_GetMousePosition(void *handle, int *x, int *y){
+    SDL_GetMouseState(x, y);
+    return 0;
 }

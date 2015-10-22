@@ -175,3 +175,26 @@ int Athena_Common_ColorToUnsignedShort(const struct Athena_Color *color, unsigne
 int Athena_IsKeyPressed(struct Athena_Window *that, unsigned key){
     return Athena_Private_IsKeyPressed(that->handle, key);
 }
+
+int Athena_GetMousePosition(struct Athena_Window *that, int *x, int *y){
+    return Athena_Private_GetMousePosition(that->handle, x, y);
+}
+
+unsigned Athena_GetMouseX(struct Athena_Window *that){
+    int x, y;
+    Athena_Private_GetMousePosition(that->handle, &x, &y);
+    if(x<0)
+        return 0;
+    else
+        return x;
+}
+
+unsigned Athena_GetMouseY(struct Athena_Window *that){
+    int x, y;
+    Athena_Private_GetMousePosition(that->handle, &x, &y);
+    
+    if(y<0)
+        return 0;
+    else
+        return y;
+}
