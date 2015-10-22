@@ -2,6 +2,7 @@
 
 #include <game/DirectWindow.h>
 #include <support/Locker.h>
+#include <interface/InterfaceDefs.h>
 #include <Application.h>
 
 // We really shouldn't be compiled with an older compiler to begin with...we need epic TCO to work properly...
@@ -273,8 +274,50 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
 	return 0;
 }
 
+static bool athena_get_bit_from_array(uint8 *array, int index){
+	return (array[index>>3] & (7-index%8));
+}
+
+const int key_mapping[127] = {
+// Control codes. Ignore them.
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0,
+// ASCII	
+//	' '  '"'  '#'  '$'  '%'  '&'  '\'' '('
+	0x5E,0x46,0x14,0x15,0x16,0x18,0x46,0x1A,
+//	')'  '*'  '+'  ','  '-'  '.'  '/'  '0'
+	0x1B,0x19,0x1D,0x53,0x1C,0x54,0x55,0x1B,
+//	'1'  '2'  '3'  '4'  '5'  '6'  '7'  '8'
+	0x12,0x13,0x14,0x15,0x16,0x17,0x18,0x19,
+//	'9'  ':'  ';'  '<'  '='  '>'  '?'  '@'
+	0x1A,0x30,0x30,0x53,0x1D,0x54,0x55,0x13,
+//	'A'  'B'  'C'  'D'  'E'  'F'  'G'  'H'
+	0x3C,0x50,0x4E,0x3E,0x29,0x3F,0x40,0x41,
+//	'I'  'J'  'K'  'L'  'M'  'O'  'P'  'Q'
+	0x2E,0x42,0x43,0x44,0x52,0x2F,0x30,0x27,
+//	'R'  'S'  'T'  'U'  'V'  'W'  'X'  'Y'
+	0x2A,0x3D,0x2B,0x2D,0x4F,0x28,0x4D,0x2C,
+//	'Z'  '['  '\\' ']'  '^'  '_'  '`'
+	0x4C,0x31,0x33,0x32,0x17,0x1C,0x11,
+// The alphabet again...
+	0x3C,0x50,0x4E,0x3E,0x29,0x3F,0x40,0x41,
+	0x2E,0x42,0x43,0x44,0x52,0x2F,0x30,0x27,
+	0x2A,0x3D,0x2B,0x2D,0x4F,0x28,0x4D,0x2C,
+	0x4C,
+//	'{'  '|'  '}'  '~'  "DEL"
+	0x31,0x33,0x32,0x11, 0	
+};
+
 int Athena_Private_IsKeyPressed(void *handle, unsigned key){
-    return 0;
+	if(key>127)
+		return 0;
+	else{
+		key_info info;    
+		get_key_info(&info);
+		return athena_get_bit_from_array(info.key_states, key_mapping[key]);
+	}    
 }
 
 int Athena_Private_GetMousePosition(void *that, int *x, int *y){
