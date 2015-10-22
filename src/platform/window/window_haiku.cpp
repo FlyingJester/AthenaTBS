@@ -130,33 +130,18 @@ int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned form
     uint8_t *row_start = screen + (starting_y * pitch);
     
     for(int i = starting_y; i < ending_y; i++){
-        for(int e = starting_x; e < ending_x; e++){
-            ConvertColorSpaces(static_cast<uint32_t *>(RGB) + e + (i * w), row_start + (x * depth), format);
-        }
+        ConvertColorSpaces(static_cast<uint32_t *>(RGB) + starting_x + (i * w), row_start + (x * depth), format);
         row_start += pitch;
     }
+    return 0;
 }
 
 int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const struct Athena_Color *color){
-	return static_cast<Athena_Window *>(handle)->DrawRect(x, y, w, h, format, color);
+	return 0;
 }
 
-int Athena_Window::DrawRect(int x, int y, unsigned w, unsigned h, const struct Athena_Color *color){
-    const int starting_x = std::max(0, -x),
-        starting_y = std::max(0, -y),
-        ending_x = std::min<int>(w, static_cast<int>(window->bounds.right) - x),
-        ending_y = std::min<int>(h, static_cast<int>(window->bounds.bottom) - y);
-    
-    uint8_t *row_start = screen + (starting_y * pitch);
-    
-    for(int i = starting_y; i < ending_y; i++){
-        ConvertColorSpaces(static_cast<uint32_t *>(RGB) + e + (i * w), row_start + (x * depth), ending_x - starting_x, format);
-        row_start += pitch;
-    }
-}
-
-int Athena_Private_DrawLine(void *that, int x1, int y1, int x2, int y2, const struct Athena_Color *color){    
-    return 0;
+int Athena_Private_DrawLine(void *handle, int x1, int y1, int x2, int y2, const struct Athena_Color *color){    
+	return 0;
 }
 
 int Athena_Private_FlipWindow(void *handle){
@@ -164,14 +149,6 @@ int Athena_Private_FlipWindow(void *handle){
 }
 
 unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to);
-
-/* Athena_Common functions are common to all backends, but are private to this library.
- * These are intended to be used from the Athena_Private functions.
- * No Athena_Common function will call any Athena_Private function, to categorically avoid infinite mutual recursion.
- */
-int Athena_Common_Line(void *handle, void *arg, int x1, int y1, int x2, int y2, athena_point_callback callback);
-int Athena_Common_ColorToUnsignedByte(const struct Athena_Color *color, unsigned char *red, unsigned char *greeb, unsigned char *blue, unsigned char *alpha);
-int Athena_Common_ColorToUnsignedShort(const struct Athena_Color *color, unsigned short *red, unsigned short *greeb, unsigned short *blue, unsigned short *alpha);
 
 int Athena_Private_IsKeyPressed(void *handle, unsigned key);
 
