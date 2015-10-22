@@ -12,12 +12,14 @@ prefer_x11 = False
 use_cocoa = False
 
 # Forces the use of SDL2 even on platforms with native backends
-use_sdl2 = True
+use_sdl2 = not sys.platform.startswith("haiku")
 
 if use_sdl2:
     athena_window = window_environment.SharedLibrary("athena_window", ["window.c", "window_sdl.c"], LIBS = ["SDL2"])
 elif (sys.platform == "darwin" and not prefer_x11) or use_cocoa:
     athena_window = window_environment.SharedLibrary("athena_window", ["window.c", "window_cocoa.m"], FRAMEWORKS = ["Cocoa", "Foundation"], LIBS = ["objc"])
+elif sys.platform.startswith("haiku"):
+    athena_window = window_environment.SharedLibrary("athena_window", ["window.c", "window_haiku.cpp"], LIBS = ["be"])
 elif os.name == "posix" or prefer_x11:
     window_environment.Append(CFLAGS = "-Wno-variadic-macros")
     if sys.platform == "darwin":
