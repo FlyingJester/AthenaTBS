@@ -120,7 +120,7 @@ void Athena_Window::DirectConnected(direct_buffer_info *info){
 void Athena_Window::MessageReceived(BMessage* message){
     if(message->what == B_MOUSE_DOWN){
         struct Athena_Event event = { athena_click_event };
-        int32_t type;
+        int32 type;
 
         message->FindInt32("buttons", &type);
 
@@ -228,8 +228,11 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
 	return 0;
 }
 
-int Athena_Private_IsKeyPressed(void *handle, unsigned key);
+int Athena_Private_IsKeyPressed(void *handle, unsigned key){
+    return 0;
+}
 
 int Athena_Private_GetMousePosition(void *handle, int *x, int *y){
     static_cast<Athena_WindowHandle *>(that)->window->GetMousePosition(x, y);
+    return 0;
 }
