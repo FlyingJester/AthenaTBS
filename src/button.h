@@ -7,6 +7,7 @@ struct Athena_GameState;
 /* Traditionally there the first one holds the gamestate. */ 
 struct Athena_ButtonArgList{
     void *arg;
+    const char *type;
     struct Athena_ButtonArgList *next;
 };
 

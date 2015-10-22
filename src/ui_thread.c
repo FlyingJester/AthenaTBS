@@ -11,17 +11,43 @@
 #include <TurboJSON/object.h>
 #include <stdlib.h>
 
-static const struct Athena_Button athena_move_button = { 0, 0, 64, 20, "Move", NULL, Athena_CancelMenuCallback };
+void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    
+}
+
+void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    if(!args)
+        return;
+    else{
+        struct Athena_GameState *const state = args->arg;
+
+        if(state->ui.selection_arg)
+            Athena_FreeButtonArgList(state->ui.selection_arg);
+
+        Athena_CopyButtonArgList(&state->ui.selection_arg, args);
+        
+        state->ui.selection_callback = unit_movement_selection_callback;
+
+    }
+    Athena_CancelMenuCallback(args, messages);
+}
+
+static const struct Athena_Button athena_move_button = { 0, 0, 64, 20, "Move", NULL, unit_movement_callback };
 
 static struct Athena_Menu *athena_generate_unit_menu(struct Athena_GameState *arg, struct Athena_Unit *unit){
     struct Athena_Menu *unit_menu = malloc(sizeof(struct Athena_Menu));
     struct Athena_ButtonList * const buttons = unit_menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
         * next = buttons->next = malloc(sizeof(struct Athena_ButtonList));
     buttons->button = athena_move_button;
+
     buttons->button.arg = Athena_DefaultButtonArgList(arg);
+    Athena_AppendButtonArgList(buttons->button.arg, unit);
 
     next->button = athena_cancel_button;
+
     next->button.arg = Athena_DefaultButtonArgList(arg);
+    Athena_AppendButtonArgList(next->button.arg, unit);
+
     next->next = NULL;
     
     unit_menu->w = 100;
@@ -73,6 +99,7 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
         ui->selection_callback(ui->selection_arg, messages);
         
         ui->selection_callback = NULL;
+        ui->selection_arg = NULL;
         Athena_FreeButtonArgList(ui->selection_arg);
         
         return 1;
@@ -129,11 +156,12 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
                     if(that->ui.menu && athena_ui_process_buttons(that, that->ui.menu->buttons, event, messages))
                         break;
 
+                    if(athena_process_selector(that->field, &that->ui, event, messages))
+                        break;
+
                     if(athena_ui_get_unit_menu(that, that->field->units, event, messages))
                         break;
 
-                    if(athena_process_selector(that->field, &that->ui, event, messages))
-                        break;
                 }
                 else if(event->which == athena_right_mouse_button){
                     {
