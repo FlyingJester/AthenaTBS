@@ -232,7 +232,7 @@ int Athena_Private_IsKeyPressed(void *handle, unsigned key){
     return 0;
 }
 
-int Athena_Private_GetMousePosition(void *handle, int *x, int *y){
+int Athena_Private_GetMousePosition(void *that, int *x, int *y){
     static_cast<Athena_WindowHandle *>(that)->window->GetMousePosition(x, y);
     return 0;
 }
