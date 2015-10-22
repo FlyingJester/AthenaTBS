@@ -33,25 +33,38 @@ void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_Mes
 }
 
 static const struct Athena_Button athena_move_button = { 0, 0, 64, 20, "Move", NULL, unit_movement_callback };
+static const struct Athena_Button athena_build_button = { 0, 0, 64, 20, "Build Unit", NULL, Athena_CancelMenuCallback };
 
 static struct Athena_Menu *athena_generate_unit_menu(struct Athena_GameState *arg, struct Athena_Unit *unit){
     struct Athena_Menu *unit_menu = malloc(sizeof(struct Athena_Menu));
     struct Athena_ButtonList * const buttons = unit_menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
         * next = buttons->next = malloc(sizeof(struct Athena_ButtonList));
-    buttons->button = athena_move_button;
 
+    if(unit->clazz->is_building){
+        buttons->button = athena_build_button;        
+    }
+    else{
+        buttons->button = athena_move_button;
+    }
     buttons->button.arg = Athena_DefaultButtonArgList(arg);
-    Athena_AppendButtonArgList(buttons->button.arg, unit);
+    Athena_AppendButtonArgList(buttons->button.arg, unit, "source_unit");
 
     next->button = athena_cancel_button;
 
     next->button.arg = Athena_DefaultButtonArgList(arg);
-    Athena_AppendButtonArgList(next->button.arg, unit);
+    Athena_AppendButtonArgList(next->button.arg, unit, "source_unit");
 
     next->next = NULL;
-    
-    unit_menu->w = 100;
-    unit_menu->text = "Unit Action";
+
+    if(unit->clazz->is_building){    
+        unit_menu->w = 120;   
+        unit_menu->text = "Building Action";
+        
+    }
+    else{
+        unit_menu->w = 100;
+        unit_menu->text = "Unit Action";
+    }
 
     return unit_menu;
 }
@@ -94,7 +107,7 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
         
         Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
         position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
-        Athena_AppendButtonArgList(ui->selection_arg, position);
+        Athena_AppendButtonArgList(ui->selection_arg, position, "destination");
         
         ui->selection_callback(ui->selection_arg, messages);
         
