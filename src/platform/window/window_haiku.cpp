@@ -109,11 +109,40 @@ void Athena_Window::DirectConnected(direct_buffer_info *info){
     }
 }
 
-void *Athena_Private_CreateHandle();
-int Athena_Private_DestroyHandle(void *);
-int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned h, const char *title);
-int Athena_Private_ShowWindow(void *);
-int Athena_Private_HideWindow(void *);
+struct Athena_WindowHandle{
+    Athena_Window *window;
+};
+
+void *Athena_Private_CreateHandle(){
+    Athena_WindowHandle *handle = new Athena_WindowHandle();
+    return handle;
+}
+
+int Athena_Private_DestroyHandle(void *that){
+    Athena_WindowHandle *const handle = static_cast<Athena_WindowHandle *>(that);
+    delete handle->window;
+    delete handle;
+    return 0;
+}
+
+int Athena_Private_CreateWindow(void *that, int x, int y, unsigned w, unsigned h, const char *title){
+    Athena_WindowHandle *const handle = static_cast<Athena_WindowHandle *>(that);
+    handle->window = new Athena_Window(x, y, w, h, title);
+    return 0;
+}
+
+int Athena_Private_ShowWindow(void *that){
+    Athena_WindowHandle *const handle = static_cast<Athena_WindowHandle *>(that);
+    handle->window->Show();
+    return 0;
+}
+
+int Athena_Private_HideWindow(void *that){
+    Athena_WindowHandle *const handle = static_cast<Athena_WindowHandle *>(that);
+    handle->window->Hide();
+    return 0;
+
+}
 
 /* Neither the BeBook nor the Haiku docs mention the composition of a clipping_rect :( */
 int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
