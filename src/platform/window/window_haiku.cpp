@@ -1,6 +1,7 @@
 #include "private_window.h"
 
 #include <game/DirectWindow.h>
+#include <support/Locker.h>
 #include <Application.h>
 
 // We really shouldn't be compiled with an older compiler to begin with...we need epic TCO to work properly...
@@ -167,17 +168,12 @@ struct Athena_Thread{
 	void (*callback)(void *);
 };
 
-athena_thread_wrapper(void *data){
-	Athena_Thread *thread = static_cast<Athena_Thread *>(data);
-	thread->callback(thread->arg);
-	return 0;
-}
-
 class Athena_Application : public BApplication {
     thread_id runner_thread;
 
     int32 RunnerThread(){
         Run();
+        return 0;
     }
     
     static int32 athena_runner_thread(void *that){
@@ -186,7 +182,8 @@ class Athena_Application : public BApplication {
     static bool exists;
     static BLocker ensure_locker;
 
-    Athena_Application(){
+    Athena_Application()
+      : BApplication("application/flying_jester_athena"){
         runner_thread = spawn_thread(athena_runner_thread, "athena_app_runner", B_NORMAL_PRIORITY, this);
         resume_thread(runner_thread);
         exists = true;
@@ -195,15 +192,15 @@ class Athena_Application : public BApplication {
 public:
 
     static void EnsureApplication(){
-        ensure_locker.lock();
+        ensure_locker.Lock();
         if(!exists)
             new Athena_Application();
-        ensure_locker.unlock();
+        ensure_locker.Unlock();
     }
 };
 
 bool Athena_Application::exists = false;
-ensure_locker Athena_Application::ensure_locker;
+BLocker Athena_Application::ensure_locker;
 
 void *Athena_Private_CreateHandle(){
 
@@ -280,7 +277,7 @@ int Athena_Private_IsKeyPressed(void *handle, unsigned key){
     return 0;
 }
 
-int Athena_Private_GetMousePosition(void *handle, int *x, int *y){
+int Athena_Private_GetMousePosition(void *that, int *x, int *y){
     static_cast<Athena_WindowHandle *>(that)->window->GetMousePosition(x, y);
     return 0;
 }
