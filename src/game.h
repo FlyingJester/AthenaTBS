@@ -3,6 +3,7 @@
 #include "image.h"
 #include "button.h"
 #include "menu.h"
+#include "pathfind.h"
 #include "audio/audio.h"
 #include "monitor/monitor.h"
 #include "window/window.h"
@@ -45,6 +46,13 @@ struct Athena_UI{
      */
     struct Athena_ButtonArgList *selection_arg;
     void (*selection_callback)(struct Athena_ButtonArgList *, struct Athena_MessageList *);
+    
+    /* This callback is nulled at the same time selection_callback is.
+     * it populates a list of spaces that are valid targets.
+     * The arg is freed at the same time that selection_arg is.
+     */
+    struct Athena_ButtonArgList *positions_arg;
+    struct Athena_PositionList *(*positions_callback)(struct Athena_ButtonArgList *);
 
     /* Yes, we have only one menu open at a time. */
     struct Athena_Menu *menu;
