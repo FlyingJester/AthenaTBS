@@ -200,9 +200,12 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
 
                         if(that->ui.selection_arg)
                             Athena_FreeButtonArgList(that->ui.selection_arg);
+                        that->ui.selection_arg = NULL;
                         that->ui.selection_callback = NULL;
+
                         if(that->ui.positions_arg)
                             Athena_FreeButtonArgList(that->ui.positions_arg);
+                        that->ui.positions_arg = NULL;
                         that->ui.positions_callback = NULL;
                     }
                 }
