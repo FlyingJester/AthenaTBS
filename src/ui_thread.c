@@ -197,6 +197,13 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
                         struct Athena_ButtonArgList arg_list = {NULL, NULL};
                         arg_list.arg = that;
                         Athena_CancelMenuCallback(&arg_list, messages);
+
+                        if(that->ui.selection_arg)
+                            Athena_FreeButtonArgList(that->ui.selection_arg);
+                        that->ui.selection_callback = NULL;
+                        if(that->ui.position_arg)
+                            Athena_FreeButtonArgList(that->ui.position_arg);
+                        that->ui.position_callback = NULL;
                     }
                 }
                 break;
