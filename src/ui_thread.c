@@ -10,9 +10,21 @@
 #include <TurboJSON/value.h>
 #include <TurboJSON/object.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
-    
+    struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
+    struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
+    if(position && unit){
+#ifndef NDEBUG
+        printf("Moving unit %s to %i, %i\n", unit->clazz->name, position->x, position->y);
+#endif        
+        
+        
+    }
+
+    if(position)
+        free(position);
 }
 
 void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
@@ -138,7 +150,11 @@ static int athena_ui_get_unit_menu(struct Athena_GameState *that, struct Athena_
         {
             struct Athena_Unit *const unit = Athena_FindUnitAt(units, x, y);
             const int i = athena_test_unit_index(units, unit, 0);
+
+#ifndef NDEBUG
             printf("[athena_ui_get_unit_menu]Selected unit %i\n", i);
+#endif
+
             if(unit){
                 {
                     struct Athena_ButtonArgList arg_list = {NULL, NULL};
@@ -206,7 +222,9 @@ static void athena_do_fps_drawing(struct Athena_Image *to){/* Finally do FPS inf
 
     if(fs >= 100){
         last_fps = s_ave_tick;
+#ifndef NDEBUG
         printf("FPS: %i (%i, %i)\n", (int)s_ave_tick, (int)s_tick, (int)Athena_GetMillisecondTicks()); 
+#endif
         fs = 0;
         s_ave_tick = fps;
     }

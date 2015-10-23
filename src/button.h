@@ -5,13 +5,28 @@ struct Athena_MessageList;
 struct Athena_GameState;
 
 /* Traditionally there the first one holds the gamestate. */ 
+
+/*
+ * Well-defined argument types:
+ *    Name: source_unit
+ *    Type: Athena_Unit *
+ *    Free: caller
+ *
+ *    Name: destination
+ *    Type: Athena_SelectingPosition *
+ *    Free: callee
+ *
+ *    Name: game_state
+ *    Type: Athena_GameState *
+ *    Free: caller
+ *    Note: This is always the first arg (if any args exist at all)
+ *
+ */
 struct Athena_ButtonArgList{
     void *arg;
     const char *type;
     struct Athena_ButtonArgList *next;
 };
-
-
 
 struct Athena_Button{
     int x, y;
