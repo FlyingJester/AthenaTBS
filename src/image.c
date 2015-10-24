@@ -294,6 +294,7 @@ uint32_t Athena_RGBARaw ## NAME(uint32_t src, uint32_t dst){\
 ATHENA_DECONSTRUCT_BLENDER(Blend)
 ATHENA_DECONSTRUCT_BLENDER(Multiply)
 ATHENA_DECONSTRUCT_BLENDER(Average)
+ATHENA_DECONSTRUCT_BLENDER(Add)
 
 /* Slight shortcut. We don't need to disassemble the RGBA, since it's just a replacement. */
 uint32_t Athena_RGBARawReplace(uint32_t src, uint32_t dst){
@@ -330,6 +331,19 @@ uint32_t Athena_RGBAAverage(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t
         ave_a = src_a + dst_a;
 
     return Athena_RGBAToRaw(ave_r >> 1, ave_g >> 1, ave_b >> 1, ave_a >> 1);
+}
+
+uint32_t Athena_RGBAAdd(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
+    const uint16_t ave_r = src_r + dst_r, 
+        ave_g = src_g + dst_g, 
+        ave_b = src_b + dst_b, 
+        ave_a = src_a + dst_a;
+
+    return Athena_RGBAToRaw(
+        (ave_r>0xFF)?0xFF:ave_r,
+        (ave_g>0xFF)?0xFF:ave_g,
+        (ave_b>0xFF)?0xFF:ave_b,
+        (ave_a>0xFF)?0xFF:ave_a);
 }
 
 uint32_t Athena_RGBAReplace(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){

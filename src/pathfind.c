@@ -8,6 +8,13 @@ static float athena_position_distance(int x1, int y1, int x2, int y2){
     return sqrt(as + bs);
 }
 
+void Athena_FoldPositions(const struct Athena_PositionList *pos, void(*callback)(void *arg, int x, int y), void *arg){
+    if(pos){
+        callback(arg, pos->x, pos->y);
+        Athena_FoldPositions(pos->next, callback, arg);
+    }
+}
+
 static void athena_append_position(struct Athena_PositionList **in, int x, int y){
     if(!in[0]){
         in[0] = malloc(sizeof(struct Athena_PositionList));
@@ -29,7 +36,10 @@ static struct Athena_PositionList *athena_position_in_list(struct Athena_Positio
 
 static void athena_try_add_attack_position(int x, int y, const struct Athena_Unit *unit, 
     struct Athena_PositionList **in_list, struct Athena_PositionList **out_list, struct Athena_PositionList **dead_list){
-    if(athena_position_in_list(in_list[0], x, y) || athena_position_in_list(out_list[0], x, y) || athena_position_in_list(dead_list[0], x, y))
+    if(athena_position_in_list(in_list[0], x, y) ||
+        athena_position_in_list(out_list[0], x, y) ||
+        athena_position_in_list(dead_list[0], x, y) ||
+        (x==unit->x && y == unit->y))
         return;
     if(athena_position_distance(x, y, unit->x, unit->y) <= unit->clazz->range){
         athena_append_position(out_list, x, y);
@@ -49,7 +59,7 @@ static void athena_attack_range_positions_iter(const struct Athena_Unit *unit,
     else{
     
         in_list[0] = pos->next;
-    
+
         athena_try_add_attack_position(pos->x + 1, pos->y, unit, in_list, out_list, dead_list);
         athena_try_add_attack_position(pos->x - 1, pos->y, unit, in_list, out_list, dead_list);
         athena_try_add_attack_position(pos->x, pos->y + 1, unit, in_list, out_list, dead_list);
@@ -78,12 +88,15 @@ struct Athena_PositionList *Athena_AttackRangePositions(struct Athena_ButtonArgL
 
     const struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
 
-    in_list->x = unit->x;
-    in_list->y = unit->y;
-    in_list->next = NULL;
+    if(unit){
 
-    athena_attack_range_inner(unit, &in_list, &out_list, &dead_list);
+        in_list->x = unit->x;
+        in_list->y = unit->y;
+        in_list->next = NULL;
 
+        athena_attack_range_inner(unit, &in_list, &out_list, &dead_list);
+        
+    }
     /* This will basically never be reached. But oh well. */
     return out_list;
 }

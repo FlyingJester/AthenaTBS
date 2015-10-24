@@ -68,8 +68,14 @@ void unit_attack_callback(struct Athena_ButtonArgList *args, struct Athena_Messa
             Athena_FreeButtonArgList(state->ui.selection_arg);
 
         Athena_CopyButtonArgList(&state->ui.selection_arg, args);
-        
+
         state->ui.selection_callback = unit_attack_selection_callback;
+
+        if(state->ui.positions_arg)
+            Athena_FreeButtonArgList(state->ui.positions_arg);
+
+        Athena_CopyButtonArgList(&state->ui.positions_arg, args);
+        state->ui.positions_callback = Athena_AttackRangePositions;
 
     }
     Athena_CancelMenuCallback(args, messages);
@@ -157,12 +163,18 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
         Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
         position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
         Athena_AppendButtonArgList(ui->selection_arg, position, "destination");
-        
+
         ui->selection_callback(ui->selection_arg, messages);
-        
+
         ui->selection_callback = NULL;
+        if(ui->selection_arg)
+            Athena_FreeButtonArgList(ui->selection_arg);
         ui->selection_arg = NULL;
-        Athena_FreeButtonArgList(ui->selection_arg);
+
+        ui->positions_callback = NULL;
+        if(ui->positions_arg)
+            Athena_FreeButtonArgList(ui->positions_arg);
+        ui->positions_arg = NULL;
         
         return 1;
     }
@@ -296,6 +308,14 @@ static void athena_draw_selector(const struct Athena_Field *field, struct Athena
     }
 }
 
+static void athena_positions_callback(void *arg, int x, int y){
+    struct Athena_GameState *state = arg;
+    Athena_FieldTileXYToPixelXY(state->field, x, y, &x, &y);
+    
+    Athena_BlendRect(&state->ui.framebuffer, x - state->ui.camera_x, y - state->ui.camera_y, 
+        state->field->tileset->tile_width, state->field->tileset->tile_height, Athena_RGBAToRaw(0x30, 0x30, 0x10, 0), Athena_RGBARawAdd);
+}
+
 int Athena_UIThreadFrame(struct Athena_GameState *that){
     struct Athena_MessageList messages;
     messages.next = NULL;
@@ -320,6 +340,11 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
         } /* End info bar Drawing */
         { /* Selector... */            
             athena_draw_selector(that->field, &that->ui);
+
+            if(that->ui.positions_callback){
+                struct Athena_PositionList *pos = that->ui.positions_callback(that->ui.positions_arg);
+                Athena_FoldPositions(pos, athena_positions_callback, that);
+            }
         }
         { /* Draw buttons */
             struct Athena_Viewport onto = {NULL, 0, 0, 0, 0};
