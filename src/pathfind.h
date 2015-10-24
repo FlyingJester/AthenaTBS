@@ -8,3 +8,4 @@ struct Athena_PositionList{
 
 struct Athena_PositionList *Athena_AttackRangePositions(struct Athena_ButtonArgList *arg);
 struct Athena_PositionList *Athena_MovementPositions(struct Athena_ButtonArgList *arg);
+struct Athena_PositionList *Athena_DumbMovementPositions(struct Athena_ButtonArgList *arg);

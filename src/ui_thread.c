@@ -20,6 +20,20 @@ void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct 
         printf("Moving unit %s to %i, %i\n", unit->clazz->name, position->x, position->y);
 #endif        
         
+    }
+
+    if(position)
+        free(position);
+}
+
+void unit_attack_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
+    struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
+    if(position && unit && position->unit){
+#ifndef NDEBUG
+        printf("Attacking unit %s at %i, %i, using unit %s at %i, %i\n", 
+            unit->clazz->name, unit->x, unit->y, position->unit->clazz->name, position->x, position->y);
+#endif        
         
     }
 
@@ -44,7 +58,25 @@ void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_Mes
     Athena_CancelMenuCallback(args, messages);
 }
 
+void unit_attack_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    if(!args)
+        return;
+    else{
+        struct Athena_GameState *const state = args->arg;
+
+        if(state->ui.selection_arg)
+            Athena_FreeButtonArgList(state->ui.selection_arg);
+
+        Athena_CopyButtonArgList(&state->ui.selection_arg, args);
+        
+        state->ui.selection_callback = unit_attack_selection_callback;
+
+    }
+    Athena_CancelMenuCallback(args, messages);
+}
+
 static const struct Athena_Button athena_move_button = { 0, 0, 64, 20, "Move", NULL, unit_movement_callback };
+static const struct Athena_Button athena_attack_button = { 0, 0, 64, 20, "Attack", NULL, unit_attack_callback };
 static const struct Athena_Button athena_build_button = { 0, 0, 64, 20, "Build Unit", NULL, Athena_CancelMenuCallback };
 
 static struct Athena_Menu *athena_generate_unit_menu(struct Athena_GameState *arg, struct Athena_Unit *unit){
@@ -57,6 +89,11 @@ static struct Athena_Menu *athena_generate_unit_menu(struct Athena_GameState *ar
     }
     else{
         buttons->button = athena_move_button;
+        next->button = athena_attack_button;
+        next->button.arg = Athena_DefaultButtonArgList(arg);
+        Athena_AppendButtonArgList(next->button.arg, unit, "source_unit");
+        next->next = malloc(sizeof(struct Athena_ButtonList));
+        next = next->next;
     }
     buttons->button.arg = Athena_DefaultButtonArgList(arg);
     Athena_AppendButtonArgList(buttons->button.arg, unit, "source_unit");
