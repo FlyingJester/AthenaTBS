@@ -55,6 +55,12 @@ void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_Mes
         
         state->ui.selection_callback = unit_movement_selection_callback;
 
+        if(state->ui.positions_arg)
+            Athena_FreeButtonArgList(state->ui.positions_arg);
+
+        Athena_CopyButtonArgList(&state->ui.positions_arg, args);
+        state->ui.positions_callback = Athena_MovementPositions;
+
     }
     Athena_CancelMenuCallback(args, messages);
 }
