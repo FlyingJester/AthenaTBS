@@ -138,7 +138,7 @@ FREE_POS_LIST_DEF(BreadthPosition, Athena_BreadthPositionList)
 static void athena_breadth_to_position_list(struct Athena_PositionList **out, const struct Athena_BreadthPositionList *in){
     if(in){
         athena_append_position(out, in->x, in->y);
-        athena_breadth_to_position_list(&(out[0]->next), in->next);
+        athena_breadth_to_position_list(out, in->next);
     }
 }
 
