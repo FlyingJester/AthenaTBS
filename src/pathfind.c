@@ -231,10 +231,10 @@ struct Athena_PositionList *Athena_MovementPositions(struct Athena_ButtonArgList
     {
         struct Athena_PositionList *pos_list = NULL;
         athena_breadth_to_position_list(&pos_list, out_list);
-        /*
+        
         Athena_FreeBreadthPositionList(out_list);
         Athena_FreeBreadthPositionList(dead_list);
-        */
+        
         return pos_list;
     }
 }
