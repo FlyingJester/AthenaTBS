@@ -30,6 +30,7 @@ void unit_attack_selection_callback(struct Athena_ButtonArgList *args, struct At
     struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
     struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
     if(position && unit && position->unit){
+
 #ifndef NDEBUG
         printf("Attacking unit %s at %i, %i, using unit %s at %i, %i\n", 
             unit->clazz->name, unit->x, unit->y, position->unit->clazz->name, position->x, position->y);
