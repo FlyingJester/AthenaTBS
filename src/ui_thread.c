@@ -167,11 +167,22 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
         struct Athena_SelectingPosition *position = malloc(sizeof(struct Athena_SelectingPosition));
         int x, y;
         
+        struct Athena_PositionList *list = ui->positions_callback(ui->positions_arg);
+        
+        
         Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
-        position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
-        Athena_AppendButtonArgList(ui->selection_arg, position, "destination");
+        
+        if(list){
+            if(Athena_PositionInList(list, x, y)){
 
-        ui->selection_callback(ui->selection_arg, messages);
+                position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
+                Athena_AppendButtonArgList(ui->selection_arg, position, "destination");
+
+                ui->selection_callback(ui->selection_arg, messages);
+
+            }
+            Athena_FreePositionList(list);
+        }
 
         ui->selection_callback = NULL;
         if(ui->selection_arg)
