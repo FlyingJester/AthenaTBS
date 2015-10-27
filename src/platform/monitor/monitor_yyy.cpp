@@ -1,5 +1,6 @@
 #include "monitor.h"
 #include "libyyymonitor/monitor.hpp"
+#include <cstdlib>
 
 struct Athena_Monitor{
     Turbo::Monitor *monitor;
