@@ -8,8 +8,8 @@ conf = Configure(environment)
 
 prefer_nanosleep = True
 
-if sys.platform.startswith("win"):
-    sources += ["sleep_windows.c"]
+if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
+    sources += ["sleep_windows.c", "ticks_windows.c"]
 else:
     sources += ["ticks_unix.c"]
     if conf.CheckCHeader("unistd.h") and conf.CheckFunc("usleep") and not prefer_nanosleep:
