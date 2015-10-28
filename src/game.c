@@ -94,3 +94,19 @@ char *Athena_CreateEndTurnMessage(int *size){
     size[0]--;
     return message_string;
 }
+
+static const char athena_movement_message_string[] =
+"{\n    \"type\":\"MoveUnit\",\n    \"from\":{\"x\":%i, \"y\":%i},\n    \"to\":{\"x\":%i, \"y\":%i}\n}\n";
+char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x, int to_y){
+    /* No number entered will be more than 0xFFFF, or 65,000ish. */
+
+    char *const message_string = malloc(200);
+    sprintf(message_string, athena_movement_message_string, that->x, that->y, to_x, to_y);
+    
+    fputs("Creating message string: ", stderr);
+    fputs(message_string, stderr);
+    fputc('\n', stderr);
+    
+    size[0] = strnlen(message_string, 200);
+    return message_string;
+}

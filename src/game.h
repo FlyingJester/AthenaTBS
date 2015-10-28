@@ -76,3 +76,4 @@ void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_Mess
 
 /* Message Creation facilities */
 char *Athena_CreateEndTurnMessage(int *size);
+char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x, int to_y);

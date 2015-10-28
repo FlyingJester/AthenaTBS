@@ -3,6 +3,7 @@
 #include "field.h"
 #include "game.h"
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 static float athena_position_distance(int x1, int y1, int x2, int y2){
@@ -22,7 +23,9 @@ struct TYPE *Athena_ ## X ## InList(struct TYPE *list, int x, int y){\
 void Athena_Free ## X ## List(struct TYPE *list){\
     if(list){\
         struct TYPE * const next = list->next;\
+        list->next = NULL;\
         free(list);\
+        list = NULL;\
         Athena_Free ## X ## List(next);\
     }\
 }
@@ -83,9 +86,11 @@ static void athena_attack_range_positions_iter(const struct Athena_Unit *unit,
         athena_try_add_attack_position(pos->x - 1, pos->y, unit, in_list, out_list, dead_list);
         athena_try_add_attack_position(pos->x, pos->y + 1, unit, in_list, out_list, dead_list);
         athena_try_add_attack_position(pos->x, pos->y - 1, unit, in_list, out_list, dead_list);
-
-        free(pos);
         
+        memset(pos, 0, sizeof(struct Athena_PositionList));
+        free(pos);
+        pos = NULL;
+
         athena_attack_range_positions_iter(unit, in_list, out_list, dead_list);
     }
 }
@@ -138,7 +143,7 @@ FREE_POS_LIST_DEF(BreadthPosition, Athena_BreadthPositionList)
 static void athena_breadth_to_position_list(struct Athena_PositionList **out, const struct Athena_BreadthPositionList *in){
     if(in){
         athena_append_position(out, in->x, in->y);
-        athena_breadth_to_position_list(out, in->next);
+        athena_breadth_to_position_list(&(out[0]->next), in->next);
     }
 }
 
@@ -194,7 +199,9 @@ static void athena_breadth_positions_iter(const struct Athena_Field *field,
         athena_try_add_breadth_position(pos->x, pos->y + 1, pos->distance, field, in_list, out_list, dead_list);
         athena_try_add_breadth_position(pos->x, pos->y - 1, pos->distance, field, in_list, out_list, dead_list);
 
+        memset(pos, 0, sizeof(struct Athena_PositionList));
         free(pos);
+        pos = NULL;
         
         athena_breadth_positions_iter(field, in_list, out_list, dead_list);
     }
@@ -212,14 +219,13 @@ static void athena_breadth_inner(const struct Athena_Field *field,
 }
 
 struct Athena_PositionList *Athena_MovementPositions(struct Athena_ButtonArgList *args){
-    struct Athena_BreadthPositionList *out_list = NULL, *dead_list = NULL,
-        * in_list = malloc(sizeof(struct Athena_BreadthPositionList));
+    struct Athena_BreadthPositionList *out_list = NULL, *dead_list = NULL, * in_list = NULL;
 
     const struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
     const struct Athena_GameState * const state = Athena_FindTypeInArgList(args, "game_state");
 
     if(unit){
-
+        in_list = malloc(sizeof(struct Athena_BreadthPositionList));
         in_list->x = unit->x;
         in_list->y = unit->y;
         in_list->distance = unit->clazz->movement;

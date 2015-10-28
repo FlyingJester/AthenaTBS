@@ -16,14 +16,26 @@ void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct 
     struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
     struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
     if(position && unit){
+        int size;
+
+        struct Athena_MessageList * const msg = malloc(sizeof(struct Athena_MessageList)); 
+        
+        msg->msg_text = Athena_CreateMovementMessage(&size, unit, position->x, position->y);
+        
+        Turbo_Object(&msg->value, msg->msg_text, msg->msg_text + size);
+
+        msg->next = NULL;
+
+        Athena_AppendMessageList(&(messages->next), msg);
+
 #ifndef NDEBUG
         printf("Moving unit %s to %i, %i\n", unit->clazz->name, position->x, position->y);
-#endif        
-        
+#endif
     }
 
     if(position)
         free(position);
+
 }
 
 void unit_attack_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
@@ -165,14 +177,13 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
         return 0;
     else{
         struct Athena_SelectingPosition *position = malloc(sizeof(struct Athena_SelectingPosition));
-        int x, y;
-        
         struct Athena_PositionList *list = ui->positions_callback(ui->positions_arg);
         
-        
-        Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
-        
         if(list){
+
+            int x, y;
+            Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
+
             if(Athena_PositionInList(list, x, y)){
 
                 position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
@@ -452,11 +463,11 @@ static void athena_end_turn_callback(struct Athena_ButtonArgList *arg, struct At
 
         msg->msg_text = Athena_CreateEndTurnMessage(&size);
         Turbo_Object(&msg->value, msg->msg_text, msg->msg_text + size);
-
+        
         msg->next = NULL;
         
-        messages->next = msg;
-        
+        Athena_AppendMessageList(&(messages->next), msg);
+
         Athena_CancelMenuCallback(arg, messages);
     }
 }
