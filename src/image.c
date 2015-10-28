@@ -215,17 +215,34 @@ static int athena_blend_rect_iter(struct Athena_Viewport *to, uint32_t color, un
 }
 
 void Athena_BlendRect(struct Athena_Image *dst, int x, int y, unsigned w, unsigned h, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
-    if(w == 1 && h == 1){
+    if(y >= dst->h || x>=dst->w)
+        return;
+    else if(w == 1 && h == 1)
         Athena_BlendPixel(dst, x, y, color, blend_func);
-    }
     else{
+    
         struct Athena_Viewport to;
         to.image = dst;
         to.x = x;
         to.y = y;
         to.w = w;
         to.h = h;
+        
+        {
+            int n_w = to.w, n_h = to.h;
+            if(n_w + to.x > dst->w)
+                n_w = dst->w - to.x;
 
+            if(n_h + to.y > dst->h)
+                n_h = dst->h - to.y;
+        
+            assert(n_w);
+            assert(n_h);
+            
+            to.w = n_w;
+            to.h = n_h;
+        }
+        
         Athena_BlendViewport(&to, color, blend_func);
     }
 }

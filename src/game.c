@@ -100,13 +100,13 @@ static const char athena_movement_message_string[] =
 char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x, int to_y){
     /* No number entered will be more than 0xFFFF, or 65,000ish. */
 
-    char *const message_string = malloc(200);
+    char *const message_string = malloc(sizeof(athena_movement_message_string) + 200);
     sprintf(message_string, athena_movement_message_string, that->x, that->y, to_x, to_y);
     
     fputs("Creating message string: ", stderr);
     fputs(message_string, stderr);
     fputc('\n', stderr);
     
-    size[0] = strnlen(message_string, 200);
+    size[0] = strnlen(message_string, sizeof(athena_movement_message_string) + 200);
     return message_string;
 }

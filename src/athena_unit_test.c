@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
     
     Athena_ShowWindow(window);
     {
-        const int err = Athena_LoadFieldFromFile("res/maps/cam_test3.json", &field);
+        const int err = Athena_LoadFieldFromFile("res/maps/cam_test2.json", &field);
 /*
         const int err = Athena_LoadFieldFromMemory(field_src, sizeof(field_src), &field, "");
 */
@@ -75,9 +75,9 @@ int main(int argc, char *argv[]){
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    0, 8, 7);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"), 0, 8, 6);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    0, 6, 6);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), 0, 7, 8);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), 0, 5, 7);
 
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), 0, 6, 7);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), 0, 4, 6);
     
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 9, 4);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 10, 4);
@@ -85,7 +85,7 @@ int main(int argc, char *argv[]){
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 11, 4);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"),          0, 11, 3);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 12, 4);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"),          0, 10, 4);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"),          0, 8, 3);
     
     Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
 

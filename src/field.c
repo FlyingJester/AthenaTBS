@@ -173,8 +173,8 @@ int Athena_FieldPixelXYToTileXY(const struct Athena_Field *field, int x, int y, 
     return 0;
 }
 
-const struct Athena_Tile *Athena_TileInField(const struct Athena_Field *field, unsigned x, unsigned y){
-    if(x >= field->w || y >= field->h)
+const struct Athena_Tile *Athena_TileInField(const struct Athena_Field *field, int x, int y){
+    if(x >= field->w || y >= field->h || x<0 || y<0)
         return NULL;
     else{
         const unsigned int i = (y * field->w) + x;

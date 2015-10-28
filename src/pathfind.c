@@ -163,6 +163,9 @@ static void athena_append_breadth_position(struct Athena_BreadthPositionList **i
 static void athena_try_add_breadth_position(int x, int y, int d, const struct Athena_Field *field, 
     struct Athena_BreadthPositionList **in_list, struct Athena_BreadthPositionList **out_list, struct Athena_BreadthPositionList **dead_list){
     
+    if(x<0 || y<0 || x>=field->w || y>=field->h || d<1)
+        return;
+    
     if(Athena_BreadthPositionInList(*out_list, x, y)){
         return;
     }
