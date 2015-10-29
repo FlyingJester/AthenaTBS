@@ -184,22 +184,26 @@ struct Athena_Unit {
 };
 */
 
+#define c_to_x 97
+#define c_to_y 86
+#define c_from_x 54
+#define c_from_y 3
+
 int Athena_Test_CreateMovementMessage(){
     struct Turbo_Value value;
 
-    const int c_to_x = 97, c_to_y = 86, c_from_x = 54, c_from_y = 3;
     int size, new_from_x, new_from_y, new_to_x, new_to_y;
 
     struct Athena_Unit unit = { NULL, 0, 0.0, c_from_x, c_from_y, 0, 0, {0, NULL} };
-
+    
     const char *msg_text = Athena_CreateMovementMessage(&size, &unit, c_to_x, c_to_y);
     Turbo_Value(&value, msg_text, msg_text + size);
 
     {
         const int err = Athena_GetJSONToAndFrom(&value, &new_from_x, &new_from_y, &new_to_x, &new_to_y);
-        
+
         Turbo_FreeParse(&value);
-        
+
         return (err==0) && new_from_x==c_from_x && new_from_y==c_from_y && new_to_x==c_to_x && new_to_y==c_to_y;
     }
 }
