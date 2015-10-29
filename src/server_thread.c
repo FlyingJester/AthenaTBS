@@ -52,7 +52,7 @@ struct Athena_InternalServerMessage{
     
 };
 
-static int athena_get_to_and_from(const struct Turbo_Value *obj, int *from_x_out, int *from_y_out, int *to_x_out, int *to_y_out){
+int Athena_GetJSONToAndFrom(const struct Turbo_Value *obj, int *from_x_out, int *from_y_out, int *to_x_out, int *to_y_out){
     const struct Turbo_Value
         *const from = Turbo_Helper_GetConstObjectElement(obj, "from"),
         *const to = Turbo_Helper_GetConstObjectElement(obj, "to");
@@ -97,7 +97,7 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                     {
                         int from_x, from_y, to_x, to_y;
                         struct Athena_Unit *movable;
-                        if(athena_get_to_and_from(&msg->value, &from_x, &from_y, &to_x, &to_y)!=0)
+                        if(Athena_GetJSONToAndFrom(&msg->value, &from_x, &from_y, &to_x, &to_y)!=0)
                             break;
                         if((movable = Athena_FindUnitAt(that->field->units, from_x, from_y))){
                             movable->x = to_x;
