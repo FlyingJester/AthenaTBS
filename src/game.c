@@ -13,7 +13,7 @@ static unsigned athena_strnlen(const char *s, unsigned long max, unsigned long i
     if(!max || s[0]=='\0')
         return i;
     else
-        return athena_strnlen(s, max-1, i+1);
+        return athena_strnlen(s+1, max-1, i+1);
 }
 #else
 /* I simply do not trust you, Sun Studio, or Open Watcom, or whoever you are! */
