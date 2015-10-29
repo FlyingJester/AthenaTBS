@@ -24,7 +24,7 @@ enum Athena_SoundFormat Athena_PreferredSoundFormat(struct Athena_Sound *x){
 }
 
 unsigned Athena_SupportsFormat(struct Athena_SoundContext *ctx, enum Athena_SoundFormat format){
-	return true;
+	return format==Athena_SoundU16 || format==Athena_SoundU32 || format==Athena_SoundFloat;
 }
 
 Athena_SoundContext *Athena_CreateSoundContext(){
