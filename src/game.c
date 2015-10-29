@@ -7,6 +7,30 @@
 #include <string.h>
 #include <stdlib.h>
 
+#if (defined _MSC_VER ) || (defined __APPLE__) || (defined __linux__)
+
+static unsigned athena_strnlen(const char *s, unsigned long max, unsigned long i){
+    if(!max || s[0]=='\0')
+        return i;
+    else
+        return athena_strnlen(s, max-1, i+1);
+}
+#else
+/* I simply do not trust you, Sun Studio, or Open Watcom, or whoever you are! */
+static unsigned athena_strnlen(const char *s, unsigned long max, unsigned long i){
+athena_strnlen_begin:
+    if(!max || s[0]=='\0')
+        return i;
+    else{
+        s++;
+        max--;
+        i++;
+        goto athena_strnlen_begin;
+    }
+}
+#endif
+
+
 unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players){
     /* A player is winning if they have any units at all. If we have more than one, we have no winner yet. */
     unsigned winning_player = 0;
@@ -107,6 +131,6 @@ char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x
     fputs(message_string, stderr);
     fputc('\n', stderr);
     
-    size[0] = strnlen(message_string, sizeof(athena_movement_message_string) + 200);
+    size[0] = athena_strnlen(message_string, sizeof(athena_movement_message_string) + 200, 0);
     return message_string;
 }
