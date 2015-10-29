@@ -86,6 +86,10 @@ enum Athena_SoundFormat Athena_PreferredFormat(struct Athena_SoundContext *ctx){
     return Athena_SoundU16;
 }
 
+enum Athena_SoundFormat Athena_PreferredSoundFormat(struct Athena_Sound *snd){
+    return Athena_PreferredFormat(NULL);
+}
+
 unsigned Athena_SupportsFormat(struct Athena_SoundContext *ctx, enum Athena_SoundFormat format){
     return Athena_PreferredFormat(ctx)==format;
 }

@@ -17,6 +17,7 @@ enum Athena_SoundFormat { Athena_SoundU16, Athena_SoundU32, Athena_SoundFloat };
 
 /* This MUST be either 16-bit integer or 32-bit float. */
 enum Athena_SoundFormat Athena_PreferredFormat(struct Athena_SoundContext *);
+enum Athena_SoundFormat Athena_PreferredSoundFormat(struct Athena_Sound *);
 unsigned Athena_SupportsFormat(struct Athena_SoundContext *, enum Athena_SoundFormat);
 
 struct Athena_SoundContext *Athena_CreateSoundContext();

@@ -32,27 +32,38 @@ struct Athena_Sound *Athena_LoadOpusMemory(const void *data, int size, struct At
 
 #define ATHENA_BUFFER_SIZE ( 0x100 << 8 )
 
-static int athena_push_stream(const void *data, int size, struct Athena_Sound *to, struct Athena_SoundContext *ctx, ogg_sync_state *state, ogg_page *page, ogg_stream_state *stream, OpusDecoder *decoder, int *stream_inited){
+static int athena_push_stream(const void *data, int size, struct Athena_Sound *to, struct Athena_SoundContext *ctx, 
+    ogg_sync_state *state, ogg_page *page, ogg_stream_state *stream, OpusDecoder *decoder, int *stream_inited){
+
     ogg_packet packet;
     if(!(*stream_inited))
         return 1;
     else if(ogg_stream_packetout(stream, &packet)==1){
-        /* 5760? */
-        const unsigned buffer_size = 5760 * sizeof(int16_t) * 2; /* max num_channels */
-        int16_t *buffer = malloc(buffer_size);
-
-        int r = opus_decode(decoder, packet.packet, packet.bytes, buffer, buffer_size, 0);
-
-        if(r>0){
-            Athena_SoundPost(to, buffer, r * sizeof(int16_t) * 2);
+        switch(Athena_PreferredSoundFormat(to)){
+            case Athena_SoundU16:
+            {
+                /* 5760? */
+                const unsigned buffer_size = 5760 * sizeof(int16_t) * 2; /* max num_channels */
+                int16_t *buffer = malloc(buffer_size);
+                int r = opus_decode(decoder, packet.packet, packet.bytes, buffer, buffer_size, 0);
+                if(r>0)
+                    Athena_SoundPost(to, buffer, r * sizeof(int16_t) * 2);
+                free(buffer);
+            }
+            break;
+            case Athena_SoundFloat:
+            default:
+            {
+                const unsigned buffer_size = 5760 * sizeof(float) * 2; /* max num_channels */
+                float *buffer = malloc(buffer_size);
+                int r = opus_decode_float(decoder, packet.packet, packet.bytes, buffer, buffer_size, 0);
+                if(r>0)
+                    Athena_SoundPost(to, buffer, r * sizeof(float) * 2);
+                free(buffer);
+            }
+            break;
         }
-        else{
-            fputs("[athena_load_opus_inner]", stderr);
-            fputs(opus_strerror(r), stderr);
-            fputc('\n', stderr);
-        }
-            
-        free(buffer);
+
         return athena_push_stream(data, size, to, ctx, state, page, stream, decoder, stream_inited);
     }
     else
@@ -108,7 +119,9 @@ int Athena_LoadOpusSoundMemory(const void *data, int size, struct Athena_Sound *
     
     err = ogg_sync_init(&state);
     
-    Athena_SoundInit(to, 2, 48000, Athena_SoundU16);
+    Athena_SoundInit(to, 2, 48000, 
+        (Athena_PreferredSoundFormat(to)==Athena_SoundU16)?
+        Athena_SoundU16:Athena_SoundFloat);
 
     athena_load_opus_inner(data, size, to, ctx, &state, &page, &stream, decoder, &stream_inited);
 
