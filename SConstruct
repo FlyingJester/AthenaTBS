@@ -17,10 +17,11 @@ if os.name=="posix":
         CFLAGS = " -ansi -Wno-long-long ", 
         CXXFLAGS = " -std=c++11 -fno-rtti -fno-exceptions ",
         LINKFLAGS = " -g ")
-    environment.Prepend(CCFLAGS = " -pedantic -Wall -Werror -g -fstrict-aliasing -pipe -fPIC ")
+    environment.Prepend(CCFLAGS = " -pedantic -Wall -Werror -g -fstrict-aliasing -pipe ")
     if not use_intel_cc:
          environment.Prepend(CCFLAGS = " -Wno-unused-result ")
-
+         if not sys.platform.startswith("cyg"):
+             environment.Prepend(CCFLAGS = " -fPIC ")
     if False and sys.platform == "darwin":
         XFlag = " -arch x86_64 -arch i586 "
         environment.Append(CCFLAGS = XFlag, LINKFLAGS = XFlag)

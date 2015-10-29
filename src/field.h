@@ -20,6 +20,8 @@ int Athena_LoadFieldFromFile(const char *file, struct Athena_Field *to);
 int Athena_FieldTileXYToPixelXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to);
 int Athena_FieldPixelXYToTileXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to);
 
+const struct Athena_Tile *Athena_TileInField(const struct Athena_Field *field, int x, int y);
+
 /* Semi-private helper functions */
 unsigned short Athena_TileIndexAt(const struct Athena_Field *field, unsigned x, unsigned y);
 int Athena_LoadFieldFromMemory(const void *data, unsigned len, struct Athena_Field *to, const char *directory);
@@ -27,3 +29,4 @@ int Athena_LoadFieldFromMemory(const void *data, unsigned len, struct Athena_Fie
 struct Turbo_Value;
 /* value->type _must_ be Object */
 int Athena_LoadFieldFromTurboValue(const struct Turbo_Value *value, struct Athena_Field *to, const char *directory);
+

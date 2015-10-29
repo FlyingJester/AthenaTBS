@@ -10,22 +10,135 @@
 #include <TurboJSON/value.h>
 #include <TurboJSON/object.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-static const struct Athena_Button athena_move_button = { 0, 0, 64, 20, "Move", NULL, Athena_CancelMenuCallback };
+void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
+    struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
+    if(position && unit){
+        int size;
+
+        struct Athena_MessageList * const msg = malloc(sizeof(struct Athena_MessageList)); 
+        
+        msg->msg_text = Athena_CreateMovementMessage(&size, unit, position->x, position->y);
+        
+        Turbo_Object(&msg->value, msg->msg_text, msg->msg_text + size);
+
+        msg->next = NULL;
+
+        Athena_AppendMessageList(&(messages->next), msg);
+
+#ifndef NDEBUG
+        printf("Moving unit %s to %i, %i\n", unit->clazz->name, position->x, position->y);
+#endif
+    }
+
+    if(position)
+        free(position);
+
+}
+
+void unit_attack_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
+    struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
+    if(position && unit && position->unit){
+
+#ifndef NDEBUG
+        printf("Attacking unit %s at %i, %i, using unit %s at %i, %i\n", 
+            unit->clazz->name, unit->x, unit->y, position->unit->clazz->name, position->x, position->y);
+#endif        
+        
+    }
+
+    if(position)
+        free(position);
+}
+
+void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    if(!args)
+        return;
+    else{
+        struct Athena_GameState *const state = args->arg;
+
+        if(state->ui.selection_arg)
+            Athena_FreeButtonArgList(state->ui.selection_arg);
+
+        Athena_CopyButtonArgList(&state->ui.selection_arg, args);
+        
+        state->ui.selection_callback = unit_movement_selection_callback;
+
+        if(state->ui.positions_arg)
+            Athena_FreeButtonArgList(state->ui.positions_arg);
+
+        Athena_CopyButtonArgList(&state->ui.positions_arg, args);
+        state->ui.positions_callback = Athena_MovementPositions;
+
+    }
+    Athena_CancelMenuCallback(args, messages);
+}
+
+void unit_attack_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    if(!args)
+        return;
+    else{
+        struct Athena_GameState *const state = args->arg;
+
+        if(state->ui.selection_arg)
+            Athena_FreeButtonArgList(state->ui.selection_arg);
+
+        Athena_CopyButtonArgList(&state->ui.selection_arg, args);
+
+        state->ui.selection_callback = unit_attack_selection_callback;
+
+        if(state->ui.positions_arg)
+            Athena_FreeButtonArgList(state->ui.positions_arg);
+
+        Athena_CopyButtonArgList(&state->ui.positions_arg, args);
+        state->ui.positions_callback = Athena_AttackRangePositions;
+
+    }
+    Athena_CancelMenuCallback(args, messages);
+}
+
+static const struct Athena_Button athena_move_button = { 0, 0, 64, 20, "Move", NULL, unit_movement_callback };
+static const struct Athena_Button athena_attack_button = { 0, 0, 64, 20, "Attack", NULL, unit_attack_callback };
+static const struct Athena_Button athena_build_button = { 0, 0, 64, 20, "Build Unit", NULL, Athena_CancelMenuCallback };
 
 static struct Athena_Menu *athena_generate_unit_menu(struct Athena_GameState *arg, struct Athena_Unit *unit){
     struct Athena_Menu *unit_menu = malloc(sizeof(struct Athena_Menu));
     struct Athena_ButtonList * const buttons = unit_menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
         * next = buttons->next = malloc(sizeof(struct Athena_ButtonList));
-    buttons->button = athena_move_button;
+
+    if(unit->clazz->is_building){
+        buttons->button = athena_build_button;        
+    }
+    else{
+        buttons->button = athena_move_button;
+        next->button = athena_attack_button;
+        next->button.arg = Athena_DefaultButtonArgList(arg);
+        Athena_AppendButtonArgList(next->button.arg, unit, "source_unit");
+        next->next = malloc(sizeof(struct Athena_ButtonList));
+        next = next->next;
+    }
     buttons->button.arg = Athena_DefaultButtonArgList(arg);
+    Athena_AppendButtonArgList(buttons->button.arg, unit, "source_unit");
 
     next->button = athena_cancel_button;
+
     next->button.arg = Athena_DefaultButtonArgList(arg);
+    Athena_AppendButtonArgList(next->button.arg, unit, "source_unit");
+
     next->next = NULL;
-    
-    unit_menu->w = 100;
-    unit_menu->text = "Unit Action";
+
+    if(unit->clazz->is_building){    
+        unit_menu->w = 120;   
+        unit_menu->text = "Building Action";
+        
+    }
+    else{
+        unit_menu->w = 100;
+        unit_menu->text = "Unit Action";
+    }
 
     return unit_menu;
 }
@@ -64,16 +177,33 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
         return 0;
     else{
         struct Athena_SelectingPosition *position = malloc(sizeof(struct Athena_SelectingPosition));
-        int x, y;
+        struct Athena_PositionList *list = ui->positions_callback(ui->positions_arg);
         
-        Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
-        position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
-        Athena_AppendButtonArgList(ui->selection_arg, position);
-        
-        ui->selection_callback(ui->selection_arg, messages);
-        
+        if(list){
+
+            int x, y;
+            Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
+
+            if(Athena_PositionInList(list, x, y)){
+
+                position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
+                Athena_AppendButtonArgList(ui->selection_arg, position, "destination");
+
+                ui->selection_callback(ui->selection_arg, messages);
+
+            }
+            Athena_FreePositionList(list);
+        }
+
         ui->selection_callback = NULL;
-        Athena_FreeButtonArgList(ui->selection_arg);
+        if(ui->selection_arg)
+            Athena_FreeButtonArgList(ui->selection_arg);
+        ui->selection_arg = NULL;
+
+        ui->positions_callback = NULL;
+        if(ui->positions_arg)
+            Athena_FreeButtonArgList(ui->positions_arg);
+        ui->positions_arg = NULL;
         
         return 1;
     }
@@ -98,7 +228,11 @@ static int athena_ui_get_unit_menu(struct Athena_GameState *that, struct Athena_
         {
             struct Athena_Unit *const unit = Athena_FindUnitAt(units, x, y);
             const int i = athena_test_unit_index(units, unit, 0);
+
+#ifndef NDEBUG
             printf("[athena_ui_get_unit_menu]Selected unit %i\n", i);
+#endif
+
             if(unit){
                 {
                     struct Athena_ButtonArgList arg_list = {NULL, NULL};
@@ -129,17 +263,28 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
                     if(that->ui.menu && athena_ui_process_buttons(that, that->ui.menu->buttons, event, messages))
                         break;
 
+                    if(athena_process_selector(that->field, &that->ui, event, messages))
+                        break;
+
                     if(athena_ui_get_unit_menu(that, that->field->units, event, messages))
                         break;
 
-                    if(athena_process_selector(that->field, &that->ui, event, messages))
-                        break;
                 }
                 else if(event->which == athena_right_mouse_button){
                     {
                         struct Athena_ButtonArgList arg_list = {NULL, NULL};
                         arg_list.arg = that;
                         Athena_CancelMenuCallback(&arg_list, messages);
+
+                        if(that->ui.selection_arg)
+                            Athena_FreeButtonArgList(that->ui.selection_arg);
+                        that->ui.selection_arg = NULL;
+                        that->ui.selection_callback = NULL;
+
+                        if(that->ui.positions_arg)
+                            Athena_FreeButtonArgList(that->ui.positions_arg);
+                        that->ui.positions_arg = NULL;
+                        that->ui.positions_callback = NULL;
                     }
                 }
                 break;
@@ -165,7 +310,9 @@ static void athena_do_fps_drawing(struct Athena_Image *to){/* Finally do FPS inf
 
     if(fs >= 100){
         last_fps = s_ave_tick;
+#ifndef NDEBUG
         printf("FPS: %i (%i, %i)\n", (int)s_ave_tick, (int)s_tick, (int)Athena_GetMillisecondTicks()); 
+#endif
         fs = 0;
         s_ave_tick = fps;
     }
@@ -188,6 +335,14 @@ static void athena_draw_selector(const struct Athena_Field *field, struct Athena
         
         Athena_BlendRect(&ui->framebuffer, x, y, field->tileset->tile_width, field->tileset->tile_height, Athena_RGBAToRaw(0xE0, 0xE0, 0x30, 0xFF), Athena_RGBARawAverage);
     }
+}
+
+static void athena_positions_callback(void *arg, int x, int y){
+    struct Athena_GameState *state = arg;
+    Athena_FieldTileXYToPixelXY(state->field, x, y, &x, &y);
+    
+    Athena_BlendRect(&state->ui.framebuffer, x - state->ui.camera_x, y - state->ui.camera_y, 
+        state->field->tileset->tile_width, state->field->tileset->tile_height, Athena_RGBAToRaw(0x30, 0x30, 0x10, 0), Athena_RGBARawAdd);
 }
 
 int Athena_UIThreadFrame(struct Athena_GameState *that){
@@ -214,6 +369,11 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
         } /* End info bar Drawing */
         { /* Selector... */            
             athena_draw_selector(that->field, &that->ui);
+
+            if(that->ui.positions_callback){
+                struct Athena_PositionList *pos = that->ui.positions_callback(that->ui.positions_arg);
+                Athena_FoldPositions(pos, athena_positions_callback, that);
+            }
         }
         { /* Draw buttons */
             struct Athena_Viewport onto = {NULL, 0, 0, 0, 0};
@@ -303,11 +463,11 @@ static void athena_end_turn_callback(struct Athena_ButtonArgList *arg, struct At
 
         msg->msg_text = Athena_CreateEndTurnMessage(&size);
         Turbo_Object(&msg->value, msg->msg_text, msg->msg_text + size);
-
+        
         msg->next = NULL;
         
-        messages->next = msg;
-        
+        Athena_AppendMessageList(&(messages->next), msg);
+
         Athena_CancelMenuCallback(arg, messages);
     }
 }

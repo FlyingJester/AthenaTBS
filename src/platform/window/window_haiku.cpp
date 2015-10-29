@@ -70,11 +70,11 @@ public:
 	int DrawImage(int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB);
 	int DrawRect(int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
 
-    virtual void DirectConnected(direct_buffer_info* info) ATHENA_OVERRIDE;
-    virtual void MessageReceived(BMessage* message) ATHENA_OVERRIDE;
+	virtual void DirectConnected(direct_buffer_info* info) ATHENA_OVERRIDE;
+	virtual void MessageReceived(BMessage* message) ATHENA_OVERRIDE;
     
-    void GetMousePosition(int &x, int &y) const;
-    void GetMousePosition(int *x, int *y) const;
+	void GetMousePosition(int &x, int &y) const;
+	void GetMousePosition(int *x, int *y) const;
     
 };
 

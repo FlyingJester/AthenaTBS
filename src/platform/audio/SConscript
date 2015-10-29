@@ -5,6 +5,10 @@ Import("environment")
 if sys.platform.startswith("haiku"):
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_haiku.cpp"], LIBS = ["be", "game"])
 else:
-    athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], LIBS = ["openal"])
+    if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
+        al_lib = "openal32"
+    else:
+        al_lib = "openal"
+    athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], LIBS = [al_lib])
 
 Return("athena_audio")

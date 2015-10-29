@@ -1,4 +1,5 @@
 #include "server_thread.h"
+#include "unit.h"
 #include "turbo_json_helpers.h"
 #include <TurboJSON/parse.h>
 #include <stdlib.h>
@@ -51,6 +52,33 @@ struct Athena_InternalServerMessage{
     
 };
 
+int Athena_GetJSONToAndFrom(const struct Turbo_Value *obj, int *from_x_out, int *from_y_out, int *to_x_out, int *to_y_out){
+    const struct Turbo_Value
+        *const from = Turbo_Helper_GetConstObjectElement(obj, "from"),
+        *const to = Turbo_Helper_GetConstObjectElement(obj, "to");
+    if(from && to){
+        const struct Turbo_Value
+            *const from_x= Turbo_Helper_GetConstObjectElement(from, "x"),
+            *const from_y= Turbo_Helper_GetConstObjectElement(from, "y"),
+            *const to_x  = Turbo_Helper_GetConstObjectElement(to, "x"),
+            *const to_y  = Turbo_Helper_GetConstObjectElement(to, "y");
+        if(from_x && from_y && to_x && to_y &&
+            from_x->type == TJ_Number &&
+            from_y->type == TJ_Number &&
+            to_x->type == TJ_Number &&
+            to_y->type == TJ_Number){
+            
+            from_x_out[0] = from_x->value.number;
+            from_y_out[0] = from_y->value.number;
+            to_x_out[0] = to_x->value.number;
+            to_y_out[0] = to_y->value.number;
+            
+            return 0;
+        }
+    }
+    return 1;
+}
+
 static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Athena_GameState *that){
     if(!msg){
         return 0;
@@ -65,6 +93,21 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                 case EndTurn:
                     that->whose_turn = (that->whose_turn+1) % that->num_players;
                     break;
+                case MoveUnit:
+                    {
+                        int from_x, from_y, to_x, to_y;
+                        struct Athena_Unit *movable;
+                        if(Athena_GetJSONToAndFrom(&msg->value, &from_x, &from_y, &to_x, &to_y)!=0)
+                            break;
+                        if((movable = Athena_FindUnitAt(that->field->units, from_x, from_y))){
+                            movable->x = to_x;
+                            movable->y = to_y;
+                        }
+                        else{
+                            fprintf(stderr, "[athena_handle_message_iter]Attempt to move non-existant unit at %i, %i to %i, %i\n", from_x, from_y, to_x, to_y);
+                        }
+                    }
+                    break;
                 default:
                     fprintf(stderr, "[athena_handle_message_iter]Dropping message of type \"%s\" (%i)\n", Athena_ServerMessageTypeString(msg_type), msg_type);
             }
@@ -74,26 +117,16 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
     }
 }
 
-static void athena_free_message_json(struct Athena_MessageList *msg){
-    if(msg){
-        Turbo_FreeParse(&msg->value);
-        athena_free_message_json(msg->next);
-    }
-}
-
-static void athena_free_message_array(struct Athena_MessageList *msg){
+static void athena_free_messages(struct Athena_MessageList *msg){
     if(msg){
         struct Athena_MessageList * const next = msg->next;
-        free(msg->msg_text);
         Turbo_FreeParse(&msg->value);
+        free(msg->msg_text);
+        msg->msg_text = NULL;
         free(msg);
-        athena_free_message_array(next);
+        msg = NULL;
+        athena_free_messages(next);
     }
-}
-
-static void athena_free_messages(struct Athena_MessageList *msg){
-    athena_free_message_json(msg);
-    athena_free_message_array(msg);
 }
 
 int Athena_ServerThread(struct Athena_GameState *that){

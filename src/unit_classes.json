@@ -4,7 +4,7 @@
         "attack":1.0,
         "defense":1.0,
         "range":1.0,
-        "movement":8.0,
+        "movement":0.0,
         "actions":1.0,
         "is_building":true
     },
@@ -13,7 +13,7 @@
         "attack":1.0,
         "defense":1.0,
         "range":1.0,
-        "movement":8.0,
+        "movement":0.0,
         "actions":1.0,
         "is_building":true
     },
@@ -31,7 +31,7 @@
         "attack":1.0,
         "defense":1.0,
         "range":1.0,
-        "movement":8.0,
+        "movement":5.0,
         "actions":1.0
     },
     {
@@ -39,7 +39,7 @@
         "attack":2.0,
         "defense":1.0,
         "range":2.0,
-        "movement":10.0,
+        "movement":6.0,
         "actions":2.0,
         "spriteset":"Pluto"
     },
@@ -48,7 +48,7 @@
         "attack":0.2,
         "defense":0.5,
         "range":1.0,
-        "movement":10.0,
+        "movement":6.0,
         "actions":1.0,
         "spriteset":"CoalitionBuilder"
     },
@@ -57,7 +57,7 @@
         "attack":2.0,
         "defense":1.0,
         "range":1.0,
-        "movement":8.0,
+        "movement":5.0,
         "actions":1.0
     },
     {
@@ -65,7 +65,7 @@
         "attack":2.0,
         "defense":2.0,
         "range":1.0,
-        "movement":10.0,
+        "movement":6.0,
         "actions":1.0
     }
 ]

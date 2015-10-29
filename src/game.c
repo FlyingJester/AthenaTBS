@@ -4,8 +4,34 @@
 #include "server_thread.h"
 #include "thread/thread.h"
 #include "time/sleep.h"
+#include "turbo_json_helpers.h"
+#include <TurboJSON/parse.h>
 #include <string.h>
 #include <stdlib.h>
+
+#if (defined _MSC_VER ) || (defined __APPLE__) || (defined __linux__)
+
+static unsigned athena_strnlen(const char *s, unsigned long max, unsigned long i){
+    if(!max || s[0]=='\0')
+        return i;
+    else
+        return athena_strnlen(s+1, max-1, i+1);
+}
+#else
+/* I simply do not trust you, Sun Studio, or Open Watcom, or whoever you are! */
+static unsigned athena_strnlen(const char *s, unsigned long max, unsigned long i){
+athena_strnlen_begin:
+    if(!max || s[0]=='\0')
+        return i;
+    else{
+        s++;
+        max--;
+        i++;
+        goto athena_strnlen_begin;
+    }
+}
+#endif
+
 
 unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players){
     /* A player is winning if they have any units at all. If we have more than one, we have no winner yet. */
@@ -94,3 +120,101 @@ char *Athena_CreateEndTurnMessage(int *size){
     size[0]--;
     return message_string;
 }
+
+static const char athena_movement_message_string[] =
+"{\n    \"type\":\"MoveUnit\",\n    \"from\":{\"x\":%i, \"y\":%i},\n    \"to\":{\"x\":%i, \"y\":%i}\n}\n";
+char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x, int to_y){
+    /* No number entered will be more than 0xFFFF, or 65,000ish. */
+
+    char *const message_string = malloc(sizeof(athena_movement_message_string) + 200);
+    sprintf(message_string, athena_movement_message_string, that->x, that->y, to_x, to_y);
+
+    size[0] = athena_strnlen(message_string, sizeof(athena_movement_message_string) + 200, 0);
+    return message_string;
+}
+
+/* ========================================================================== */
+/* Game Tests */
+/* ========================================================================== */
+
+int Athena_Test_AthenaStrnlen0Image(){
+    static const char * const test_str = "";
+    return athena_strnlen(test_str, 0, 0) == 0;
+}
+
+int Athena_Test_AthenaStrnlen1Image(){
+    static const char * const test_str = "";
+    return athena_strnlen(test_str, 99, 0) == 0;
+}
+
+int Athena_Test_AthenaStrnlen2Image(){
+    static const char * const test_str = "asdf";
+    return athena_strnlen(test_str, 99, 0) == 4;
+}
+
+int Athena_Test_AthenaStrnlen3Image(){
+    static const char * const test_str = "asdf";
+    return athena_strnlen(test_str, 3, 0) == 3;
+}
+
+int Athena_Test_CreateEndTurnMessage(){
+    struct Turbo_Value value;
+    int size;
+    const char *msg_text = Athena_CreateEndTurnMessage(&size);
+    Turbo_Value(&value, msg_text, msg_text + size);
+    {
+        const struct Turbo_Value
+            *const type_obj = Turbo_Helper_GetConstObjectElement(&value, "type");
+        
+        const int err = Turbo_Helper_CompareStringConstant(type_obj, "EndTurn");
+        
+        Turbo_FreeParse(&value);
+        
+        return err;
+    }
+}
+
+/*
+struct Athena_Unit {
+    const struct Athena_Class *clazz;
+    unsigned owner;
+    float health;
+    unsigned x, y, movement, actions;
+    struct Athena_Animation sprite;
+};
+*/
+
+#define c_to_x 97
+#define c_to_y 86
+#define c_from_x 54
+#define c_from_y 3
+
+int Athena_Test_CreateMovementMessage(){
+    struct Turbo_Value value;
+
+    int size, new_from_x, new_from_y, new_to_x, new_to_y;
+
+    struct Athena_Unit unit = { NULL, 0, 0.0, c_from_x, c_from_y, 0, 0, {0, NULL} };
+    
+    const char *msg_text = Athena_CreateMovementMessage(&size, &unit, c_to_x, c_to_y);
+    Turbo_Value(&value, msg_text, msg_text + size);
+
+    {
+        const int err = Athena_GetJSONToAndFrom(&value, &new_from_x, &new_from_y, &new_to_x, &new_to_y);
+
+        Turbo_FreeParse(&value);
+
+        return (err==0) && new_from_x==c_from_x && new_from_y==c_from_y && new_to_x==c_to_x && new_to_y==c_to_y;
+    }
+}
+
+static struct Athena_Test athena_tests[] = {
+    ATHENA_TEST(Athena_Test_AthenaStrnlen0Image),
+    ATHENA_TEST(Athena_Test_AthenaStrnlen1Image),
+    ATHENA_TEST(Athena_Test_AthenaStrnlen2Image),
+    ATHENA_TEST(Athena_Test_AthenaStrnlen3Image),
+    ATHENA_TEST(Athena_Test_CreateEndTurnMessage),
+    ATHENA_TEST(Athena_Test_CreateMovementMessage)
+};
+
+ATHENA_TEST_FUNCTION(Athena_GameTest, athena_tests)
