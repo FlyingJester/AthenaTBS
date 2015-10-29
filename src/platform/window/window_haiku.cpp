@@ -80,11 +80,27 @@ void Athena_Window::ConvertColorSpaces(const uint32_t *in, void *out, size_t num
     switch(c){
         case B_RGB32:
         case B_RGBA32:
+        	for(unsigned i = 0; i<num_pixels; i++){
+        		const uint8_t *from = reinterpret_cast<const uint8_t *>(in + i);
+				uint8_t *to = reinterpret_cast<uint8_t *>(out) + (i<<2); 
+				to[0] = from[2];
+				to[1] = from[1];
+				to[2] = from[0];
+				to[3] = from[3];
+			}
+        	break;
         case B_RGB32_BIG:
         case B_RGBA32_BIG:
             std::copy(in, in + num_pixels, static_cast<uint32_t *>(out));
             break;
         case B_RGB24:
+            for(unsigned i = 0; i<num_pixels; i++){
+                uint8_t *pixel = static_cast<uint8_t *>(out) + (3 * i);
+                pixel[2] = in[i] & 0xFF;
+                pixel[1] = (in[i] >> 8) & 0xFF;
+                pixel[0] = (in[i] >> 16) & 0xFF;
+            }
+            break;
         case B_RGB24_BIG:
             for(unsigned i = 0; i<num_pixels; i++){
                 uint8_t *pixel = static_cast<uint8_t *>(out) + (3 * i);
@@ -245,7 +261,7 @@ int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned form
     uint8_t *row_start = screen + (starting_y * pitch);
     
     for(int i = starting_y; i < ending_y; i++){
-        ConvertColorSpaces(static_cast<const uint32_t *>(RGB) + starting_x + bounds.left + ((i + bounds.top) * w), row_start + (x * depth), ending_x - starting_x, this->format);
+        ConvertColorSpaces(static_cast<const uint32_t *>(RGB) + starting_x + (i * w), row_start + (x * depth), ending_x - starting_x, this->format);
         row_start += pitch;
     }
     return 0;
