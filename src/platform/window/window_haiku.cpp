@@ -55,9 +55,7 @@ class Athena_Window : public BDirectWindow{
 public:
     Athena_Window(int x, int y, unsigned w, unsigned h, const char *title)
       : BDirectWindow(BRect(x, y, x + w, y + h), title, B_TITLED_WINDOW, B_NOT_RESIZABLE|B_QUIT_ON_WINDOW_CLOSE, B_CURRENT_WORKSPACE){
-        
-        
-        
+
     }
 
     ~Athena_Window(){
@@ -246,7 +244,7 @@ int Athena_Window::DrawImage(int x, int y, unsigned w, unsigned h, unsigned form
     uint8_t *row_start = screen + (starting_y * pitch);
     
     for(int i = starting_y; i < ending_y; i++){
-        ConvertColorSpaces(static_cast<const uint32_t *>(RGB) + starting_x + (i * w), row_start + (x * depth), ending_x - starting_x, this->format);
+        ConvertColorSpaces(static_cast<const uint32_t *>(RGB) + starting_x + bounds.left + ((i + bounds.top) * w), row_start + (x * depth), ending_x - starting_x, this->format);
         row_start += pitch;
     }
     return 0;
