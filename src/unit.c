@@ -7,10 +7,16 @@
 int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y){
     if(!unit)
         return 1;
-    else if(Athena_DrawAnimation(&unit->sprite, to, (unit->x * tile_w) - x, (unit->y * tile_h) - y - ( unit->sprite.frames->frame->h - tile_h ))!=0)
-        return 1;
-    else
-        return Athena_AnimationTick(&unit->sprite);
+    else{
+        const struct Athena_Animation *sprite = &unit->sprite;
+        const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - ( unit->sprite.frames->frame->h - tile_h );
+        
+        if(Athena_DrawAnimationBlendMode(sprite, to, to_x, to_y, 
+            (unit->actions>0)?Athena_RGBARawBlend:Athena_RGBARawGrayscale)!=0)
+            return 1;
+        else
+            return Athena_AnimationTick(&unit->sprite);
+    }
 }
 
 int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y){

@@ -10,6 +10,16 @@ int Athena_AnimationTick(struct Athena_Animation *animation){
     return 0;
 }
 
+
+int Athena_DrawAnimationBlendMode(const struct Athena_Animation *animation, struct Athena_Image *image, int x, int y, uint32_t(*blend_func)(uint32_t, uint32_t)){
+    if(!(animation && image))
+        return 1;
+    else{
+        Athena_BlitBlendMode(animation->frames->frame, image, x, y, blend_func);
+        return 0;
+    }
+}
+
 int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *image, int x, int y){
     if(!(animation && image))
         return 1;

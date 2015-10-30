@@ -16,3 +16,5 @@ struct Athena_Animation {
 
 int Athena_AnimationTick(struct Athena_Animation *animation);
 int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y);
+int Athena_DrawAnimationBlendMode(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y, 
+    uint32_t(*blend_func)(uint32_t, uint32_t));
