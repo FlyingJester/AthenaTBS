@@ -42,6 +42,17 @@ void unit_attack_selection_callback(struct Athena_ButtonArgList *args, struct At
     struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
     struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
     if(position && unit && position->unit){
+        int size;
+
+        struct Athena_MessageList * const msg = malloc(sizeof(struct Athena_MessageList)); 
+        
+        msg->msg_text = Athena_CreateAttackMessage(&size, unit, position->x, position->y);
+        
+        Turbo_Object(&msg->value, msg->msg_text, msg->msg_text + size);
+
+        msg->next = NULL;
+
+        Athena_AppendMessageList(&(messages->next), msg);
 
 #ifndef NDEBUG
         printf("Attacking unit %s at %i, %i, using unit %s at %i, %i\n", 
