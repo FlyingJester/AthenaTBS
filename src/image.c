@@ -358,6 +358,7 @@ ATHENA_DECONSTRUCT_BLENDER(Blend)
 ATHENA_DECONSTRUCT_BLENDER(Multiply)
 ATHENA_DECONSTRUCT_BLENDER(Average)
 ATHENA_DECONSTRUCT_BLENDER(Add)
+ATHENA_DECONSTRUCT_BLENDER(Grayscale)
 
 /* Slight shortcut. We don't need to disassemble the RGBA, since it's just a replacement. */
 uint32_t Athena_RGBARawReplace(uint32_t src, uint32_t dst){
@@ -411,6 +412,11 @@ uint32_t Athena_RGBAAdd(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src
 
 uint32_t Athena_RGBAReplace(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
     return Athena_RGBAToRaw(src_r, src_g, src_b, src_a);
+}
+
+uint32_t Athena_RGBAGrayscale(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a){
+    const uint8_t new_level = (src_r + src_g + src_b) / 3;
+    return Athena_RGBABlend(new_level, new_level, new_level, src_a, dst_r, dst_g, dst_b, dst_a);
 }
 
 static void athena_image_from_palette(uint32_t *to, const uint8_t *data, const uint32_t *palette, unsigned len){

@@ -67,6 +67,10 @@ uint32_t Athena_RGBAReplace(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t
 uint32_t Athena_RGBARawAdd(uint32_t src, uint32_t dst);
 uint32_t Athena_RGBAAdd(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
 
+/* Same as Athena_RGBARawBlend, but first mixes source to grayscale. */
+uint32_t Athena_RGBARawGrayscale(uint32_t src, uint32_t dst);
+uint32_t Athena_RGBAGrayscale(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
+
 void Athena_BlendRect(struct Athena_Image *to, int x, int y, unsigned w, unsigned h, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst));
 void Athena_BlendViewport(struct Athena_Viewport *v, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst));
 void Athena_BlendPixel(struct Athena_Image *to, int x, int y, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst));
