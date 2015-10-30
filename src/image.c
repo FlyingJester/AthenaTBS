@@ -171,7 +171,10 @@ void Athena_BlitBlendMode(const struct Athena_Image *src, struct Athena_Image *d
     assert(src);
     assert(dst);
 
-    if(x < dst->w && y < dst->h && x + (long)src->w > 0 && y + (long)src->h > 0){
+    if(blend_func==Athena_RGBARawReplace){
+        Athena_Blit(src, dst, x, y);
+    }
+    else if(x < dst->w && y < dst->h && x + (long)src->w > 0 && y + (long)src->h > 0){
         struct Athena_Viewport to;
         const unsigned len = Athena_LowerBlitWidth(src, dst, x);
         
