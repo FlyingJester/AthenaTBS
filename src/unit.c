@@ -64,6 +64,34 @@ void Athena_RenewUnit(struct Athena_Unit *to){
     to->actions = to->clazz->actions;
 }
 
+void Athena_RenewUnitList(struct Athena_UnitList *unit){
+    if(unit){
+        Athena_RenewUnit(&unit->unit);
+        Athena_RenewUnitList(unit->next);
+    }
+}
+
+void Athena_RenewUnitListIf(struct Athena_UnitList *unit, int(*check)(void *arg, const struct Athena_Unit *unit), void *arg){
+    if(unit){
+        struct Athena_Unit *const that = &unit->unit;
+        if(check(arg, that))
+            Athena_RenewUnit(that);
+
+        Athena_RenewUnitListIf(unit->next, check, arg);
+    }
+}
+
+int Athena_CheckUnitOwner(const struct Athena_CheckUnitOwnerData *data, const struct Athena_Unit *unit){
+    if(unit->owner == data->owner)
+        return !data->toggle;
+    else
+        return data->toggle;
+}
+
+int Athena_CheckUnitOwnerCallback(void *arg, const struct Athena_Unit *unit){
+    return Athena_CheckUnitOwner(arg, unit);
+}
+
 void Athena_DepleteUnit(struct Athena_Unit *to){
     to->movement = 0;
     to->actions = 0;

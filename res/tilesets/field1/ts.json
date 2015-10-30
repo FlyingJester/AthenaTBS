@@ -16,5 +16,11 @@
     {"file":"water_northwest2.png", "obstruction_value":255},
     {"file":"water_special1.png", "obstruction_value":255},
     {"file":"water_special2.png", "obstruction_value":255},
-    {"file":"water_special3.png", "obstruction_value":255}
+    {"file":"water_special3.png", "obstruction_value":255},
+    {"file":"water_special4.png", "obstruction_value":255},
+    {"file":"water_special5.png", "obstruction_value":255},
+    {"file":"water_special6.png", "obstruction_value":255},
+    {"file":"water_special7.png", "obstruction_value":255},
+    {"file":"water_special8.png", "obstruction_value":255},
+    {"file":"water_special9.png", "obstruction_value":255}
 ]

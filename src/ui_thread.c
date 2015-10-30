@@ -106,29 +106,32 @@ static const struct Athena_Button athena_build_button = { 0, 0, 64, 20, "Build U
 
 static struct Athena_Menu *athena_generate_unit_menu(struct Athena_GameState *arg, struct Athena_Unit *unit){
     struct Athena_Menu *unit_menu = malloc(sizeof(struct Athena_Menu));
-    struct Athena_ButtonList * const buttons = unit_menu->buttons = malloc(sizeof(struct Athena_ButtonList)),
-        * next = buttons->next = malloc(sizeof(struct Athena_ButtonList));
+    struct Athena_ButtonList *buttons = NULL;
 
-    if(unit->clazz->is_building){
-        buttons->button = athena_build_button;        
+    if(unit->actions){
+        if(unit->clazz->is_building){
+            struct Athena_Button *const first_button = Athena_AppendButton(&buttons, athena_build_button);
+            first_button->arg = Athena_DefaultButtonArgList(arg);
+            Athena_AppendButtonArgList(first_button->arg, unit, "source_unit");
+        }
+        else{
+            struct Athena_Button *const first_button = Athena_AppendButton(&buttons, athena_attack_button);
+            first_button->arg = Athena_DefaultButtonArgList(arg);
+            Athena_AppendButtonArgList(first_button->arg, unit, "source_unit");
+
+            /* Push 'next' ahead one to make room for movement. */
+            if(unit->movement){
+                struct Athena_Button *const movement_button = Athena_AppendButton(&buttons, athena_move_button);
+                movement_button->arg = Athena_DefaultButtonArgList(arg);
+                Athena_AppendButtonArgList(movement_button->arg, unit, "source_unit");
+            }
+
+        }
     }
-    else{
-        buttons->button = athena_move_button;
-        next->button = athena_attack_button;
-        next->button.arg = Athena_DefaultButtonArgList(arg);
-        Athena_AppendButtonArgList(next->button.arg, unit, "source_unit");
-        next->next = malloc(sizeof(struct Athena_ButtonList));
-        next = next->next;
-    }
-    buttons->button.arg = Athena_DefaultButtonArgList(arg);
-    Athena_AppendButtonArgList(buttons->button.arg, unit, "source_unit");
+    
+    Athena_AppendButton(&buttons, athena_cancel_button)->arg = Athena_DefaultButtonArgList(arg);
 
-    next->button = athena_cancel_button;
-
-    next->button.arg = Athena_DefaultButtonArgList(arg);
-    Athena_AppendButtonArgList(next->button.arg, unit, "source_unit");
-
-    next->next = NULL;
+    unit_menu->buttons = buttons;
 
     if(unit->clazz->is_building){    
         unit_menu->w = 120;   

@@ -46,7 +46,20 @@ struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y
 
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);
+
 void Athena_RenewUnit(struct Athena_Unit *unit);
+void Athena_RenewUnitList(struct Athena_UnitList *unit);
+void Athena_RenewUnitListIf(struct Athena_UnitList *unit, int(*check)(void *arg, const struct Athena_Unit *unit), void *arg);
+
 void Athena_DepleteUnit(struct Athena_Unit *unit);
+
+struct Athena_CheckUnitOwnerData{
+    unsigned owner;
+    unsigned toggle; /* If this is 1, we return true for units NOT owned by 'owner'. */
+};
+
+int Athena_CheckUnitOwner(const struct Athena_CheckUnitOwnerData *data, const struct Athena_Unit *unit);
+/* Wraps Athena_CheckUnitOwner */
+int Athena_CheckUnitOwnerCallback(void *arg, const struct Athena_Unit *unit);
 
 const struct Athena_Class *Athena_BuiltinClass(const char *name);
