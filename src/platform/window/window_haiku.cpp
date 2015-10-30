@@ -2,6 +2,7 @@
 
 #include <game/DirectWindow.h>
 #include <support/Locker.h>
+#include <support/Autolock.h>
 #include <interface/InterfaceDefs.h>
 #include <Application.h>
 
@@ -38,130 +39,134 @@ class Athena_Window : public BDirectWindow{
        clipping_rect         clip_list[1];
     } direct_buffer_info;
     */
-    
-    uint8_t *screen;
-    uint32_t pitch, depth; // both in bytes.
-    color_space format;
-    clipping_rect bounds;
 
-    std::vector<clipping_rect> clip_list;
-    std::queue<Athena_Event> queued_events;
-    
-    bool connected, connection_disabled;
-    
-    BPoint mouse_location;
-    
-    static void ConvertColorSpaces(const uint32_t *in, void *out, size_t num_pixels, color_space c);
-    
+	uint8_t *screen;
+	uint32_t pitch, depth; // both in bytes.
+	color_space format;
+	clipping_rect bounds;
+
+	std::vector<clipping_rect> clip_list;
+
+	BLocker event_locker;
+	std::queue<Athena_Event> queued_events;
+
+	bool connected, connection_disabled;
+
+	BPoint mouse_location;
+
+	static void ConvertColorSpaces(const uint32_t *in, void *out, size_t num_pixels, color_space c);
+
 public:
-    Athena_Window(int x, int y, unsigned w, unsigned h, const char *title)
-      : BDirectWindow(BRect(x, y, x + w, y + h), title, B_TITLED_WINDOW, B_NOT_RESIZABLE|B_QUIT_ON_WINDOW_CLOSE, B_CURRENT_WORKSPACE){
+	Athena_Window(int x, int y, unsigned w, unsigned h, const char *title)
+	  : BDirectWindow(BRect(x, y, x + w, y + h), title, B_TITLED_WINDOW, B_NOT_RESIZABLE|B_QUIT_ON_WINDOW_CLOSE, B_CURRENT_WORKSPACE){
 
-    }
+	}
 
-    ~Athena_Window(){
-        connection_disabled = false;
-        Hide();
-        Sync();
-    }
+	~Athena_Window(){
+		connection_disabled = false;
+		Hide();
+		Sync();
+	}
     
 	int DrawImage(int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB);
 	int DrawRect(int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
 
 	virtual void DirectConnected(direct_buffer_info* info) ATHENA_OVERRIDE;
 	virtual void MessageReceived(BMessage* message) ATHENA_OVERRIDE;
-    
+
 	void GetMousePosition(int &x, int &y) const;
 	void GetMousePosition(int *x, int *y) const;
-    
+
 };
 
 void Athena_Window::ConvertColorSpaces(const uint32_t *in, void *out, size_t num_pixels, color_space c){
-    switch(c){
-        case B_RGB32:
-        case B_RGBA32:
-        	for(unsigned i = 0; i<num_pixels; i++){
-        		const uint8_t *from = reinterpret_cast<const uint8_t *>(in + i);
+	switch(c){
+		case B_RGB32:
+		case B_RGBA32:
+			for(unsigned i = 0; i<num_pixels; i++){
+				const uint8_t *from = reinterpret_cast<const uint8_t *>(in + i);
 				uint8_t *to = reinterpret_cast<uint8_t *>(out) + (i<<2); 
 				to[0] = from[2];
 				to[1] = from[1];
 				to[2] = from[0];
 				to[3] = from[3];
 			}
-        	break;
-        case B_RGB32_BIG:
-        case B_RGBA32_BIG:
-            std::copy(in, in + num_pixels, static_cast<uint32_t *>(out));
-            break;
-        case B_RGB24:
-            for(unsigned i = 0; i<num_pixels; i++){
-                uint8_t *pixel = static_cast<uint8_t *>(out) + (3 * i);
-                pixel[2] = in[i] & 0xFF;
-                pixel[1] = (in[i] >> 8) & 0xFF;
-                pixel[0] = (in[i] >> 16) & 0xFF;
-            }
-            break;
-        case B_RGB24_BIG:
-            for(unsigned i = 0; i<num_pixels; i++){
-                uint8_t *pixel = static_cast<uint8_t *>(out) + (3 * i);
-                pixel[0] = in[i] & 0xFF;
-                pixel[1] = (in[i] >> 8) & 0xFF;
-                pixel[2] = (in[i] >> 16) & 0xFF;
-            }
-            break;
-        default:
-            // ...
-            break;
-    }
+			break;
+		case B_RGB32_BIG:
+		case B_RGBA32_BIG:
+			std::copy(in, in + num_pixels, static_cast<uint32_t *>(out));
+			break;
+		case B_RGB24:
+			for(unsigned i = 0; i<num_pixels; i++){
+				uint8_t *pixel = static_cast<uint8_t *>(out) + (3 * i);
+				pixel[2] = in[i] & 0xFF;
+				pixel[1] = (in[i] >> 8) & 0xFF;
+				pixel[0] = (in[i] >> 16) & 0xFF;
+			}
+			break;
+		case B_RGB24_BIG:
+			for(unsigned i = 0; i<num_pixels; i++){
+				uint8_t *pixel = static_cast<uint8_t *>(out) + (3 * i);
+				pixel[0] = in[i] & 0xFF;
+				pixel[1] = (in[i] >> 8) & 0xFF;
+				pixel[2] = (in[i] >> 16) & 0xFF;
+			}
+			break;
+		default:
+			// ...
+			break;
+	}
 }
 
 void Athena_Window::DirectConnected(direct_buffer_info *info){
-    switch(info->buffer_state & B_DIRECT_MODE_MASK){
-        case B_DIRECT_START:
-            connected = true;
-        case B_DIRECT_MODIFY:
-            clip_list.clear();
-            clip_list.insert(clip_list.end(), info->clip_list, info->clip_list + info->clip_list_count);
-            
-            screen = reinterpret_cast<uint8_t *>(info->bits);
-            pitch = info->bytes_per_row;
-            depth = info->bits_per_pixel >> 3;
-            format = info->pixel_format;
-            bounds = info->window_bounds;
-            
-        case B_DIRECT_STOP:
-            connected = false;
-    }
+	switch(info->buffer_state & B_DIRECT_MODE_MASK){
+		case B_DIRECT_START:
+			connected = true;
+		case B_DIRECT_MODIFY:
+			clip_list.clear();
+			clip_list.insert(clip_list.end(), info->clip_list, info->clip_list + info->clip_list_count);
+
+			screen = reinterpret_cast<uint8_t *>(info->bits);
+			pitch = info->bytes_per_row;
+			depth = info->bits_per_pixel >> 3;
+			format = info->pixel_format;
+			bounds = info->window_bounds;
+
+		case B_DIRECT_STOP:
+			connected = false;
+	}
 }
 
 void Athena_Window::MessageReceived(BMessage* message){
-    if(message->what == B_MOUSE_DOWN){
-        struct Athena_Event event = { athena_click_event };
-        int32 type;
+	if(message->what == B_MOUSE_DOWN){
+		struct Athena_Event event = { athena_click_event };
+		int32 type;
 
-        message->FindInt32("buttons", &type);
+		message->FindInt32("buttons", &type);
 
-        if(type==B_PRIMARY_MOUSE_BUTTON)
-            event.which = athena_left_mouse_button;
-        else if(type==B_SECONDARY_MOUSE_BUTTON)
-            event.which = athena_right_mouse_button;
-        else if(type==B_TERTIARY_MOUSE_BUTTON)
-            event.which = athena_middle_mouse_button;
-        else
-            event.which = athena_unknown_mouse_button;
-    
-        BPoint point;
-        
-        message->FindPoint("where", &point);
-        
+		if(type==B_PRIMARY_MOUSE_BUTTON)
+			event.which = athena_left_mouse_button;
+		else if(type==B_SECONDARY_MOUSE_BUTTON)
+			event.which = athena_right_mouse_button;
+		else if(type==B_TERTIARY_MOUSE_BUTTON)
+			event.which = athena_middle_mouse_button;
+		else
+			event.which = athena_unknown_mouse_button;
+
+		BPoint point;
+
+	    message->FindPoint("where", &point);
+	
         event.x = point.x;
         event.y = point.y;
-    
+		BAutolock locker(event_locker);
         queued_events.push(event);
     }
     else if(message->what == B_MOUSE_MOVED){
         message->FindPoint("where", &mouse_location);
     }
+    
+    BDirectWindow::MessageReceived(message);
 }
 
 void Athena_Window::GetMousePosition(int &x, int &y) const{
@@ -207,10 +212,9 @@ class Athena_Application : public BApplication {
 public:
 
     static void EnsureApplication(){
-        ensure_locker.Lock();
+    	BAutolock locker(ensure_locker);
         if(!exists)
             new Athena_Application();
-        ensure_locker.Unlock();
     }
 };
 
