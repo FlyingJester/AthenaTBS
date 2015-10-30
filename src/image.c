@@ -153,13 +153,13 @@ static int athena_blit_scanline_blend_mode_iter(const struct Athena_Image *src, 
     else if(laser_y >= to->h)
         return 0;
     else if(laser_x >= to->w)
-        return athena_blit_scanline_blended_iter(src, to, 0, laser_y + 1);
+        return athena_blit_scanline_blend_mode_iter(src, to, 0, laser_y + 1, blend_func);
     else{
 
         uint32_t * const pixel_to = Athena_Pixel(to->image, to->x + laser_x, to->y + laser_y);
 
         pixel_to[0] = blend_func(Athena_PixelConst(src, laser_x, laser_y)[0], *pixel_to);
-        return athena_blit_scanline_blended_iter(src, to, laser_x + 1, laser_y);
+        return athena_blit_scanline_blend_mode_iter(src, to, laser_x + 1, laser_y, blend_func);
 
     }
 }
