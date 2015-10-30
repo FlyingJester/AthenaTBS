@@ -77,6 +77,8 @@ public:
 	void GetMousePosition(int &x, int &y) const;
 	void GetMousePosition(int *x, int *y) const;
 
+	bool GetEvent(struct Athena_Event *to);
+
 };
 
 void Athena_Window::ConvertColorSpaces(const uint32_t *in, void *out, size_t num_pixels, color_space c){
@@ -159,8 +161,10 @@ void Athena_Window::MessageReceived(BMessage* message){
 	
         event.x = point.x;
         event.y = point.y;
-		BAutolock locker(event_locker);
-        queued_events.push(event);
+        {
+			BAutolock locker(event_locker);
+        	queued_events.push(event);
+        }
     }
     else if(message->what == B_MOUSE_MOVED){
         message->FindPoint("where", &mouse_location);
@@ -176,6 +180,15 @@ void Athena_Window::GetMousePosition(int &x, int &y) const{
 void Athena_Window::GetMousePosition(int *x, int *y) const{
     x[0] = mouse_location.x;
     y[0] = mouse_location.y;
+}
+
+bool Athena_Window::GetEvent(struct Athena_Event *to){
+	BAutolock locker(event_locker);
+	if(queued_events.empty())
+		return true;
+	to[0] = queued_events.back();
+	queued_events.pop();
+	return false;
 }
 
 struct Athena_WindowHandle{
@@ -289,7 +302,7 @@ int Athena_Private_FlipWindow(void *handle){
 }
 
 unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
-	return 0;
+	return static_cast<Athena_WindowHandle *>(handle)->window->GetEvent(to);
 }
 
 static bool athena_get_bit_from_array(uint8 *array, int index){
