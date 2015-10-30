@@ -19,6 +19,9 @@ void Athena_DestroyImageArray(struct Athena_ImageArray *ia);
 
 void Athena_Blit(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y);
 void Athena_BlitBlended(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y);
+void Athena_BlitBlendMode(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y, 
+    uint32_t (*blend_func)(uint32_t src, uint32_t dst));
+
 void Athena_CloneImage(struct Athena_Image *to, const struct Athena_Image *from);
 
 void Athena_SetPixel(struct Athena_Image *to, int x, int y, uint32_t color);
