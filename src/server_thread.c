@@ -103,9 +103,22 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                         if((movable = Athena_FindUnitAt(that->field->units, from_x, from_y))){
                             movable->x = to_x;
                             movable->y = to_y;
+                            movable->movement = 0;
                         }
                         else{
                             fprintf(stderr, "[athena_handle_message_iter]Attempt to move non-existant unit at %i, %i to %i, %i\n", from_x, from_y, to_x, to_y);
+                        }
+                    }
+                    break;
+                case AttackUnit:
+                    {
+                        int from_x, from_y, to_x, to_y;
+                        struct Athena_Unit *attacker, *attackee;
+                        if(Athena_GetJSONToAndFrom(&msg->value, &from_x, &from_y, &to_x, &to_y)!=0)
+                            break;
+                        if((attacker = Athena_FindUnitAt(that->field->units, from_x, from_y)) && (attacker->actions) && 
+                            (attackee = Athena_FindUnitAt(that->field->units, to_x, to_y))){
+                            attacker->actions = 0;
                         }
                     }
                     break;
