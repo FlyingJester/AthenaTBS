@@ -50,7 +50,7 @@ int FUNC_NAME(){\
     return results.u;\
 }
 
-#define ATHENA_RUN_TEST_SUITE(R)\
+#define ATHENA_RUN_TEST_SUITE(R, I)\
 {\
     union {\
         unsigned u;\
@@ -60,6 +60,7 @@ int FUNC_NAME(){\
     results.u = R();\
     printf("[Test]" #R " Results: %i/%i\n========== " #R\
         " ==========\n", results.s[0], results.s[1]);\
+    I |= (results.s[0] != results.s[1]);\
 }
 
 /*
