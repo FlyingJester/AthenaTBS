@@ -45,6 +45,8 @@ struct Athena_ButtonList{
 
 int Athena_UIDrawButtons(struct Athena_ButtonList *buttons, struct Athena_Viewport *onto);
 int Athena_FreeButtonList(struct Athena_ButtonList *buttons);
+struct Athena_Button *Athena_AppendButtonList(struct Athena_ButtonList **to, struct Athena_ButtonList *button);
+struct Athena_Button *Athena_AppendButton(struct Athena_ButtonList **to, struct Athena_Button button);
 int Athena_FreeButtonArgList(struct Athena_ButtonArgList *args);
 struct Athena_ButtonArgList *Athena_DefaultButtonArgList(struct Athena_GameState *arg);
 

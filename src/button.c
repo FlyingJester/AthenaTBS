@@ -86,3 +86,19 @@ void *Athena_FindTypeInArgList(struct Athena_ButtonArgList *list, const char *ty
     else
         return Athena_FindTypeInArgList(list->next, type);
 }
+
+struct Athena_Button *Athena_AppendButtonList(struct Athena_ButtonList **to, struct Athena_ButtonList *button){
+    if(to[0]==NULL){
+        to[0] = button;
+        return &to[0]->button;
+    }
+    else
+        return Athena_AppendButtonList(&(to[0]->next), button);
+}
+
+struct Athena_Button *Athena_AppendButton(struct Athena_ButtonList **to, struct Athena_Button button){
+    struct Athena_ButtonList *const b = malloc(sizeof(struct Athena_ButtonList));
+    b->button = button;
+    b->next = NULL;
+    return Athena_AppendButtonList(to, b);
+}
