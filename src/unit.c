@@ -59,6 +59,14 @@ struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y
     return Athena_FindUnitAt(list->next, x, y);
 }
 
+struct Athena_UnitList *Athena_FindNextUnitAt(struct Athena_UnitList *list, int x, int y){
+    if(!list)
+        return NULL;
+    if(list->unit.x == x && list->unit.y == y)
+        return list;
+    return Athena_FindNextUnitAt(list->next, x, y);
+}
+
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b){
     const int delta_x = a->x - b->x,
         delta_y = a->y - b->y;

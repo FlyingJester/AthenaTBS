@@ -43,6 +43,7 @@ void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz,
     Athena_CreateUnit(Athena_AppendUnit(A_LIST_), A_CLAZZ_, A_OWNER_, A_X_, A_Y_)
 
 struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y);
+struct Athena_UnitList *Athena_FindNextUnitAt(struct Athena_UnitList *list, int x, int y);
 
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);
