@@ -36,6 +36,10 @@ int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned 
 int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
 #define Athena_DrawUnits Athena_DrawUnitList
 
+int Athena_DrawUnitHealthBar(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
+int Athena_DrawUnitListHealthBar(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
+#define Athena_DrawUnitsHealthBars Athena_DrawUnitListHealthBar
+
 struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units);
 void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, unsigned owner, unsigned x, unsigned y);
 
@@ -43,7 +47,6 @@ void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz,
     Athena_CreateUnit(Athena_AppendUnit(A_LIST_), A_CLAZZ_, A_OWNER_, A_X_, A_Y_)
 
 struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y);
-struct Athena_UnitList *Athena_FindNextUnitAt(struct Athena_UnitList *list, int x, int y);
 
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);

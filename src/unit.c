@@ -26,6 +26,22 @@ int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, 
         return Athena_DrawUnit(&units->unit, to, tile_w, tile_h, x, y) || Athena_DrawUnitList(units->next, to, tile_w, tile_h, x, y);
 }
 
+int Athena_DrawUnitHealthBar(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y){
+    const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - ( unit->sprite.frames->frame->h);
+    const int fill_w = (tile_w * (unit->health * 255.0f)) / 255.0f;
+    Athena_FillRect(to, to_x - 1, to_y, tile_w + 2, 3, Athena_RGBAToRaw(0x40, 0x40, 0x40, 0xFF));
+    Athena_FillRect(to, to_x, to_y + 1, fill_w, 1, Athena_RGBAToRaw(0x20, 0xB0, 0x20, 0xFF));
+    
+    return 0;
+}
+
+int Athena_DrawUnitListHealthBar(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y){
+    if(!units)
+        return 0;
+    else
+        return Athena_DrawUnitHealthBar(&units->unit, to, tile_w, tile_h, x, y) || Athena_DrawUnitListHealthBar(units->next, to, tile_w, tile_h, x, y);
+}
+
 struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units){
     if(units[0])
         return Athena_AppendUnit(&(units[0]->next));
@@ -57,14 +73,6 @@ struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y
     if(list->unit.x == x && list->unit.y == y)
         return &(list->unit);
     return Athena_FindUnitAt(list->next, x, y);
-}
-
-struct Athena_UnitList *Athena_FindNextUnitAt(struct Athena_UnitList *list, int x, int y){
-    if(!list)
-        return NULL;
-    if(list->unit.x == x && list->unit.y == y)
-        return list;
-    return Athena_FindNextUnitAt(list->next, x, y);
 }
 
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b){
