@@ -372,6 +372,10 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
             
             Athena_DrawUnits(that->field->units, &that->ui.framebuffer, 
                 that->field->tileset->tile_width, that->field->tileset->tile_height, that->ui.camera_x, that->ui.camera_y);
+            
+            Athena_DrawUnitsHealthBars(that->field->units, &that->ui.framebuffer, 
+                that->field->tileset->tile_width, that->field->tileset->tile_height, that->ui.camera_x, that->ui.camera_y);
+
         } /* End Field Drawing */
         { /* Draw info bar */
 
