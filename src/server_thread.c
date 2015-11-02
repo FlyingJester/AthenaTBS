@@ -119,6 +119,7 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                         if((attacker = Athena_FindUnitAt(that->field->units, from_x, from_y)) && (attacker->actions) && 
                             (attackee = Athena_FindUnitAt(that->field->units, to_x, to_y))){
                             attacker->actions = 0;
+                            Athena_Attack(attacker, attackee);
                         }
                     }
                     break;
