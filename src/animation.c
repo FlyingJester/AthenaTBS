@@ -15,7 +15,7 @@ int Athena_DrawAnimationBlendMode(const struct Athena_Animation *animation, stru
     if(!(animation && image))
         return 1;
     else{
-        Athena_BlitBlendMode(animation->frames->frame, image, x, y, blend_func);
+        Athena_BlitBlendMode(animation->frames->frame.image, image, x, y, blend_func);
         return 0;
     }
 }
@@ -24,7 +24,15 @@ int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena
     if(!(animation && image))
         return 1;
     else{
-        Athena_BlitBlended(animation->frames->frame, image, x, y);
+        Athena_BlitBlended(animation->frames->frame.image, image, x, y);
         return 0;
     }
+}
+
+int Athena_DrawAnimationMask(const struct Athena_Animation *animation, struct Athena_Image *image, int x, int y, uint32_t color){
+    const int err = Athena_DrawAnimation(animation, image, x, y);
+    if(err==0){
+        Athena_BlitMasked(animation->frames->frame.mask, image, x, y, color);
+    }
+    return err;
 }

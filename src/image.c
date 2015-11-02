@@ -126,6 +126,20 @@ void Athena_Blit(const struct Athena_Image *src, struct Athena_Image *dst, int x
     }
 }
 
+static int athena_blit_scanline_masked_iter(const struct Athena_Image *src, struct Athena_Viewport *to, unsigned laser_x, unsigned laser_y, uint32_t color){
+    if(laser_y >= to->h)
+        return 0;
+    else if(laser_x >= to->w)
+        return athena_blit_scanline_blended_iter(src, to, 0, laser_y + 1);
+    else{
+
+        uint32_t *pixel_to = Athena_Pixel(to->image, to->x + laser_x, to->y + laser_y);
+        const uint32_t *pixel_from = Athena_PixelConst(src, laser_x, laser_y);
+        pixel_to[0] = Athena_RGBARawBlend(Athena_RGBARawMultiply(*pixel_from, color), *pixel_to);
+        return athena_blit_scanline_blended_iter(src, to, laser_x + 1, laser_y);
+    }
+}
+
 void Athena_BlitBlended(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y){
     assert(src);
     assert(dst);
@@ -140,6 +154,23 @@ void Athena_BlitBlended(const struct Athena_Image *src, struct Athena_Image *dst
         to.h = ATHENA_MIN(src->h, dst->h - to.y);
         
         athena_blit_scanline_blended_iter(src, &to, 0, 0);
+    }
+}
+
+void Athena_BlitMasked(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y, uint32_t color){
+    assert(src);
+    assert(dst);
+    if(x < dst->w && y < dst->h && x + (long)src->w > 0 && y + (long)src->h > 0){
+        struct Athena_Viewport to;
+        const unsigned len = Athena_LowerBlitWidth(src, dst, x);
+        
+        to.image = dst;
+        to.x = x;
+        to.y = y;
+        to.w = len;
+        to.h = ATHENA_MIN(src->h, dst->h - to.y);
+        
+        athena_blit_scanline_masked_iter(src, &to, 0, 0, color);
     }
 }
 

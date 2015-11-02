@@ -11,5 +11,11 @@
         "CBuilderIdleSouth.png",
         "CBuilderIdleEast.png",
         "CBuilderIdleWest.png"
+    ],
+    "masks":[
+        "CBuilderIdleNorthMask.tga",
+        "CBuilderIdleSouthMask.tga",
+        "CBuilderIdleNorthMask.tga",
+        "CBuilderIdleSouthMask.tga"
     ]
 }

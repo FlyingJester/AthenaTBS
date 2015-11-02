@@ -11,5 +11,6 @@
             ]
         }
     },
-    "images":["Path.png"]
+    "images":["Path.png"],
+    "masks":["mask.tga"]
 }

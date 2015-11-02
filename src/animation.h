@@ -4,7 +4,7 @@
 /* Circularly linked... */
 struct Athena_AnimationFrame {
     unsigned time;
-    struct Athena_Image *frame;
+    struct Athena_MaskedImage frame;
     struct Athena_AnimationFrame *next;
 };
 
@@ -16,5 +16,6 @@ struct Athena_Animation {
 
 int Athena_AnimationTick(struct Athena_Animation *animation);
 int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y);
-int Athena_DrawAnimationBlendMode(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y, 
+int Athena_DrawAnimationBlendMode(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y,
     uint32_t(*blend_func)(uint32_t, uint32_t));
+int Athena_DrawAnimationMask(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y, uint32_t color);

@@ -9,6 +9,10 @@ struct Athena_Image{
     unsigned w, h;
 };
 
+struct Athena_MaskedImage{
+    struct Athena_Image *image, *mask;
+};
+
 struct Athena_ImageArray{
     struct Athena_Image *images;
     unsigned num_images, images_capacity;
@@ -19,6 +23,7 @@ void Athena_DestroyImageArray(struct Athena_ImageArray *ia);
 
 void Athena_Blit(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y);
 void Athena_BlitBlended(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y);
+void Athena_BlitMasked(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y, uint32_t color);
 void Athena_BlitBlendMode(const struct Athena_Image *src, struct Athena_Image *dst, int x, int y, 
     uint32_t (*blend_func)(uint32_t src, uint32_t dst));
 

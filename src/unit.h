@@ -36,6 +36,11 @@ int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned 
 int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
 #define Athena_DrawUnits Athena_DrawUnitList
 
+/* This is used to draw outlines of units. It's primarily intended to be used to indicate whose unit is which. */
+int Athena_DrawUnitHalo(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y, unsigned radius, uint32_t color);
+int Athena_DrawUnitListHalo(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
+#define Athena_DrawUnitsHalos Athena_DrawUnitListHalo
+
 int Athena_DrawUnitHealthBar(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
 int Athena_DrawUnitListHealthBar(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
 #define Athena_DrawUnitsHealthBars Athena_DrawUnitListHealthBar

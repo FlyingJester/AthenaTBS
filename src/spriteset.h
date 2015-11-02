@@ -16,9 +16,12 @@ struct Athena_SpriteAction {
 struct Athena_Spriteset{
     struct Athena_SpriteAction *actions;
     unsigned num_actions, actions_capacity;
-    
+
     struct Athena_Image *images;
     unsigned num_images, images_capacity;
+
+    struct Athena_Image *masks;
+    unsigned num_masks, masks_capacity;
 };
 
 struct Athena_Sprite{

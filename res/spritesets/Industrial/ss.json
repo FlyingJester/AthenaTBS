@@ -11,5 +11,6 @@
             ]
         }
     },
-    "images":["Industrial.png"]
+    "images":["Industrial.png"],
+    "masks":["mask.tga"]
 }
