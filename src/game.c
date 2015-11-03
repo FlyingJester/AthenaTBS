@@ -33,33 +33,30 @@ athena_strnlen_begin:
 #endif
 
 
-unsigned Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players){
+struct Athena_Player *Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players){
     /* A player is winning if they have any units at all. If we have more than one, we have no winner yet. */
-    unsigned winning_player = 0;
+    struct Athena_Player *winning_player = NULL;
     const struct Athena_UnitList *units = field->units;
-
-    /* Somehow we only no units. End the game. */
     if(!units)
-        return 1;
+        return NULL;
 
     do{
         /* Skip neutral units. */
-        if(units->unit.owner!=0){
-        
+        if(units->unit.owner!=NULL){
+
             /* If we have no winning player */
             if(!winning_player){
                 winning_player = units->unit.owner;
             }
             /* If we have a winner, but we see a unit of another team, we have no winner yet. */
             else if(winning_player!=units->unit.owner){
-                return 0;
+                return NULL;
             }
         }
     }while((units = units->next));
-    
-    /* Somehow we only have neutral units. End the game. */
+
     if(!winning_player)
-        return 1;
+        return NULL;
     else
         return winning_player;
 }

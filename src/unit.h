@@ -2,6 +2,8 @@
 #include "spriteset.h"
 #include "menu.h"
 
+struct Athena_Player;
+
 /* For an equal attack and defense, this is the number of attacks it takes to defeat a unit. */
 #define ATTACK_CONSTANT 4.0f
 
@@ -21,7 +23,7 @@ struct Athena_Class {
 
 struct Athena_Unit {
     const struct Athena_Class *clazz;
-    unsigned owner;
+    struct Athena_Player *owner;
     float health;
     unsigned x, y, movement, actions;
     struct Athena_Animation sprite;
@@ -63,7 +65,7 @@ void Athena_RenewUnitListIf(struct Athena_UnitList *unit, int(*check)(void *arg,
 void Athena_DepleteUnit(struct Athena_Unit *unit);
 
 struct Athena_CheckUnitOwnerData{
-    unsigned owner;
+    struct Athena_Player *owner;
     unsigned toggle; /* If this is 1, we return true for units NOT owned by 'owner'. */
 };
 

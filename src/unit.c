@@ -1,4 +1,5 @@
 #include "unit.h"
+#include "player.h"
 #include "unit_classes.h"
 #include <stdlib.h>
 #include <string.h>
@@ -11,11 +12,15 @@ int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned 
         const struct Athena_Animation *sprite = &unit->sprite;
         const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - ( unit->sprite.frames->frame.image->h - tile_h );
         
-        if(Athena_DrawAnimationBlendMode(sprite, to, to_x, to_y, 
-            (unit->actions>0)?Athena_RGBARawBlend:Athena_RGBARawGrayscale)!=0)
-            return 1;
-        else
-            return Athena_AnimationTick(&unit->sprite);
+        if(unit->actions>0){
+            Athena_DrawAnimationMask(sprite, to, to_x, to_y, 
+                (unit->owner)?unit->owner->color:Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF));
+        }
+        else{
+            Athena_DrawAnimation(sprite, to, to_x, to_y);
+        }
+        
+        return Athena_AnimationTick(&unit->sprite);
     }
 }
 

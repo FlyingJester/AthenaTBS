@@ -31,8 +31,17 @@ int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena
 
 int Athena_DrawAnimationMask(const struct Athena_Animation *animation, struct Athena_Image *image, int x, int y, uint32_t color){
     const int err = Athena_DrawAnimation(animation, image, x, y);
-    if(err==0){
+    if(err==0)
         Athena_BlitMasked(animation->frames->frame.mask, image, x, y, color);
-    }
+
+    return err;
+}
+
+int Athena_DrawAnimationMaskBlendMode(const struct Athena_Animation *animation, struct Athena_Image *image, int x, int y,
+    uint32_t(*blend_func)(uint32_t, uint32_t), uint32_t color){
+    const int err = Athena_DrawAnimationBlendMode(animation, image, x, y, blend_func);
+    if(err==0)
+        Athena_BlitMasked(animation->frames->frame.mask, image, x, y, color);
+
     return err;
 }

@@ -19,3 +19,5 @@ int Athena_DrawAnimation(const struct Athena_Animation *animation, struct Athena
 int Athena_DrawAnimationBlendMode(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y,
     uint32_t(*blend_func)(uint32_t, uint32_t));
 int Athena_DrawAnimationMask(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y, uint32_t color);
+int Athena_DrawAnimationMaskBlendMode(const struct Athena_Animation *animation, struct Athena_Image *onto, int x, int y,
+    uint32_t(*blend_func)(uint32_t, uint32_t), uint32_t mask);
