@@ -4,3 +4,6 @@
 [submodule "src/platform/monitor/libyyymonitor"]
 	path = src/platform/monitor/libyyymonitor
 	url = https://github.com/FlyingJester/libyyymonitor
+[submodule "res/fonts/sgi"]
+	path = res/fonts/sgi
+	url = https://github.com/sphere-group/sgi_screen
