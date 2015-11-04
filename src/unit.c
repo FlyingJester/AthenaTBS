@@ -11,13 +11,21 @@ int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned 
     else{
         const struct Athena_Animation *sprite = &unit->sprite;
         const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - ( unit->sprite.frames->frame.image->h - tile_h );
+        uint32_t color = Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF);
+        
+        if(unit->owner){
+            color = unit->owner->color;}{
+            Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, tile_w, 2, color);
+            Athena_FillRect(to, unit->x * tile_w, ((unit->y + 1) * tile_h) - 2, tile_w, 2, color);
+            Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, 2, tile_h, color);
+            Athena_FillRect(to, ((unit->x + 1) * tile_w) - 2, unit->y * tile_h, 2, tile_h, color);
+        }
         
         if(unit->actions>0){
-            Athena_DrawAnimationMask(sprite, to, to_x, to_y, 
-                (unit->owner)?unit->owner->color:Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF));
+            Athena_DrawAnimation(sprite, to, to_x, to_y);
         }
         else{
-            Athena_DrawAnimation(sprite, to, to_x, to_y);
+            Athena_DrawAnimationBlendMode(sprite, to, to_x, to_y, Athena_RGBARawGrayscale);
         }
         
         return Athena_AnimationTick(&unit->sprite);
