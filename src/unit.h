@@ -48,7 +48,7 @@ int Athena_DrawUnitListHealthBar(struct Athena_UnitList *units, struct Athena_Im
 #define Athena_DrawUnitsHealthBars Athena_DrawUnitListHealthBar
 
 struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units);
-void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, unsigned owner, unsigned x, unsigned y);
+void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, struct Athena_Player *owner, unsigned x, unsigned y);
 
 #define Athena_SpawnUnit(A_LIST_, A_CLAZZ_, A_OWNER_, A_X_, A_Y_)\
     Athena_CreateUnit(Athena_AppendUnit(A_LIST_), A_CLAZZ_, A_OWNER_, A_X_, A_Y_)

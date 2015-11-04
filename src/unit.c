@@ -14,13 +14,14 @@ int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned 
         uint32_t color = Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF);
         
         if(unit->owner){
-            color = unit->owner->color;}{
-            Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, tile_w, 2, color);
-            Athena_FillRect(to, unit->x * tile_w, ((unit->y + 1) * tile_h) - 2, tile_w, 2, color);
-            Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, 2, tile_h, color);
-            Athena_FillRect(to, ((unit->x + 1) * tile_w) - 2, unit->y * tile_h, 2, tile_h, color);
+            color = unit->owner->color;
         }
         
+        Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, tile_w, 2, color);
+        Athena_FillRect(to, unit->x * tile_w + 2, ((unit->y + 1) * tile_h) - 2, tile_w - 4, 2, color);
+        Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, 2, tile_h, color);
+        Athena_FillRect(to, ((unit->x + 1) * tile_w) - 2, unit->y * tile_h, 2, tile_h, color);
+
         if(unit->actions>0){
             Athena_DrawAnimation(sprite, to, to_x, to_y);
         }
@@ -65,11 +66,12 @@ struct Athena_Unit *Athena_AppendUnit(struct Athena_UnitList **units){
     }
 }
 
-void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, unsigned owner, unsigned x, unsigned y){
+void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz, struct Athena_Player *owner, unsigned x, unsigned y){
     to->clazz = clazz;
     to->health = 1.0f;
     to->x = x;
     to->y = y;
+    to->owner = owner;
     Athena_DepleteUnit(to);
     to->sprite.frames = Athena_GetSpritesetDirection(clazz->spriteset, "idle", "south", NULL);
     to->sprite.last_time = 0;

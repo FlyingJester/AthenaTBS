@@ -69,23 +69,23 @@ int main(int argc, char *argv[]){
         }
     }
     
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 3, 7);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 3, 6);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 3, 5);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    0, 4, 7);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"), 0, 4, 6);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    0, 2, 6);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), 0, 5, 7);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 0, 3, 7);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 0, 3, 6);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 0, 3, 5);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    players + 0, 4, 7);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"), players + 0, 4, 6);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    players + 0, 2, 6);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 5, 7);
 
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), 0, 4, 6);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), players + 0, 4, 6);
     
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 12, 4);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 13, 4);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),          0, 13, 3);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 14, 4);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"),          0, 14, 3);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 15, 4);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"),          0, 8, 3);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 1, 12, 4);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 1, 13, 4);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    players + 1, 13, 3);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 1, 14, 4);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"), players + 1, 14, 3);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 1, 15, 4);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 1, 8, 3);
     
     Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
 

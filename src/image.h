@@ -57,6 +57,8 @@ uint8_t Athena_RawToG(uint32_t rgba);
 uint8_t Athena_RawToB(uint32_t rgba);
 uint8_t Athena_RawToA(uint32_t rgba);
 
+uint32_t Athena_RGBAReplaceAlpha(uint32_t rgba, uint8_t new_a);
+
 uint32_t Athena_RGBARawBlend(uint32_t src, uint32_t dst);
 uint32_t Athena_RGBABlend(uint8_t src_r, uint8_t src_g, uint8_t src_b, uint8_t src_a, uint8_t dst_r, uint8_t dst_g, uint8_t dst_b, uint8_t dst_a);
 
