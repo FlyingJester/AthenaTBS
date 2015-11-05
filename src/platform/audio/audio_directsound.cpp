@@ -1,4 +1,7 @@
 #include "audio.h"
+#include <windows.h>
+#include <mmsystem.h>
+#include <dsound.h>
 
 /*
 	LPVOID m_pTheSound;
@@ -18,16 +21,50 @@ struct Athena_SoundContext{
     LPDIRECTSOUND direct_sound;
 };
 
+/* A Sound is a sequence of buffers, implemented here as a singly linked list. 
+ * The list is circular for looping buffers. */
+
 struct Athena_Sound{
     struct Athena_SoundContext ctx;
     WAVEFORMATEX wfx;
-    LPDIRECTSOUNDBUFFER buffer;
+    struct Athena_SoundConfig config;
+    struct Athena_SoundBuffer *buffers;
 }
 
-struct Athena_SoundConfig{
-    float volume, pan;
-    unsigned char loop;
+struct Athena_SoundBuffer{
+    LPDIRECTSOUNDBUFFER buffer;
+    unsigned long length;
+    struct Athena_SoundBuffer *next;
 };
+
+static void athena_append_buffer_inner(struct Athena_SoundBuffer *to, struct Athena_SoundBuffer *with){
+    if(to->next==NULL)
+        to->next = with;
+    else
+        athena_append_buffer_inner(to->next, with);
+}
+
+static struct Athena_SoundBuffer *athena_append_sound_buffer(struct Athena_Sound *snd, unsigned length){
+    DSBUFFERDESC description = { 0, DSBCAPS_GLOBALFOCUS, 0, 0, 0, GUID_NULL };
+    struct Athena_SoundBuffer *const ab = malloc(sizeof(struct Athena_SoundBuffer));
+
+    description.dwSize = sizeof(DSBUFFERDESC);
+    description.dwBufferBytes = length;
+    description.lpwfxFormat = &(snd->wfx);
+    snd->ctx->direct_sound->CreateSoundBuffer(&description, &ab->buffer, NULL);
+
+    ab->length = length;
+    ab->next = NULL;
+    
+    if(snd->buffers==NULL)
+        snd-buffers = ab;
+    else{
+        athena_append_buffer_inner(snd->buffers, an);
+    }
+    
+    return ab;
+
+}
 
 enum Athena_SoundFormat { Athena_SoundU16, Athena_SoundU32, Athena_SoundFloat };
 
@@ -67,6 +104,7 @@ void Athena_DestroySound(struct Athena_Sound *snd){
 
 void Athena_SoundInit(struct Athena_Sound *, unsigned num_channels, unsigned samples_per_second, enum Athena_SoundFormat format){
     snd->wfx->wFormatTag = WAVE_FORMAT_PCM;
+
     if(num_channels == 2)
         snd->wfx->nChannels = 2;
     else
@@ -81,9 +119,18 @@ void Athena_SoundInit(struct Athena_Sound *, unsigned num_channels, unsigned sam
     else
         snd->wfx->wBitsPerSample = 8;
 
+    snd->wfx->nBlockAlign = snd->wfx->nChannels * snd->wfx->wBitsPerSample;
+
+    snd->wfx->nAvgBytesPerSecond = samples_per_second * snd->wfx->nBlockAlign;
+
+    snd->wfx->cbSize = 0;
+
 }
 
-void Athena_SoundGetConfig(const struct Athena_Sound *sound, struct Athena_SoundConfig *to);
+void Athena_SoundGetConfig(const struct Athena_Sound *sound, struct Athena_SoundConfig *to){
+    
+}
+
 void Athena_SoundSetConfig(struct Athena_Sound *sound, const struct Athena_SoundConfig *to);
 
 float Athena_SoundGetLength(const struct Athena_Sound *sound);
@@ -91,7 +138,9 @@ unsigned Athena_SoundGetChannels(const struct Athena_Sound *sound);
 unsigned Athena_SoundGetSamplesPerSecond(const struct Athena_Sound *sound);
 enum Athena_SoundFormat Athena_SoundGetFormat(const struct Athena_Sound *sound);
 
-unsigned Athena_SoundPost(struct Athena_Sound *sound, const void *data, unsigned length);
+unsigned Athena_SoundPost(struct Athena_Sound *snd, const void *data, unsigned length){
+
+}
 
 void Athena_SoundPlay(struct Athena_Sound *sound);
 void Athena_SoundPause(struct Athena_Sound *sound);
