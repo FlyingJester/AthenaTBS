@@ -127,22 +127,47 @@ void Athena_SoundInit(struct Athena_Sound *, unsigned num_channels, unsigned sam
 
 }
 
-void Athena_SoundGetConfig(const struct Athena_Sound *sound, struct Athena_SoundConfig *to){
+void Athena_SoundGetConfig(const struct Athena_Sound *snd, struct Athena_SoundConfig *to){
+    to[0] = snd->config;
+}
+
+void Athena_SoundSetConfig(struct Athena_Sound *snd, const struct Athena_SoundConfig *to);
+
+float Athena_SoundGetLength(const struct Athena_Sound *snd){
+    unsigned long num_samples = 0;
+    const struct Athena_SoundBuffer *const first_buffer = snd->buffers;
     
+    for(const struct Athena_SoundBuffer *buffer = first_buffer;
+        buffer!=NULL && buffer!=first_buffer;
+        buffer = buffer->next){
+
+        num_samples += buffer->length;
+
+    }
+    
+    return static_cast<float>(num_samples)/static_cast<float>(snd->wfx->nAvgBytesPerSecond);
 }
 
-void Athena_SoundSetConfig(struct Athena_Sound *sound, const struct Athena_SoundConfig *to);
-
-float Athena_SoundGetLength(const struct Athena_Sound *sound);
-unsigned Athena_SoundGetChannels(const struct Athena_Sound *sound);
-unsigned Athena_SoundGetSamplesPerSecond(const struct Athena_Sound *sound);
-enum Athena_SoundFormat Athena_SoundGetFormat(const struct Athena_Sound *sound);
-
-unsigned Athena_SoundPost(struct Athena_Sound *snd, const void *data, unsigned length){
-
+unsigned Athena_SoundGetChannels(const struct Athena_Sound *snd){
+    return snd->wfx->nChannels;
 }
 
-void Athena_SoundPlay(struct Athena_Sound *sound);
-void Athena_SoundPause(struct Athena_Sound *sound);
-void Athena_SoundStop(struct Athena_Sound *sound);
-void Athena_SoundRewind(struct Athena_Sound *sound);
+unsigned Athena_SoundGetSamplesPerSecond(const struct Athena_Sound *snd){
+    return snd->wfx->nSamplesPerSecond;
+}
+
+enum Athena_SoundFormat Athena_SoundGetFormat(const struct Athena_Sound *snd){
+    if(snd->wfx->wBitsPerSample==16)
+        return Athena_SoundU16;
+    else if(snd->wfx->wBitsPerSample==32)
+        return Athena_SoundU32;
+    else // Just a default.
+        return Athena_SoundU16;
+}
+
+unsigned Athena_SoundPost(struct Athena_Sound *snd, const void *data, unsigned length);
+
+void Athena_SoundPlay(struct Athena_Sound *snd);
+void Athena_SoundPause(struct Athena_Sound *snd);
+void Athena_SoundStop(struct Athena_Sound *snd);
+void Athena_SoundRewind(struct Athena_Sound *snd);
