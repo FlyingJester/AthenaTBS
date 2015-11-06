@@ -124,11 +124,15 @@ static struct Athena_Font *system_font = NULL;
 
 struct Athena_Font *GetSystemFont(){
     if(system_font==NULL)
+
 #ifdef EMBED_CYNICAL
         system_font = LoadFontMem((uint32_t *)res_fonts_cynical_rfn, res_fonts_cynical_rfn_len);
 #else
         system_font = LoadFont("res/fonts/cynical.rfn");
 #endif
+/*
+        system_font = LoadFont("res/fonts/sgi/sgi_screen.rfn");
+*/
     return system_font;
 }
 

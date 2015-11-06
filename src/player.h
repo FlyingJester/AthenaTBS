@@ -7,6 +7,7 @@ struct Athena_Player{
     char *name;
     struct Athena_Image flag;
     const uint32_t color;
+    unsigned human;
 };
 
 void Athena_DrawPlayerDataBox(const struct Athena_Player *player, struct Athena_Viewport *to);

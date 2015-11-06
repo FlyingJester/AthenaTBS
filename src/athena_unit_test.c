@@ -28,7 +28,7 @@ static const char * const flag_1 = "res/images/jest.png", * const flag_2 = "res/
 
 int main(int argc, char *argv[]){
     struct Athena_Window * const window = Athena_CreateWindow(scr_width, scr_height, "Athena Test");
-    struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0}};
+    struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF, 1}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0, 1}};
     struct Athena_Field field;
 
     struct Athena_Sound *sound = Athena_LoadOpusFile("res/sounds/night_at_the_river.opus");

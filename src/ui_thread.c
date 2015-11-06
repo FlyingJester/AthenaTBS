@@ -247,7 +247,7 @@ static int athena_ui_get_unit_menu(struct Athena_GameState *that, struct Athena_
             printf("[athena_ui_get_unit_menu]Selected unit %i\n", i);
 #endif
 
-            if(unit){
+            if(unit && unit->owner->human && unit->owner == that->players + that->whose_turn){
                 {
                     struct Athena_ButtonArgList arg_list = {NULL, NULL};
                     arg_list.arg = that;
@@ -377,14 +377,6 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
                 that->field->tileset->tile_width, that->field->tileset->tile_height, that->ui.camera_x, that->ui.camera_y);
 
         } /* End Field Drawing */
-        { /* Draw info bar */
-
-            struct Athena_Viewport port = { NULL, 0, 0, 128, 32 };
-            port.image = &that->ui.framebuffer;
-
-            Athena_DrawPlayerDataBox(that->players + that->whose_turn, &port);
-
-        } /* End info bar Drawing */
         { /* Selector... */            
             athena_draw_selector(that->field, &that->ui);
 
@@ -393,6 +385,14 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
                 Athena_FoldPositions(pos, athena_positions_callback, that);
             }
         }
+        { /* Draw info bar */
+
+            struct Athena_Viewport port = { NULL, 0, 0, 128, 48 };
+            port.image = &that->ui.framebuffer;
+
+            Athena_DrawPlayerDataBox(that->players + that->whose_turn, &port);
+
+        } /* End info bar Drawing */
         { /* Draw buttons */
             struct Athena_Viewport onto = {NULL, 0, 0, 0, 0};
             onto.image = &that->ui.framebuffer;

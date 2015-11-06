@@ -28,7 +28,7 @@ struct Athena_Sound{
     struct Athena_SoundContext ctx;
     WAVEFORMATEX wfx;
     struct Athena_SoundConfig config;
-    struct Athena_SoundBuffer *buffers;
+    struct Athena_SoundBuffer *buffers, *start;
 }
 
 struct Athena_SoundBuffer{
@@ -167,7 +167,20 @@ enum Athena_SoundFormat Athena_SoundGetFormat(const struct Athena_Sound *snd){
 
 unsigned Athena_SoundPost(struct Athena_Sound *snd, const void *data, unsigned length);
 
-void Athena_SoundPlay(struct Athena_Sound *snd);
-void Athena_SoundPause(struct Athena_Sound *snd);
-void Athena_SoundStop(struct Athena_Sound *snd);
-void Athena_SoundRewind(struct Athena_Sound *snd);
+void Athena_SoundPlay(struct Athena_Sound *snd){
+    
+}
+
+void Athena_SoundPause(struct Athena_Sound *snd){
+    // Unsupported yet.
+    Athena_SoundStop(snd);
+}
+
+void Athena_SoundStop(struct Athena_Sound *snd){
+    snd->current = NULL;
+}
+
+void Athena_SoundRewind(struct Athena_Sound *snd){
+    snd->current = snd->buffers;
+    Athena_SoundPlay(snd);
+}
