@@ -5,7 +5,7 @@ struct Athena_Thread{
 	void *arg;
 	void (*func)(void *);
 	HANDLE thread;
-}
+};
 
 static DWORD WINAPI athena_win32_thread_wrapper(LPVOID arg){
 	struct Athena_Thread * const thr = arg;
@@ -22,7 +22,7 @@ struct Athena_Thread *Athena_CreateThread(void (*thread_function)(void *), void 
 }
 
 void Athena_StartThread(struct Athena_Thread *thr){
-	thr->thread = CreateThread(NULL, 0, athena_win32_thread_wrapper, thr, 0);
+	thr->thread = CreateThread(NULL, 0, athena_win32_thread_wrapper, thr, 0, CREATE_SUSPENDED);
 }
 
 void Athena_JoinThread(struct Athena_Thread *thr){
