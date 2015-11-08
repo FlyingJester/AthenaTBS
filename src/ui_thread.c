@@ -247,7 +247,7 @@ static int athena_ui_get_unit_menu(struct Athena_GameState *that, struct Athena_
             printf("[athena_ui_get_unit_menu]Selected unit %i\n", i);
 #endif
 
-            if(unit && unit->owner->human && unit->owner == that->players + that->whose_turn){
+            if(unit && unit->owner && unit->owner->human && unit->owner == that->players + that->whose_turn){
                 {
                     struct Athena_ButtonArgList arg_list = {NULL, NULL};
                     arg_list.arg = that;
