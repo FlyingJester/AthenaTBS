@@ -98,8 +98,8 @@ int Athena_GetJSONToAndFromWithType(const struct Turbo_Value *obj, const char **
         if(!from_type->type==TJ_String)
             return 1;
         
-        name[0] = from->value.string;
-        name_len[0] = from->length;
+        name[0] = from_type->value.string;
+        name_len[0] = from_type->length;
             
         return athena_get_json_to_and_from_inner(to, from, from_x_out, from_y_out, to_x_out, to_y_out);
     }
@@ -151,17 +151,19 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                 case AttackUnit:
                     {
                         int from_x, from_y, to_x, to_y;
+                        const char *type;
+                        unsigned type_len;
                         struct Athena_Unit *attacker, *attackee;
-                        if(Athena_GetJSONToAndFrom(&msg->value, &from_x, &from_y, &to_x, &to_y)!=0)
+                        if(Athena_GetJSONToAndFromWithType(&msg->value, &type, &type_len, &from_x, &from_y, &to_x, &to_y)!=0)
                             break;
-                        if((attacker = Athena_FindUnitAt(that->field->units, from_x, from_y)) && (attacker->actions) && 
+                        if((attacker = Athena_FindUnitTypeAtN(that->field->units, type, type_len, from_x, from_y)) && (attacker->actions) && 
                             (attackee = Athena_FindUnitAt(that->field->units, to_x, to_y))){
                             attacker->actions = 0;
                             Athena_Attack(attacker, attackee);
                         }
                         else{
                             if(!attacker)
-                                fprintf(stderr, "[athena_handle_message_iter]Non-existant attacking unit at %i, %i\n", from_x, from_y);
+                                fprintf(stderr, "[athena_handle_message_iter]Non-existant attacking unit of type %s at %i, %i\n", type, from_x, from_y);
                             else if(!attacker->actions)
                                 fprintf(stderr, "[athena_handle_message_iter]Attacking unit at %i, %i of type %s has no more actions available.\n", from_x, from_y, attacker->clazz->name);
                             else if(!attackee){

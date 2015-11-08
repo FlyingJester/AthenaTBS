@@ -131,7 +131,7 @@ char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x
 }
 
 static const char athena_attack_message_string[] =
-"{\n    \"type\":\"AttackUnit\",\n    \"from\":{\"x\":%i, \"y\":%i, \"type\":%s},\n    \"to\":{\"x\":%i, \"y\":%i}\n}\n";
+"{\n    \"type\":\"AttackUnit\",\n    \"from\":{\"x\":%i, \"y\":%i, \"type\":\"%s\"},\n    \"to\":{\"x\":%i, \"y\":%i}\n}\n";
 char *Athena_CreateAttackMessage(int *size, struct Athena_Unit *that, int to_x, int to_y){
     const unsigned name_len = strlen(that->clazz->name);
     char *const message_string = malloc(sizeof(athena_attack_message_string) + 200 + name_len);

@@ -91,6 +91,14 @@ struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y
     return Athena_FindUnitAt(list->next, x, y);
 }
 
+struct Athena_Unit *Athena_FindUnitTypeAtN(struct Athena_UnitList *list, const char *name, unsigned name_len, int x, int y){
+    if(!list)
+        return NULL;
+    if(list->unit.x == x && list->unit.y == y && strlen(list->unit.clazz->name) == name_len && memcmp(list->unit.clazz->name, name, name_len) == 0)
+        return &(list->unit);
+    return Athena_FindUnitTypeAtN(list->next, name, name_len, x, y);
+}
+
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b){
     const int delta_x = a->x - b->x,
         delta_y = a->y - b->y;
