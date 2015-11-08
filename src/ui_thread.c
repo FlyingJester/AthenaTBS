@@ -29,7 +29,7 @@ void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct 
         Athena_AppendMessageList(&(messages->next), msg);
 
 #ifndef NDEBUG
-        printf("Moving unit %s to %i, %i\n", unit->clazz->name, position->x, position->y);
+        printf("[unit_movement_selection_callback]Moving unit %s to %i, %i\n", unit->clazz->name, position->x, position->y);
 #endif
     }
 
@@ -55,7 +55,7 @@ void unit_attack_selection_callback(struct Athena_ButtonArgList *args, struct At
         Athena_AppendMessageList(&(messages->next), msg);
 
 #ifndef NDEBUG
-        printf("Attacking unit %s at %i, %i, using unit %s at %i, %i\n", 
+        printf("[unit_attack_selection_callback]Attacking unit %s at %i, %i, using unit %s at %i, %i\n", 
             unit->clazz->name, unit->x, unit->y, position->unit->clazz->name, position->x, position->y);
 #endif        
         

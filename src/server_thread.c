@@ -52,10 +52,9 @@ struct Athena_InternalServerMessage{
     
 };
 
-int Athena_GetJSONToAndFrom(const struct Turbo_Value *obj, int *from_x_out, int *from_y_out, int *to_x_out, int *to_y_out){
-    const struct Turbo_Value
-        *const from = Turbo_Helper_GetConstObjectElement(obj, "from"),
-        *const to = Turbo_Helper_GetConstObjectElement(obj, "to");
+static int athena_get_json_to_and_from_inner(const struct Turbo_Value *to, const struct Turbo_Value *from, 
+    int *from_x_out, int *from_y_out, int *to_x_out, int *to_y_out){
+
     if(from && to){
         const struct Turbo_Value
             *const from_x= Turbo_Helper_GetConstObjectElement(from, "x"),
@@ -78,6 +77,36 @@ int Athena_GetJSONToAndFrom(const struct Turbo_Value *obj, int *from_x_out, int 
     }
     return 1;
 }
+
+int Athena_GetJSONToAndFrom(const struct Turbo_Value *obj, int *from_x_out, int *from_y_out, int *to_x_out, int *to_y_out){
+    const struct Turbo_Value
+        *const from = Turbo_Helper_GetConstObjectElement(obj, "from"),
+        *const to = Turbo_Helper_GetConstObjectElement(obj, "to");
+
+    return athena_get_json_to_and_from_inner(to, from, from_x_out, from_y_out, to_x_out, to_y_out);
+}
+
+int Athena_GetJSONToAndFromWithType(const struct Turbo_Value *obj, const char **name, unsigned *name_len, int *from_x_out, int *from_y_out, int *to_x_out, int *to_y_out){
+    const struct Turbo_Value
+        *const from = Turbo_Helper_GetConstObjectElement(obj, "from"),
+        *const to = Turbo_Helper_GetConstObjectElement(obj, "to");
+
+    if(from){
+        const struct Turbo_Value
+            *const from_type = Turbo_Helper_GetConstObjectElement(from, "type");
+        
+        if(!from_type->type==TJ_String)
+            return 1;
+        
+        name[0] = from->value.string;
+        name_len[0] = from->length;
+            
+        return athena_get_json_to_and_from_inner(to, from, from_x_out, from_y_out, to_x_out, to_y_out);
+    }
+    else
+        return 1;
+}
+
 /*
 static void athena_clear_corpses(
 
@@ -129,6 +158,15 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                             (attackee = Athena_FindUnitAt(that->field->units, to_x, to_y))){
                             attacker->actions = 0;
                             Athena_Attack(attacker, attackee);
+                        }
+                        else{
+                            if(!attacker)
+                                fprintf(stderr, "[athena_handle_message_iter]Non-existant attacking unit at %i, %i\n", from_x, from_y);
+                            else if(!attacker->actions)
+                                fprintf(stderr, "[athena_handle_message_iter]Attacking unit at %i, %i of type %s has no more actions available.\n", from_x, from_y, attacker->clazz->name);
+                            else if(!attackee){
+                                fprintf(stderr, "[athena_handle_message_iter]Non-existant attack target at %i, %i\n", to_x, to_y);
+                            }
                         }
                     }
                     break;
