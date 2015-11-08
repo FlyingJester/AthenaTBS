@@ -28,6 +28,7 @@ athena_test = environment.Program("athena_test", ["athena_test.c"], LIBS = athen
 athena_image_test = environment.Program("athena_image_test", ["athena_image_test.c"], LIBS = athena_libs)
 athena_camera_test = environment.Program("athena_camera_test", ["athena_camera_test.c"], LIBS = athena_libs)
 athena_unit_test = environment.Program("athena_unit_test", ["athena_unit_test.c"], LIBS = athena_libs)
+athena_hotseat_test = environment.Program("athena_hotseat_test", ["athena_hotseat_test.c"], LIBS = athena_libs)
 
 
 environment = s_env.Clone()
