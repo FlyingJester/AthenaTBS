@@ -78,8 +78,8 @@ int Athena_GetJSONToAndFrom(const struct Turbo_Value *obj, int *from_x_out, int 
     }
     return 1;
 }
-
-static void athena_clear_corpses
+/*
+static void athena_clear_corpses(
 
 static void athena_clear_corpses_iter(struct Athena_UnitList *first, struct Athena_UnitList *second, const struct Athena_UnitList *third){
     if(second->health){
@@ -87,7 +87,7 @@ static void athena_clear_corpses_iter(struct Athena_UnitList *first, struct Athe
         
     }
 }
-
+*/
 static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Athena_GameState *that){
     if(!msg){
         return 0;
