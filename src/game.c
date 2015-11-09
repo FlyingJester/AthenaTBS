@@ -123,9 +123,10 @@ char *Athena_CreateEndTurnMessage(int *size){
 static const char athena_movement_message_string[] =
 "{\n    \"type\":\"MoveUnit\",\n    \"from\":{\"x\":%i, \"y\":%i, \"type\":\"%s\"},\n    \"to\":{\"x\":%i, \"y\":%i}\n}\n";
 char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x, int to_y){
-    const unsigned name_len = strlen(that->clazz->name);
+    const char * const typename = (that->clazz)?that->clazz->name:"";
+    const unsigned name_len = strlen(typename);
     char *const message_string = malloc(sizeof(athena_movement_message_string) + 200 + name_len);
-    sprintf(message_string, athena_movement_message_string, that->x, that->y, that->clazz->name, to_x, to_y);
+    sprintf(message_string, athena_movement_message_string, that->x, that->y, typename, to_x, to_y);
 
     size[0] = athena_strnlen(message_string, sizeof(athena_movement_message_string) + 200, 0);
     return message_string;
@@ -134,9 +135,10 @@ char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x
 static const char athena_attack_message_string[] =
 "{\n    \"type\":\"AttackUnit\",\n    \"from\":{\"x\":%i, \"y\":%i, \"type\":\"%s\"},\n    \"to\":{\"x\":%i, \"y\":%i}\n}\n";
 char *Athena_CreateAttackMessage(int *size, struct Athena_Unit *that, int to_x, int to_y){
-    const unsigned name_len = strlen(that->clazz->name);
+    const char * const typename = (that->clazz)?that->clazz->name:"";
+    const unsigned name_len = strlen(typename);
     char *const message_string = malloc(sizeof(athena_attack_message_string) + 200 + name_len);
-    sprintf(message_string, athena_attack_message_string, that->x, that->y, that->clazz->name, to_x, to_y);
+    sprintf(message_string, athena_attack_message_string, that->x, that->y, typename, to_x, to_y);
 
     size[0] = athena_strnlen(message_string, sizeof(athena_attack_message_string) + 200, 0);
     return message_string;
