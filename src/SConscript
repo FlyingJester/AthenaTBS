@@ -23,14 +23,16 @@ libathena = environment.StaticLibrary("athena",
 
 athena_libs = [libathena] + athena_libs
 
-athena = environment.Program("athena", ["athena.c"], LIBS = athena_libs)
-athena_test = environment.Program("athena_test", ["athena_test.c"], LIBS = athena_libs)
-athena_image_test = environment.Program("athena_image_test", ["athena_image_test.c"], LIBS = athena_libs)
-athena_camera_test = environment.Program("athena_camera_test", ["athena_camera_test.c"], LIBS = athena_libs)
-athena_unit_test = environment.Program("athena_unit_test", ["athena_unit_test.c"], LIBS = athena_libs)
-athena_hotseat_test = environment.Program("athena_hotseat_test", ["athena_hotseat_test.c"], LIBS = athena_libs)
+def AthenaProgram(Name):
+    return environment.Program(Name, [Name + ".c"], LIBS = athena_libs)
 
+AthenaProgram("athena")
+AthenaProgram("athena_test")
+AthenaProgram("athena_image_test")
+AthenaProgram("athena_camera_test")
+AthenaProgram("athena_unit_test")
+AthenaProgram("athena_hotseat_test")
 
 environment = s_env.Clone()
 
-Return("athena")
+Return("libathena")
