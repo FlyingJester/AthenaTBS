@@ -135,10 +135,12 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                 case MoveUnit:
                     {
                         int from_x, from_y, to_x, to_y;
+                        const char *type;
+                        unsigned type_len;
                         struct Athena_Unit *movable;
-                        if(Athena_GetJSONToAndFrom(&msg->value, &from_x, &from_y, &to_x, &to_y)!=0)
+                        if(Athena_GetJSONToAndFromWithType(&msg->value, &type, &type_len, &from_x, &from_y, &to_x, &to_y)!=0)
                             break;
-                        if((movable = Athena_FindUnitAt(that->field->units, from_x, from_y))){
+                        if((movable = Athena_FindUnitTypeAtN(that->field->units, type, type_len, from_x, from_y))){
                             movable->x = to_x;
                             movable->y = to_y;
                             movable->movement = 0;
