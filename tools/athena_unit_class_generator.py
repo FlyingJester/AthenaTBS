@@ -36,6 +36,7 @@ def GenerateAthenaClassDictionary(that, n):
         range   = gen_int_to_str(that["range"]),
         is_building = gen_bool_to_str("is_building", that),
         can_build = gen_bool_to_str("can_build", that),
+        is_path = gen_bool_to_str("is_path", that),
         name    = str(that["name"]),
         i = n
     )
@@ -71,7 +72,7 @@ def CreateAthenaClassesSource(classes, paths):
     header.write("extern " + class_array_def + ";\n")
     source.write(class_array_def + " = {\n")
     
-    class_template = Template(" $defense, $attack, $movement, $actions, $range, $is_building, $can_build, \"$name\",\n        athena_unit_classes_spritesets + $i ")
+    class_template = Template(" $defense, $attack, $movement, $actions, $range, $is_building, $can_build, $is_path, \"$name\",\n        athena_unit_classes_spritesets + $i ")
     
     i = 0
     for that in classes:

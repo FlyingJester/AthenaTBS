@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
 
 void Athena_ServerThreadWrapper(void *that){
     Athena_ServerThread(that);
@@ -109,6 +110,10 @@ int Athena_GetJSONToAndFromWithType(const struct Turbo_Value *obj, const char **
 
 static void athena_clear_corpses_iter(struct Athena_UnitList *first, struct Athena_UnitList *second,
     void(*death_callback)(struct Athena_Unit *dying)){
+    
+    assert(first);
+    assert(first->next == second);
+    
     if(!second)
         return;
     else{

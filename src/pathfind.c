@@ -160,12 +160,20 @@ static void athena_append_breadth_position(struct Athena_BreadthPositionList **i
     }
 }
 
-static void athena_try_add_breadth_position(int x, int y, int d, const struct Athena_Field *field, 
+static void athena_try_add_breadth_position(const struct Athena_Unit *unit, int x, int y, int d, const struct Athena_Field *field, 
     struct Athena_BreadthPositionList **in_list, struct Athena_BreadthPositionList **out_list, struct Athena_BreadthPositionList **dead_list){
+    
+    const struct Athena_Unit *blocking_unit;
     
     if(x<0 || y<0 || x>=field->w || y>=field->h || d<1)
         return;
     
+
+    if((blocking_unit = Athena_FindUnitAt(field->units, x, y)) && (!blocking_unit->clazz->is_path)){
+        if(unit->owner != blocking_unit->owner)
+            return;
+    }
+
     if(Athena_BreadthPositionInList(*out_list, x, y)){
         return;
     }
@@ -181,13 +189,16 @@ static void athena_try_add_breadth_position(int x, int y, int d, const struct At
                 else{
                     athena_append_breadth_position(in_list, x, y, new_distance);
                 }
-                athena_append_breadth_position(out_list, x, y, new_distance);
+                
+                /* We can only stop on a space without a unit, unless that unit is a building that did not stop our progress. 
+                if(!Athena_FindNonBuildingUnitAt(field->units, x, y)) */
+                    athena_append_breadth_position(out_list, x, y, new_distance);
             }
         }
     }
 }
 
-static void athena_breadth_positions_iter(const struct Athena_Field *field,
+static void athena_breadth_positions_iter(const struct Athena_Unit *unit, const struct Athena_Field *field,
     struct Athena_BreadthPositionList **in_list, struct Athena_BreadthPositionList **out_list, struct Athena_BreadthPositionList **dead_list){
     
     struct Athena_BreadthPositionList *pos = in_list[0];
@@ -197,27 +208,27 @@ static void athena_breadth_positions_iter(const struct Athena_Field *field,
     
         in_list[0] = pos->next;
 
-        athena_try_add_breadth_position(pos->x + 1, pos->y, pos->distance, field, in_list, out_list, dead_list);
-        athena_try_add_breadth_position(pos->x - 1, pos->y, pos->distance, field, in_list, out_list, dead_list);
-        athena_try_add_breadth_position(pos->x, pos->y + 1, pos->distance, field, in_list, out_list, dead_list);
-        athena_try_add_breadth_position(pos->x, pos->y - 1, pos->distance, field, in_list, out_list, dead_list);
+        athena_try_add_breadth_position(unit, pos->x + 1, pos->y, pos->distance, field, in_list, out_list, dead_list);
+        athena_try_add_breadth_position(unit, pos->x - 1, pos->y, pos->distance, field, in_list, out_list, dead_list);
+        athena_try_add_breadth_position(unit, pos->x, pos->y + 1, pos->distance, field, in_list, out_list, dead_list);
+        athena_try_add_breadth_position(unit, pos->x, pos->y - 1, pos->distance, field, in_list, out_list, dead_list);
 
         memset(pos, 0, sizeof(struct Athena_PositionList));
         free(pos);
         pos = NULL;
         
-        athena_breadth_positions_iter(field, in_list, out_list, dead_list);
+        athena_breadth_positions_iter(unit, field, in_list, out_list, dead_list);
     }
 }
 
-static void athena_breadth_inner(const struct Athena_Field *field,
+static void athena_breadth_inner(const struct Athena_Unit *unit, const struct Athena_Field *field,
     struct Athena_BreadthPositionList **in_list, struct Athena_BreadthPositionList **out_list, struct Athena_BreadthPositionList **dead_list){
     
     if(!in_list[0])
         return;
     else{
-        athena_breadth_positions_iter(field, in_list, out_list, dead_list);
-        athena_breadth_inner(field, in_list, out_list, dead_list);
+        athena_breadth_positions_iter(unit, field, in_list, out_list, dead_list);
+        athena_breadth_inner(unit, field, in_list, out_list, dead_list);
     }
 }
 
@@ -234,7 +245,7 @@ struct Athena_PositionList *Athena_MovementPositions(struct Athena_ButtonArgList
         in_list->distance = unit->clazz->movement;
         in_list->next = NULL;
 
-        athena_breadth_inner(state->field, &in_list, &out_list, &dead_list);
+        athena_breadth_inner(unit, state->field, &in_list, &out_list, &dead_list);
     }
     
     {

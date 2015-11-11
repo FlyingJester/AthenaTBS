@@ -91,6 +91,22 @@ struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y
     return Athena_FindUnitAt(list->next, x, y);
 }
 
+struct Athena_Unit *Athena_FindNonBuildingUnitAt(struct Athena_UnitList *list, int x, int y){
+    if(!list)
+        return NULL;
+    if(list->unit.x == x && list->unit.y == y && list->unit.clazz && (!list->unit.clazz->is_building))
+        return &(list->unit);
+    return Athena_FindUnitAt(list->next, x, y);
+}
+
+struct Athena_UnitList *Athena_FindUnitListAt(struct Athena_UnitList *list, int x, int y){
+    if(!list)
+        return NULL;
+    if(list->unit.x == x && list->unit.y == y)
+        return list;
+    return Athena_FindUnitListAt(list->next, x, y);
+}
+
 struct Athena_Unit *Athena_FindUnitTypeAtN(struct Athena_UnitList *list, const char *name, unsigned name_len, int x, int y){
     if(!list)
         return NULL;

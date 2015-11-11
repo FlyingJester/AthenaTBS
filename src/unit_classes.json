@@ -24,7 +24,8 @@
         "range":0.0,
         "movement":0.0,
         "actions":0.0,
-        "is_building":true
+        "is_building":true,
+        "is_path":true
     },
     {
         "name":"Wormer",
