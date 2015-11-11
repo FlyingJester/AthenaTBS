@@ -88,13 +88,6 @@ int main(int argc, char *argv[]){
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), players + 1,15, 4);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), players + 1,15, 5);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), players + 1,15, 6);
-
-/*
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    players + 0, 4, 7);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"), players + 0, 4, 6);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    players + 0, 2, 6);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 5, 7);
-*/
     
     Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
 

@@ -96,7 +96,7 @@ struct Athena_Unit *Athena_FindNonBuildingUnitAt(struct Athena_UnitList *list, i
         return NULL;
     if(list->unit.x == x && list->unit.y == y && list->unit.clazz && (!list->unit.clazz->is_building))
         return &(list->unit);
-    return Athena_FindUnitAt(list->next, x, y);
+    return Athena_FindNonBuildingUnitAt(list->next, x, y);
 }
 
 struct Athena_UnitList *Athena_FindUnitListAt(struct Athena_UnitList *list, int x, int y){
