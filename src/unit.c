@@ -91,12 +91,41 @@ struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y
     return Athena_FindUnitAt(list->next, x, y);
 }
 
-struct Athena_Unit *Athena_FindNonBuildingUnitAt(struct Athena_UnitList *list, int x, int y){
+struct Athena_Unit *Athena_FindUnitAtNotOwnedBy(struct Athena_UnitList *list, const struct Athena_Player *player, int x, int y){
     if(!list)
         return NULL;
-    if(list->unit.x == x && list->unit.y == y && list->unit.clazz && (!list->unit.clazz->is_building))
+    if(list->unit.x == x && list->unit.y == y && list->unit.owner!=player)
         return &(list->unit);
-    return Athena_FindNonBuildingUnitAt(list->next, x, y);
+    return Athena_FindUnitAtNotOwnedBy(list->next, player, x, y);
+}
+
+struct Athena_Unit *Athena_FindUnitAtWithPredicate(struct Athena_UnitList *list, int x, int y,
+    unsigned(*pred)(const struct Athena_Unit *unit, void *arg), void *arg, unsigned inverse){
+    if(!list)
+        return NULL;
+    if(list->unit.x == x && list->unit.y == y){
+        if(inverse){
+            if(!pred(&list->unit, arg))
+                return &(list->unit);
+        }
+        else{
+            if(pred(&list->unit, arg))
+                return &(list->unit);
+        }
+    }
+    return Athena_FindUnitAtWithPredicate(list->next, x, y, pred, arg, inverse);
+}
+
+unsigned Athena_UnitIsOwnedBy(const struct Athena_Unit *unit, void *arg){
+    return unit->owner == arg;
+}
+
+unsigned Athena_UnitIsPassable(const struct Athena_Unit *unit, void *arg){
+    return unit->clazz->is_path || Athena_UnitIsOwnedBy(unit, arg);
+}
+
+unsigned Athena_UnitIsBuilding(const struct Athena_Unit *unit, void *arg){
+    return unit->clazz->is_building;
 }
 
 struct Athena_UnitList *Athena_FindUnitListAt(struct Athena_UnitList *list, int x, int y){

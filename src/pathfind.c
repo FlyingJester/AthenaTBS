@@ -169,11 +169,8 @@ static void athena_try_add_breadth_position(const struct Athena_Unit *unit, int 
         return;
     
 
-    if((blocking_unit = Athena_FindUnitAt(field->units, x, y)) && (!blocking_unit->clazz->is_path)){
-        if(unit->owner != blocking_unit->owner){
-            printf("[athena_try_add_breadth_position]Found non-owning unit of type %s\n", blocking_unit->clazz->name);
-            return;
-        }
+    if((blocking_unit = Athena_FindUnitAtWithPredicate(field->units, x, y, Athena_UnitIsPassable, unit->owner, 1))){
+        return;
     }
 
     if(Athena_BreadthPositionInList(*out_list, x, y)){
@@ -193,13 +190,8 @@ static void athena_try_add_breadth_position(const struct Athena_Unit *unit, int 
                 }
                 
                 /* We can only stop on a space without a unit, unless that unit is a building that did not stop our progress. */
-                {
-                    const struct Athena_Unit *non_building_unit;
-                    if(!(non_building_unit = Athena_FindNonBuildingUnitAt(field->units, x, y)))
+                    if(!Athena_FindUnitAtWithPredicate(field->units, x, y, Athena_UnitIsBuilding, NULL, 1))
                         athena_append_breadth_position(out_list, x, y, new_distance);
-                    else
-                        printf("[athena_try_add_breadth_position]Found blocking unit of type %s\n", non_building_unit->clazz->name);
-                }
             }
         }
     }

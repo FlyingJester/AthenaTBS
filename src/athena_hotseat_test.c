@@ -69,10 +69,11 @@ int main(int argc, char *argv[]){
         }
     }
     
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0, 9, 5);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0,10, 5);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0,11, 5);
-    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          0,12, 5);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),       NULL, 9, 5);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),       NULL,10, 5);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),       NULL,11, 5);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),       NULL,12, 5);
+
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 7, 4);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 7, 5);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 7, 6);

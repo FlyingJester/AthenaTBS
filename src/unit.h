@@ -54,7 +54,18 @@ void Athena_CreateUnit(struct Athena_Unit *to, const struct Athena_Class *clazz,
     Athena_CreateUnit(Athena_AppendUnit(A_LIST_), A_CLAZZ_, A_OWNER_, A_X_, A_Y_)
 
 struct Athena_Unit *Athena_FindUnitAt(struct Athena_UnitList *list, int x, int y);
-struct Athena_Unit *Athena_FindNonBuildingUnitAt(struct Athena_UnitList *list, int x, int y);
+
+/* If inverse is 0, then we return the first unit at x, y, for which pred(unit)>0. 
+ * Otherwise, we return the first unit at x, y, for which pred(unit)<=0.
+ */
+struct Athena_Unit *Athena_FindUnitAtWithPredicate(struct Athena_UnitList *list, int x, int y, 
+    unsigned(*pred)(const struct Athena_Unit *unit, void *arg), void *arg, unsigned inverse);
+
+/* Some predicates for Athena_FindUnitAtWithPredicate */
+unsigned Athena_UnitIsOwnedBy(const struct Athena_Unit *unit, void *arg); /* arg is a struct Athena_Player */
+unsigned Athena_UnitIsPassable(const struct Athena_Unit *unit, void *arg); /* arg is a struct Athena_Player */
+unsigned Athena_UnitIsBuilding(const struct Athena_Unit *unit, void *arg); /* arg is not used */
+
 struct Athena_UnitList *Athena_FindUnitListAt(struct Athena_UnitList *list, int x, int y);
 struct Athena_Unit *Athena_FindUnitTypeAtN(struct Athena_UnitList *list, const char *name, unsigned name_len, int x, int y);
 #define Athena_FindUnitTypeAt(LIST_, NAME_, X_, Y_) Athena_FindUnitTypeAtN(LIST_, NAME_, NAME_?strlen(NAME_):0, X_, Y_)
