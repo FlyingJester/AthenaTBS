@@ -107,16 +107,37 @@ int Athena_GetJSONToAndFromWithType(const struct Turbo_Value *obj, const char **
         return 1;
 }
 
-/*
-static void athena_clear_corpses(
-
-static void athena_clear_corpses_iter(struct Athena_UnitList *first, struct Athena_UnitList *second, const struct Athena_UnitList *third){
-    if(second->health){
-        
-        
+static void athena_clear_corpses_iter(struct Athena_UnitList *first, struct Athena_UnitList *second,
+    void(*death_callback)(struct Athena_Unit *dying)){
+    if(!second)
+        return;
+    else{
+        if(second->unit.health==0){
+            first->next = second->next;
+            if(death_callback)
+                death_callback(&second->unit);
+            free(second);
+        }
+        athena_clear_corpses_iter(first->next, second->next, death_callback);
     }
 }
-*/
+
+static void athena_clear_corpses(struct Athena_UnitList **list, void(*death_callback)(struct Athena_Unit *dying)){
+    if(!list[0])
+        return;
+    else if(list[0]->next==NULL){
+        if(!list[0]->unit.health){
+            if(death_callback)
+                death_callback(&list[0]->unit);
+            free(list[0]);
+            list[0] = NULL;
+        }
+    }
+    else{
+        athena_clear_corpses_iter(list[0], list[0]->next, death_callback);
+    }
+}
+
 static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Athena_GameState *that){
     if(!msg){
         return 0;
@@ -131,6 +152,7 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                 case EndTurn:
                     Athena_RenewUnitList(that->field->units);
                     that->whose_turn = (that->whose_turn+1) % that->num_players;
+                    athena_clear_corpses(&that->field->units, NULL);
                     break;
                 case MoveUnit:
                     {
@@ -172,6 +194,7 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                                 fprintf(stderr, "[athena_handle_message_iter]Non-existant attack target at %i, %i\n", to_x, to_y);
                             }
                         }
+                        athena_clear_corpses(&that->field->units, NULL);
                     }
                     break;
                 default:
