@@ -13,9 +13,10 @@ int Athena_IsWindowShown(struct Athena_Window *that);
 int Athena_WindowWidth(struct Athena_Window *that);
 int Athena_WindowHeight(struct Athena_Window *that);
 
-int Athena_DrawImage(struct Athena_Window *that, int x, int y, unsigned w, unsigned h, enum Athena_ImageFormat format, const void *RGB);
-int Athena_DrawRect(struct Athena_Window *that, int x, int y, unsigned w, unsigned h, const struct Athena_Color *color);
-int Athena_DrawLine(struct Athena_Window *that, int x1, int y1, int x2, int y2, const struct Athena_Color *color);
+/* RGB must be the bpp of format (4 for 32s, 3 for 24s, etc) times Athena_WindowWidth times Athena_WindowHeight. 
+ * Only full updates are performed.
+ */
+int Athena_Update(struct Athena_Window *that, enum Athena_ImageFormat format, const void *RGB);
 
 /* May return 0 for no events. Non-blocking */
 unsigned Athena_GetEvent(struct Athena_Window *that, struct Athena_Event *to);
