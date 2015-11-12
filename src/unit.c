@@ -121,7 +121,7 @@ unsigned Athena_UnitIsOwnedBy(const struct Athena_Unit *unit, void *arg){
 }
 
 unsigned Athena_UnitIsPassable(const struct Athena_Unit *unit, void *arg){
-    return unit->clazz->is_path || Athena_UnitIsOwnedBy(unit, arg);
+    return unit->clazz->is_path || unit->owner == arg;
 }
 
 unsigned Athena_UnitIsBuilding(const struct Athena_Unit *unit, void *arg){
