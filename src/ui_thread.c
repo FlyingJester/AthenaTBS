@@ -409,7 +409,7 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
         athena_do_fps_drawing(&that->ui.framebuffer);
     } /* End Drawing. */
 
-    Athena_DrawImage(that->ui.window, 0, 0, that->ui.framebuffer.w, that->ui.framebuffer.h, 0, that->ui.framebuffer.pixels);
+    Athena_Update(that->ui.window, 0, that->ui.framebuffer.pixels);
     Athena_FlipWindow(that->ui.window);
     
     Athena_LockMonitor(that->monitor);

@@ -28,10 +28,8 @@ def AthenaProgram(Name):
 
 AthenaProgram("athena")
 AthenaProgram("athena_test")
-AthenaProgram("athena_image_test")
 AthenaProgram("athena_camera_test")
 AthenaProgram("athena_unit_test")
-AthenaProgram("athena_hotseat_test")
 
 environment = s_env.Clone()
 

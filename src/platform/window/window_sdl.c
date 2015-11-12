@@ -1,5 +1,6 @@
 #include "private_window.h"
 #include <SDL2/SDL.h>
+#include <assert.h>
 
 struct Athena_SDL2_Window{
     SDL_Window *window;
@@ -71,15 +72,13 @@ const unsigned depth = (format>1)?3:4;
     else return NULL;
 }
 
-int Athena_Private_DrawImage(void *handle, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
+int Athena_Private_Update(void *handle, unsigned format, const void *RGB, unsigned w, unsigned h){
     struct Athena_SDL2_Window * const window = handle;
 
     SDL_Surface * const surface = Athena_Private_SurfaceOfFormat(w, h, format, RGB),
         * const win_surface = SDL_GetWindowSurface(window->window);
-    SDL_Rect dst;
+    SDL_Rect dst = {0, 0};
     
-    dst.x = x;
-    dst.y = y;
     dst.w = w;
     dst.h = h;
 
