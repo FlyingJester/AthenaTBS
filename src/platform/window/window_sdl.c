@@ -27,8 +27,11 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
     if(!title)
         title = "";
 
-    if(!SDL_WasInit(SDL_INIT_VIDEO|SDL_INIT_EVENTS))
+    if(!SDL_WasInit(SDL_INIT_VIDEO|SDL_INIT_EVENTS)){
+        SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION, "0");
+        SDL_SetHint(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, "1");
         SDL_Init(SDL_INIT_VIDEO|SDL_INIT_EVENTS);
+    }
 
     window->window = SDL_CreateWindow(title, x, y, w, h, SDL_WINDOW_HIDDEN);
     return 0;
