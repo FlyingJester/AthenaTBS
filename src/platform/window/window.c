@@ -19,7 +19,7 @@ struct Athena_Window *Athena_CreateWindow(unsigned w, unsigned h, const char *ti
     
     window->w = w;
     window->h = h;
-    
+  
     return window;
 }
 

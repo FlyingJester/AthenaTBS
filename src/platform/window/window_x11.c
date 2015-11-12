@@ -1,122 +1,214 @@
+#include "window.h"
 #include "private_window.h"
-#include <xcb/xcb.h>
 #include <X11/Xlib.h>
-#include <X11/Xlib-xcb.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/XShm.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <strings.h>
+#include <assert.h>
 
-struct Athena_XCBHandle{
-    Display *display;
-    xcb_connection_t *connection;
-    xcb_window_t window;
-    
-    const xcb_setup_t *setup;
-    xcb_screen_t *screen;
-    
-    xcb_gcontext_t ctx;
+static Display *display = NULL;
+
+#define ATHENA_VERIFY(A_HANDLE)\
+    A_HANDLE;\
+    if(!display)\
+        return -1;\
+    if(!A_HANDLE)\
+        return -1
+
+struct Athena_X_Window {
+    Window root_window, window;
+    Colormap color_map;
+    int screen;
+    int mouse_x, mouse_y;
+    XVisualInfo *visinfo;
+    int framebuffer_info;
+    XImage *framebuffer;
+    XShmSegmentInfo shminfo;
+    GC gc;
 };
 
-/*
-static void athena_push_values(struct Athena_XCBHandle *handle, uint32_t mask, uint32_t *value_list){
-    xcb_change_gc(handle->connection, handle->ctx, mask, value_list);
-}
-*/
-
-static void athena_flush_handle(void *handle){
-   xcb_flush(((struct Athena_XCBHandle *)handle)->connection);
-}
-
 void *Athena_Private_CreateHandle(){
-    struct Athena_XCBHandle *handle = calloc(1, sizeof(struct Athena_XCBHandle));
-    handle->display = XOpenDisplay(NULL);
-    handle->connection = XGetXCBConnection(handle->display);
-    handle->window = xcb_generate_id(handle->connection);
-    handle->ctx = xcb_generate_id(handle->connection);
+    struct Athena_X_Window *x_window;
+
+    if(!display && !(display = XOpenDisplay(NULL)))
+        return NULL;
+
+    assert(display);
+
+    x_window = malloc(sizeof(struct Athena_X_Window));
+    x_window->screen = DefaultScreen(display);
+    x_window->root_window = RootWindow(display, x_window->screen);
+    x_window->color_map = DefaultColormap(display, x_window->screen);
     
-    handle->setup = xcb_get_setup(handle->connection);
-    handle->screen = xcb_setup_roots_iterator(handle->setup).data;
-    
-    return handle;
+    return x_window;
 }
 
-int Athena_Private_DestroyHandle(void *arg){
-    struct Athena_XCBHandle *handle = arg;
+#define PRINT_ALL_X_MODES
+
+#ifdef PRINT_ALL_X_MODES
+
+static const char *class_name(int c){
+#define CASE(X) if(c==X) return #X
+    CASE(TrueColor);
+    CASE(DirectColor);
+    CASE(GrayScale);
+    CASE(StaticColor);
+    CASE(StaticGray);
+    return "unknown";
+}
+
+#endif
+
+int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned h, const char *title){
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
     
-    xcb_disconnect(handle->connection);
+    {
+        const int black = BlackPixel(display, x_window->screen);
+        int n = 0, i = 0;
+        XVisualInfo template;
+
+        template.screen = x_window->screen;
+        x_window->visinfo = XGetVisualInfo(display, VisualScreenMask, &template, &n);
+        x_window->framebuffer_info = -1;
+        while(i<n){
+#ifdef PRINT_ALL_X_MODES
+            printf("[Athena_Private_CreateWindow]Visual %i:\n\tVisual 0x%lx\n\tClass %s\n\tDepth %d\n\n",
+                i, x_window->visinfo[i].visualid, class_name(x_window->visinfo[i].class), x_window->visinfo[i].depth);
+#endif
+            if(x_window->visinfo[i].class == TrueColor && x_window->visinfo[i].depth==32){
+                x_window->framebuffer_info = i;
+                break;
+            }
+            i++;
+        }
+        
+        if(x_window->framebuffer_info==-1){
+            i = 0;
+            while(i<n){
+                if(x_window->visinfo[i].class == TrueColor && x_window->visinfo[i].depth==24){
+                    x_window->framebuffer_info = i;
+                    break;
+                }
+                i++;
+            }
+        }
+        
+        if(x_window->framebuffer_info==-1)
+            x_window->framebuffer_info = 0;
+/*        
+        x_window->framebuffer = XShmCreateImage(display, DirectColor, 32, XYBitmap, NULL, &x_window->shminfo, w, h);
+  *//*
+        x_window->window = XCreateWindow(display, x_window->screen, int x, int y, unsigned int width, unsigned int
+              height, unsigned int border_width, int depth, unsigned int class, Visual *visual, unsigned long val-
+              uemask, XSetWindowAttributes *attributes);
+              */
+        x_window->window = XCreateSimpleWindow(display, x_window->root_window, x, y, w, h, 0, black, black);
+    }
+
+    XSelectInput(display, x_window->window, StructureNotifyMask);
+    x_window->gc = XCreateGC(display, x_window->window, 0, NULL);
+
+    if(title)
+        XStoreName(display, x_window->window, title);
+
+    return 0;
+}
+
+int Athena_Private_Update(void *handle, unsigned format, const void *RGB, unsigned w, unsigned h){
+    return 0;
+}
+
+int Athena_Private_DestroyHandle(void *handle){
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+    XFreeGC(display, x_window->gc);
+    XDestroyWindow(display, x_window->window);
+    return 0;
+}
+
+int Athena_Private_ShowWindow(void *handle){
+    XEvent x_event;
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+
+    XMapWindow(display, x_window->window);
+
+    do{
+        XNextEvent(display, &x_event);
+    }while(x_event.type != MapNotify);
     
     return 0;
 }
 
-int Athena_Private_CreateWindow(void *arg, int x, int y, unsigned w, unsigned h, const char *title){
-    struct Athena_XCBHandle *handle = arg;
-    xcb_create_window(handle->connection, 
-        4,
-        handle->window,
-        handle->screen->root,
-        x, y, w, h,
-        0,
-        XCB_WINDOW_CLASS_INPUT_OUTPUT,
-        handle->screen->root_visual,
-        0, NULL);
+int Athena_Private_HideWindow(void *handle){
+    XEvent x_event;
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
     
-    {
-        uint32_t value = handle->screen->black_pixel;
-        xcb_create_gc(handle->connection, handle->ctx, handle->window, XCB_GC_FOREGROUND, &value);
-        
+    XUnmapWindow(display, x_window->window);
+    do{
+        XNextEvent(display, &x_event);
+    }while(x_event.type != UnmapNotify);
+
+    return 0;
+}
+
+int Athena_Private_FlipWindow(void *handle){
+    XFlush(display);
+    return 0;
+}
+
+unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
+    XEvent event;
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+    XNextEvent(display, &event);
+    switch(event.type){
+        case MotionNotify:
+            x_window->mouse_x = event.xmotion.x;
+            x_window->mouse_y = event.xmotion.y;
+        break;
+        case UnmapNotify:
+            /* Quit outright here? */
+        break;
+        case DestroyNotify:
+            bzero(to, sizeof(struct Athena_Event));
+            to->type = athena_quit_event;
+            return 1;
+        case ButtonPress:
+
+            bzero(to, sizeof(struct Athena_Event));
+            /*
+            struct Athena_Event {
+                enum Athena_EventType type;
+                int x, y, w, h, state;
+                unsigned which, id;
+            };
+            */
+
+            /* We might as well update the mouse position while we are here. */
+            to->x = x_window->mouse_x = event.xbutton.x;
+            to->y = x_window->mouse_y = event.xbutton.y;
+            if(event.xbutton.button==1)
+                to->which = athena_left_mouse_button;
+            else if(event.xbutton.button==2)
+                to->which = athena_middle_mouse_button;
+            else if(event.xbutton.button==3)
+                to->which = athena_right_mouse_button;
+            else
+                to->which = athena_unknown_mouse_button;
+            to->type = athena_click_event;
+            return 1;
     }
     return 0;
 }
 
-int Athena_Private_ShowWindow(void *arg){
-   struct Athena_XCBHandle *handle = arg;
-   xcb_map_window(handle->connection, handle->window);
-   athena_flush_handle(arg);
-   return 0;
-}
-
-int Athena_Private_HideWindow(void *arg);
-int Athena_Private_DrawImage(void *arg, int x, int y, unsigned w, unsigned h, unsigned format, const void *RGB){
-    struct Athena_XCBHandle *handle = arg;
-    xcb_pixmap_t pixmap = xcb_generate_id(handle->connection);
-    xcb_create_pixmap(handle->connection, 32, pixmap, handle->window, w, h);
-    xcb_free_pixmap(handle->connection, pixmap);
-}
-
-int Athena_Private_DrawRect(void *arg, int x, int y, unsigned w, unsigned h, const struct Athena_Color *color){
-
-/*
-    xcb_change_gc(xcb_connection_t *c, xcb_gcontext_t gc, uint32_t value_mask, const uint32_t *value_list);
-*/
-
-    struct Athena_XCBHandle *handle = arg;
-    xcb_rectangle_t rectangle;
-    rectangle.x = x; rectangle.y = y; rectangle.width = w; rectangle.height = h;
-    xcb_poly_fill_rectangle(handle->connection, handle->window, handle->ctx, 1, &rectangle);
+int Athena_Private_GetMousePosition(void *handle, int *x, int *y){
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+    
+    x[0] = x_window->mouse_x;
+    y[0] = x_window->mouse_y;
     return 0;
 }
 
-int Athena_Private_DrawLine(void *arg, int x1, int y1, int x2, int y2, const struct Athena_Color *color){
-    struct Athena_XCBHandle *handle = arg;
-    xcb_segment_t segment;
-    segment.x1 = x1; segment.y1 = y1; segment.x2 = x2; segment.y2 = y2;
-    xcb_poly_segment(handle->connection, handle->window, handle->ctx, 1, &segment);
+int Athena_Private_IsKeyPressed(void *handle, unsigned key){
     return 0;
 }
-
-int Athena_Private_FlipWindow(void *arg){
-
-   athena_flush_handle(arg);
-   return 0;
-}
-
-unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
-    return 0;
-}
-
-/* Athena_Common functions are common to all backends, but are private to this library.
- * These are intended to be used from the Athena_Private functions.
- * No Athena_Common function will call any Athena_Private function, to categorically avoid infinite mutual recursion.
- */
-int Athena_Common_Line(void *handle, void *arg, int x1, int y1, int x2, int y2, athena_point_callback callback);
-int Athena_Common_ColorToUnsignedByte(const struct Athena_Color *color, unsigned char *red, unsigned char *greeb, unsigned char *blue, unsigned char *alpha);
-int Athena_Common_ColorToUnsignedShort(const struct Athena_Color *color, unsigned short *red, unsigned short *greeb, unsigned short *blue, unsigned short *alpha);
-
