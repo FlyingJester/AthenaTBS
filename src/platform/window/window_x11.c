@@ -3,6 +3,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
+#include <sys/shm.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <strings.h>
@@ -20,14 +21,23 @@ static Display *display = NULL;
 struct Athena_X_Window {
     Window root_window, window;
     Colormap color_map;
+    GC gc;
     int screen;
+
     int mouse_x, mouse_y;
+
     XVisualInfo *visinfo;
     int framebuffer_info;
     XImage *framebuffer;
     XShmSegmentInfo shminfo;
-    GC gc;
+    unsigned was_attached;
+
+    unsigned w, h;
 };
+
+static const XVisualInfo *athena_x11_visinfo(const struct Athena_X_Window *x_window){
+    return x_window->visinfo + x_window->framebuffer_info;
+}
 
 void *Athena_Private_CreateHandle(){
     struct Athena_X_Window *x_window;
@@ -63,8 +73,11 @@ static const char *class_name(int c){
 
 int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned h, const char *title){
     struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
-    
+    x_window->w = w;
+    x_window->h = h;
+    x_window->was_attached = 0;
     {
+        /* Create our shared memory image on the X11 side to push our updates to. */
         const int black = BlackPixel(display, x_window->screen);
         int n = 0, i = 0;
         XVisualInfo template;
@@ -97,13 +110,15 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
         
         if(x_window->framebuffer_info==-1)
             x_window->framebuffer_info = 0;
-/*        
-        x_window->framebuffer = XShmCreateImage(display, DirectColor, 32, XYBitmap, NULL, &x_window->shminfo, w, h);
-  *//*
-        x_window->window = XCreateWindow(display, x_window->screen, int x, int y, unsigned int width, unsigned int
-              height, unsigned int border_width, int depth, unsigned int class, Visual *visual, unsigned long val-
-              uemask, XSetWindowAttributes *attributes);
-              */
+        
+        /* Actually create the image, as well as the shared memory segment to copy to. */
+        x_window->framebuffer = XShmCreateImage(display, athena_x11_visinfo(x_window)->visual, athena_x11_visinfo(x_window)->depth, ZPixmap, NULL, &x_window->shminfo, w, h);
+        x_window->shminfo.shmid = shmget(IPC_PRIVATE, x_window->framebuffer->bytes_per_line * x_window->framebuffer->height, IPC_CREAT|0777);
+        x_window->shminfo.shmaddr = x_window->framebuffer->data = shmat(x_window->shminfo.shmid, 0, 0); 
+        x_window->shminfo.readOnly = True;
+        
+
+        /* Create the window */
         x_window->window = XCreateSimpleWindow(display, x_window->root_window, x, y, w, h, 0, black, black);
     }
 
@@ -116,7 +131,30 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
     return 0;
 }
 
-int Athena_Private_Update(void *handle, unsigned format, const void *RGB, unsigned w, unsigned h){
+int Athena_Private_Update(void *handle, unsigned format, const void *RGBA, unsigned w, unsigned h){
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+    if(x_window->was_attached){
+        XShmDetach(display, &x_window->shminfo);
+        x_window->was_attached = 0;
+    }
+
+    if(athena_x11_visinfo(x_window)->depth==32){
+        memcpy(x_window->shminfo.shmaddr, RGBA, w * h << 2);
+    }
+    else if(athena_x11_visinfo(x_window)->depth==24){
+        unsigned i;
+        const unsigned num_pixels = w * h;
+        const unsigned char *in = RGBA;
+        for(i = 0; i<num_pixels; i++){
+            unsigned char *pixel = ((unsigned char *)(x_window->shminfo.shmaddr)) + (3 * i);
+            pixel[2] = in[i] & 0xFF;
+            pixel[1] = (in[i] >> 8) & 0xFF;
+            pixel[0] = (in[i] >> 16) & 0xFF;
+        }
+    }
+    else{
+        memcpy(x_window->shminfo.shmaddr, RGBA, w * h * athena_x11_visinfo(x_window)->depth >> 3);
+    }
     return 0;
 }
 
@@ -136,7 +174,8 @@ int Athena_Private_ShowWindow(void *handle){
     do{
         XNextEvent(display, &x_event);
     }while(x_event.type != MapNotify);
-    
+    puts("[Athena_Private_ShowWindow]Window Mapped");
+
     return 0;
 }
 
@@ -148,11 +187,21 @@ int Athena_Private_HideWindow(void *handle){
     do{
         XNextEvent(display, &x_event);
     }while(x_event.type != UnmapNotify);
+    puts("[Athena_Private_ShowWindow]Window Unmapped");
 
     return 0;
 }
 
 int Athena_Private_FlipWindow(void *handle){
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+    
+    if(x_window->was_attached || (XShmAttach(display, &x_window->shminfo)!=0)){
+        if(!x_window->was_attached){
+            XSync(display, False);
+            x_window->was_attached = 1;
+        }
+        XShmPutImage(display, x_window->window, x_window->gc, x_window->framebuffer, 0, 0, 0, 0, x_window->w, x_window->h, False);
+    }
     XFlush(display);
     return 0;
 }
@@ -176,13 +225,6 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
         case ButtonPress:
 
             bzero(to, sizeof(struct Athena_Event));
-            /*
-            struct Athena_Event {
-                enum Athena_EventType type;
-                int x, y, w, h, state;
-                unsigned which, id;
-            };
-            */
 
             /* We might as well update the mouse position while we are here. */
             to->x = x_window->mouse_x = event.xbutton.x;
