@@ -4,6 +4,7 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
 #include <sys/shm.h>
+#include <sys/errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <strings.h>
@@ -54,8 +55,6 @@ void *Athena_Private_CreateHandle(){
     
     return x_window;
 }
-
-#define PRINT_ALL_X_MODES
 
 #ifdef PRINT_ALL_X_MODES
 
@@ -108,12 +107,40 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
             }
         }
         
-        if(x_window->framebuffer_info==-1)
+        if(x_window->framebuffer_info==-1){
+            puts("Couldn't find a reliable framebuffer visual, defaulting to visual 0");
             x_window->framebuffer_info = 0;
-        
+        }        
         /* Actually create the image, as well as the shared memory segment to copy to. */
         x_window->framebuffer = XShmCreateImage(display, athena_x11_visinfo(x_window)->visual, athena_x11_visinfo(x_window)->depth, ZPixmap, NULL, &x_window->shminfo, w, h);
+        printf("Created image of size %i (pitch) x %i (height) = %i\n", x_window->framebuffer->bytes_per_line, x_window->framebuffer->height, x_window->framebuffer->bytes_per_line * x_window->framebuffer->height);
         x_window->shminfo.shmid = shmget(IPC_PRIVATE, x_window->framebuffer->bytes_per_line * x_window->framebuffer->height, IPC_CREAT|0777);
+        
+        if(x_window->shminfo.shmid == -1){
+            perror("x_window->shminfo.shmid");
+            switch(errno){
+                case EACCES:
+                    puts("No permission to make shared pages");
+                    break;
+                case EEXIST:
+                    puts("Segment already exists");
+                    break;
+                case ENFILE:
+                    puts("System file limit reached");
+                    break;
+                case ENOENT:
+                    puts("Tried to access a key that was not yet created");
+                    break;
+                case ENOMEM:
+                    puts("No memory");
+                    break;
+                case ENOSPC:
+                    puts("All shared memory IDs are taken.");
+                    break;
+            
+            }
+        }
+
         x_window->shminfo.shmaddr = x_window->framebuffer->data = shmat(x_window->shminfo.shmid, 0, 0); 
         x_window->shminfo.readOnly = True;
         
@@ -122,7 +149,7 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
         x_window->window = XCreateSimpleWindow(display, x_window->root_window, x, y, w, h, 0, black, black);
     }
 
-    XSelectInput(display, x_window->window, StructureNotifyMask);
+    XSelectInput(display, x_window->window, StructureNotifyMask|KeyPressMask|ExposureMask|PointerMotionMask);
     x_window->gc = XCreateGC(display, x_window->window, 0, NULL);
 
     if(title)
@@ -160,6 +187,12 @@ int Athena_Private_Update(void *handle, unsigned format, const void *RGBA, unsig
 
 int Athena_Private_DestroyHandle(void *handle){
     struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+    if(x_window->was_attached)
+        XShmDetach(display, &x_window->shminfo);
+    XDestroyImage(x_window->framebuffer);
+    shmdt(x_window->shminfo.shmaddr);
+    shmctl(x_window->shminfo.shmid, IPC_RMID, 0);
+
     XFreeGC(display, x_window->gc);
     XDestroyWindow(display, x_window->window);
     return 0;
@@ -201,8 +234,8 @@ int Athena_Private_FlipWindow(void *handle){
             x_window->was_attached = 1;
         }
         XShmPutImage(display, x_window->window, x_window->gc, x_window->framebuffer, 0, 0, 0, 0, x_window->w, x_window->h, False);
+        XSync(display, False);
     }
-    XFlush(display);
     return 0;
 }
 

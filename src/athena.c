@@ -91,6 +91,9 @@ int main(int argc, char *argv[]){
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Black Coat"), players + 1,15, 6);
     
     Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
-
+    
+    puts("Destroying Main Window");
+    Athena_DestroyWindow(window);
+    
     return 0;
 }
