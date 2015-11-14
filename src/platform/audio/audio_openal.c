@@ -55,11 +55,6 @@ struct Athena_SoundContext *Athena_CreateSoundContext(){
     
     if(!(context = alcCreateContext(device, NULL)))
         return NULL;
-    else{
-        fprintf(stderr, "[Athena_CreateSoundContext]Created context %p\n", context);
-    }
-    
-    fprintf(stderr, "[Athena_CreateSoundContext]Error %i\n", alGetError());
     
     alcMakeContextCurrent(context);
     
@@ -196,6 +191,15 @@ static ALuint athena_get_buffer(struct Athena_Sound *sound){
     alGetSourcei(sound->source, AL_BUFFERS_PROCESSED, &i);
     if(i){
         alSourceUnqueueBuffers(sound->source, 1, &buffer);
+        
+        /* If there are more than one buffers ready to be unqueued, we will simply destroy them.
+         * This is mainly an issue with OS X's OpenAL. */
+        if(--i){
+            ALuint *other_buffers = calloc(sizeof(ALuint), i);
+            fprintf(stderr, "[athena_get_buffer]Destroying %i buffers.\n", i);
+            alSourceUnqueueBuffers(sound->source, i, other_buffers);
+            alDeleteBuffers(i, other_buffers);
+        }
     }
     else{
         alGenBuffers(1, &buffer);
