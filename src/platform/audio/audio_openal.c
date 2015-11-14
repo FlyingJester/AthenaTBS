@@ -1,6 +1,8 @@
 #include "audio.h"
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
+#include <assert.h>
 
 #ifdef __APPLE__
 
@@ -14,15 +16,6 @@
     #include <AL/alext.h>
 
 #endif
-
-/*
-struct Athena_SoundConfig{
-    float volume, pan;
-    unsigned char loop;
-};
-
-enum Athena_SoundFormat { Athena_SoundU16, Athena_SoundU32, Athena_SoundFloat };
-*/
 
 #define DEFAULT_STARTING_BUFFERS 2
 
@@ -44,8 +37,12 @@ struct Athena_Sound{
 };
 
 static void athena_make_context_current(const struct Athena_SoundContext *ctx){
-    if(ctx)
+    if(ctx){
         alcMakeContextCurrent(ctx->context);
+    }
+    else{
+        puts("[athena_make_context_current]Invalid context.");
+    }
 }
 
 struct Athena_SoundContext *Athena_CreateSoundContext(){
@@ -58,6 +55,11 @@ struct Athena_SoundContext *Athena_CreateSoundContext(){
     
     if(!(context = alcCreateContext(device, NULL)))
         return NULL;
+    else{
+        fprintf(stderr, "[Athena_CreateSoundContext]Created context %p\n", context);
+    }
+    
+    fprintf(stderr, "[Athena_CreateSoundContext]Error %i\n", alGetError());
     
     alcMakeContextCurrent(context);
     
@@ -188,9 +190,9 @@ const void *Athena_SoundGetContext(const struct Athena_Sound *sound){
 
 static ALuint athena_get_buffer(struct Athena_Sound *sound){
     ALuint buffer = 0;
+    ALint i = 0;
 
-    ALint i;
-
+    athena_make_context_current(sound->context);
     alGetSourcei(sound->source, AL_BUFFERS_PROCESSED, &i);
     if(i){
         alSourceUnqueueBuffers(sound->source, 1, &buffer);
@@ -207,7 +209,8 @@ unsigned Athena_SoundPost(struct Athena_Sound *sound, const void *data, unsigned
    
     {
         const ALuint buffer = athena_get_buffer(sound);
-
+        if(!buffer)
+            return 1;
         alBufferData(buffer, sound->format, data, length, sound->samples_per_second);
         alSourceQueueBuffers(sound->source, 1, &buffer);
     }

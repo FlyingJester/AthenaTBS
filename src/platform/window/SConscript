@@ -6,7 +6,7 @@ Import("environment")
 window_environment = environment.Clone()
 
 # Intended to force X11 on Windows (via cygwin) or OS X
-prefer_x11 = True
+prefer_x11 = False
 
 # Intended to force the use of GNUStep on non-OS X platforms.
 use_cocoa = False
