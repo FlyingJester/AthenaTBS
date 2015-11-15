@@ -199,6 +199,8 @@ static ALuint athena_get_buffer(struct Athena_Sound *sound){
             fprintf(stderr, "[athena_get_buffer]Destroying %i buffers.\n", i);
             alSourceUnqueueBuffers(sound->source, i, other_buffers);
             alDeleteBuffers(i, other_buffers);
+            if(!buffer)
+                return athena_get_buffer(sound);
         }
     }
     else{
