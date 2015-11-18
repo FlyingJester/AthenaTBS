@@ -186,7 +186,7 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                         if(Athena_GetJSONToAndFromWithType(&msg->value, &type, &type_len, &from_x, &from_y, &to_x, &to_y)!=0)
                             break;
                         if((attacker = Athena_FindUnitTypeAtN(that->field->units, type, type_len, from_x, from_y)) && (attacker->actions) && 
-                            (attackee = Athena_FindUnitAt(that->field->units, to_x, to_y))){
+                            (attackee = Athena_FindAttackableUnitAt(that->field->units, to_x, to_y))){
                             attacker->actions = 0;
                             Athena_Attack(attacker, attackee);
                         }

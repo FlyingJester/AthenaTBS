@@ -144,6 +144,18 @@ struct Athena_Unit *Athena_FindUnitTypeAtN(struct Athena_UnitList *list, const c
     return Athena_FindUnitTypeAtN(list->next, name, name_len, x, y);
 }
 
+struct Athena_Unit *Athena_FindAttackableUnitAt(struct Athena_UnitList *list, int x, int y){
+    struct Athena_UnitList * const unit = Athena_FindUnitListAt(list, x, y);
+
+    if(unit && unit->unit.clazz->is_building){
+        struct Athena_Unit *const try_next = Athena_FindAttackableUnitAt(unit->next, x, y);
+        if(try_next)
+            return try_next;
+    }
+
+    return &unit->unit;
+}
+
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b){
     const int delta_x = a->x - b->x,
         delta_y = a->y - b->y;

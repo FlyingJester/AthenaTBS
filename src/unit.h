@@ -69,6 +69,7 @@ unsigned Athena_UnitIsBuilding(const struct Athena_Unit *unit, void *arg); /* ar
 struct Athena_UnitList *Athena_FindUnitListAt(struct Athena_UnitList *list, int x, int y);
 struct Athena_Unit *Athena_FindUnitTypeAtN(struct Athena_UnitList *list, const char *name, unsigned name_len, int x, int y);
 #define Athena_FindUnitTypeAt(LIST_, NAME_, X_, Y_) Athena_FindUnitTypeAtN(LIST_, NAME_, NAME_?strlen(NAME_):0, X_, Y_)
+struct Athena_Unit *Athena_FindAttackableUnitAt(struct Athena_UnitList *list, int x, int y);
 
 void Athena_Attack(const struct Athena_Unit *attacker, struct Athena_Unit *other);
 unsigned Athena_UnitDistance(const struct Athena_Unit *a, const struct Athena_Unit *b);

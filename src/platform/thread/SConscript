@@ -17,6 +17,6 @@ elif sys.platform.startswith("haiku") and not prefer_pthreads:
 elif os.name == "posix" or prefer_pthreads:
     libathena_thread = environment.SharedLibrary("athena_thread", ["thread_pthreads.c"], LIBS = ["pthread"])
 elif sys.platform.startswith("win"):
-    libathena_thread = environment.Library("athena_thread", ["thread_win32.c"])    
-    
+    libathena_thread = environment.Library("athena_thread", ["thread_win32.c"])
+
 Return("libathena_thread")
