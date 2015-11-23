@@ -18,7 +18,7 @@ libathena = environment.StaticLibrary("athena",
         "animation.c", "image.c", "load_png.c", "load_tga.c", "window_style.c", "container.c", "font.c", "viewport.c",
         "turbo_json_helpers.c", "button.c", "menu.c", "load_opus.c", "audio_ctl.c", "unit_classes.c", "pathfind.c",
         "server_thread.c", "ui_thread.c",
-	"options.c"
+	"options.c", "titlescreen.c"
     ],
     LIBS = athena_libs, CPPDEFINES = ["EMBED_CYNICAL"])
 
@@ -31,6 +31,7 @@ AthenaProgram("athena")
 AthenaProgram("athena_test")
 AthenaProgram("athena_camera_test")
 AthenaProgram("athena_unit_test")
+AthenaProgram("athena_titlescreen_test")
 
 environment = s_env.Clone()
 

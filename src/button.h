@@ -21,6 +21,11 @@ struct Athena_GameState;
  *    Free: caller
  *    Note: This is always the first arg (if any args exist at all)
  *
+ *    Name: screen_state
+ *    Type: int *
+ *    Free: caller
+ *    Note: This is only used in UI screens, such as the title screen or options screen.
+ *              Usually, -1 means "in progress", -2 means "quit", and >= 0 is an enumeration of options.
  */
 struct Athena_ButtonArgList{
     void *arg;

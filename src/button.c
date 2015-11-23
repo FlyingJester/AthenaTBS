@@ -112,7 +112,7 @@ static int athena_ui_process_buttons_iter(struct Athena_GameState *that, struct 
         if(
             (buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y) << 2) &&
             buttons->button.callback){
-            if(that->ui.click_sound)
+            if(that && that->ui.click_sound)
                 Athena_SoundPlay(that->ui.click_sound);
             buttons->button.callback(buttons->button.arg, messages);
             return 1;
