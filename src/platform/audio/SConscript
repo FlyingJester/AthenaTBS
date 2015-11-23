@@ -2,9 +2,20 @@ import sys
 
 Import("environment")
 
-if sys.platform.startswith("haiku"):
+has_sndio = False
+
+# Set this to True to ignore the existence of sndio headers.
+no_sndio = False
+
+l_env = environment.Clone()
+
+configure = Configure(l_env)
+
+if not no_sndio and configure.CheckCHeader("sndio.h"):
+    athena_audio = environment.SharedLibrary("athena_audio", ["audio_sndio.c"], LIBS = ["sndio"])
+elif sys.platform.startswith("haiku"):
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_haiku.cpp"], LIBS = ["be", "game"])
-if sys.platform == 'darwin':
+elif sys.platform == 'darwin':
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], FRAMEWORKS = ["OpenAL"])
 else:
     if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
@@ -12,5 +23,7 @@ else:
     else:
         al_lib = "openal"
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], LIBS = [al_lib])
+
+l_env = configure.Finish()
 
 Return("athena_audio")
