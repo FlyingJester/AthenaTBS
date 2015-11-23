@@ -2,6 +2,7 @@
 #include "image.h"
 #include "window_style.h"
 #include "font.h"
+#include "game.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -101,4 +102,25 @@ struct Athena_Button *Athena_AppendButton(struct Athena_ButtonList **to, struct 
     b->button = button;
     b->next = NULL;
     return Athena_AppendButtonList(to, b);
+}
+
+static int athena_ui_process_buttons_iter(struct Athena_GameState *that, struct Athena_ButtonList *buttons, const struct Athena_Event *event, struct Athena_MessageList *messages){
+    if(!buttons){
+        return 0;
+    }
+    else{
+        if(
+            (buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y) << 2) &&
+            buttons->button.callback){
+            if(that->ui.click_sound)
+                Athena_SoundPlay(that->ui.click_sound);
+            buttons->button.callback(buttons->button.arg, messages);
+            return 1;
+        }
+        return athena_ui_process_buttons_iter(that, buttons->next, event, messages);
+    }
+}
+
+int Athena_ProcessButtons(struct Athena_GameState *that, struct Athena_ButtonList *buttons, const struct Athena_Event *event, struct Athena_MessageList *messages){
+    return athena_ui_process_buttons_iter(that, buttons, event, messages);
 }

@@ -54,3 +54,6 @@ struct Athena_ButtonArgList *Athena_DefaultButtonArgList(struct Athena_GameState
 int Athena_AppendButtonArgList(struct Athena_ButtonArgList *list, void *arg, const char *type);
 void *Athena_FindTypeInArgList(struct Athena_ButtonArgList *list, const char *type);
 void Athena_CopyButtonArgList(struct Athena_ButtonArgList **to, struct Athena_ButtonArgList *from);
+
+struct Athena_Event;
+int Athena_ProcessButtons(struct Athena_GameState *that, struct Athena_ButtonList *buttons, const struct Athena_Event *event, struct Athena_MessageList *messages);

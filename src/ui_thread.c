@@ -169,23 +169,6 @@ int Athena_UIThread(struct Athena_GameState *that){
     return 0;
 }
 
-static int athena_ui_process_buttons(struct Athena_GameState *that, struct Athena_ButtonList *buttons, const struct Athena_Event *event, struct Athena_MessageList *messages){
-    if(!buttons){
-        return 0;
-    }
-    else{
-        if(
-            (buttons->button.clicked = Athena_IsWithin(buttons->button, event->x, event->y) << 2) &&
-            buttons->button.callback){
-            if(that->ui.click_sound)
-                Athena_SoundPlay(that->ui.click_sound);
-            buttons->button.callback(buttons->button.arg, messages);
-            return 1;
-        }
-        return athena_ui_process_buttons(that, buttons->next, event, messages);
-    }
-}
-
 static int athena_process_selector(const struct Athena_Field *field, struct Athena_UI *ui, const struct Athena_Event *event, struct Athena_MessageList *messages){
     if(!ui->selection_callback)
         return 0;
@@ -271,10 +254,10 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
         switch(event->type){
             case athena_click_event:
                 if(event->which == athena_left_mouse_button || event->which == athena_unknown_mouse_button){
-                    if(athena_ui_process_buttons(that, that->ui.buttons, event, messages))
+                    if(Athena_ProcessButtons(that, that->ui.buttons, event, messages))
                         break;
 
-                    if(that->ui.menu && athena_ui_process_buttons(that, that->ui.menu->buttons, event, messages))
+                    if(that->ui.menu && Athena_ProcessButtons(that, that->ui.menu->buttons, event, messages))
                         break;
 
                     if(athena_process_selector(that->field, &that->ui, event, messages))
