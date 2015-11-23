@@ -2,8 +2,6 @@
 #include "game.h"
 #include "player.h"
 
-const unsigned scr_width = 720, scr_height = 450;
-
 const char field_src[] = "{\
     \"tileset\":\"res/tilesets/field1/ts.json\",\
     \"attributes\":{\"width\":8, \"height\":8},\
@@ -23,9 +21,13 @@ const char field_src[] = "{\
 static const char * const flag_1 = "res/images/jest.png", * const flag_2 = "res/images/legend.png";
 
 int main(int argc, char *argv[]){
-    struct Athena_Window * const window = Athena_CreateWindow(scr_width, scr_height, "Athena Test");
+    struct Athena_Options option;
+    const int err1 = Athena_LoadOptions("athena_settings.json", &option);
+    struct Athena_Window * const window = Athena_CreateWindow(option.screen_w, option.screen_h, "Athena Test");
     struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0}};
     struct Athena_Field field;
+
+    if(err1){}
     
     Athena_ShowWindow(window);
     {
@@ -53,7 +55,7 @@ int main(int argc, char *argv[]){
         }
     }
 
-    Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
+    Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, &option, Athena_ConquestCondition);
 
     return 0;
 }

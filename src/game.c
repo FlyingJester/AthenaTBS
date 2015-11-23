@@ -61,7 +61,7 @@ struct Athena_Player *Athena_ConquestCondition(const struct Athena_Field *field,
         return winning_player;
 }
 
-int Athena_Game(struct Athena_Field *field, unsigned num_players, struct Athena_Player *players, struct Athena_Window *window, athena_field_condition win_condition){
+int Athena_Game(struct Athena_Field *field, unsigned num_players, struct Athena_Player *players, struct Athena_Window *window, const struct Athena_Options *options,  athena_field_condition win_condition){
     struct Athena_GameState game_state;
     struct Athena_Thread *const server_thread = Athena_CreateThread(Athena_ServerThreadWrapper, &game_state);
 

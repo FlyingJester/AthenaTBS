@@ -6,8 +6,6 @@
 #include "audio/audio.h"
 #include <string.h>
 
-const unsigned scr_width = 400, scr_height = 300;
-
 const char field_src[] = "{\
     \"tileset\":\"res/tilesets/field1/ts.json\",\
     \"attributes\":{\"width\":8, \"height\":8},\
@@ -27,7 +25,9 @@ const char field_src[] = "{\
 static const char * const flag_1 = "res/images/jest.png", * const flag_2 = "res/images/legend.png";
 
 int main(int argc, char *argv[]){
-    struct Athena_Window * const window = Athena_CreateWindow(scr_width, scr_height, "Athena Test");
+    struct Athena_Options option;
+    const int err1 = Athena_LoadOptions("athena_settings.json", &option);
+    struct Athena_Window * const window = Athena_CreateWindow(option.screen_w, option.screen_h, "Athena Test");
     struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF, 1}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0, 1}};
     struct Athena_Field field;
 
@@ -38,6 +38,8 @@ int main(int argc, char *argv[]){
     
     Athena_SoundSetConfig(sound, &config);
     Athena_SoundPlay(sound);
+
+    if(err1){}
 
     memset(&field, 0, sizeof(struct Athena_Field));
 
@@ -87,7 +89,7 @@ int main(int argc, char *argv[]){
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 1, 15, 4);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 1, 8, 3);
     
-    Athena_Game(&field, sizeof(players) / sizeof(players[0]),  players, window, Athena_ConquestCondition);
+    Athena_Game(&field, sizeof(players) / sizeof(players[0]), players, window, &option, Athena_ConquestCondition);
 
     return 0;
 }
