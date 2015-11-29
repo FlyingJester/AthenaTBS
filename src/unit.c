@@ -10,7 +10,7 @@ int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned 
         return 1;
     else{
         const struct Athena_Animation *sprite = &unit->sprite;
-        const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - ( unit->sprite.frames->frame.image->h - tile_h );
+        const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - ( unit->sprite.frames->frame->h - tile_h );
         uint32_t color = Athena_RGBAToRaw(0xFF>>1, 0xFF>>1, 0xFF>>1, 0xFF);
         
         if(unit->owner){
@@ -42,7 +42,7 @@ int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, 
 
 int Athena_DrawUnitHealthBar(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y){
     if(fabs(unit->health - 1.0f) > 1.0f/256.0f){
-        const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - (unit->sprite.frames->frame.image->h - tile_h + 4);
+        const int to_x = (unit->x * tile_w) - x, to_y = (unit->y * tile_h) - y - (unit->sprite.frames->frame->h - tile_h + 4);
         const int fill_w = (tile_w * (unit->health * 255.0f)) / 255.0f;
         Athena_FillRect(to, to_x - 1, to_y, tile_w + 2, 3, Athena_RGBAToRaw(0x40, 0x40, 0x40, 0xFF));
         Athena_FillRect(to, to_x, to_y + 1, fill_w, 1, Athena_RGBAToRaw(0x20, 0xB0, 0x20, 0xFF));

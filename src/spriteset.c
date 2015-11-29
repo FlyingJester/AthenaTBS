@@ -189,7 +189,7 @@ static struct Athena_AnimationFrame *athena_last_spriteset_frame(struct Athena_A
 }
 
 static int athena_load_spriteset_frame(const struct Turbo_Value *properties, unsigned long num_properties,
-    struct Athena_Image *images, struct Athena_Image *masks, struct Athena_AnimationFrame **frame_p){
+    struct Athena_Image *images, struct Athena_AnimationFrame **frame_p){
     if(!num_properties){
         frame_p[0] = NULL;
         return 0;
@@ -216,16 +216,15 @@ static int athena_load_spriteset_frame(const struct Turbo_Value *properties, uns
         
             struct Athena_AnimationFrame * const frame = frame_p[0] = malloc(sizeof(struct Athena_AnimationFrame));
             frame->time = (int)delay->value.number;
-            frame->frame.image = images + (int)image->value.number;
-            frame->frame.mask  = masks + (int)image->value.number;
+            frame->frame = images + (int)image->value.number;
             
-            return athena_load_spriteset_frame(properties + 1, num_properties - 1, images, masks, &frame->next);
+            return athena_load_spriteset_frame(properties + 1, num_properties - 1, images, &frame->next);
         }
     }
 }
 
 static int athena_load_spriteset_direction(const struct Turbo_Property *direction_values, unsigned long num_directions, 
-    struct Athena_Image *images, struct Athena_Image *masks, struct Athena_SpriteDirection *directions){
+    struct Athena_Image *images, struct Athena_SpriteDirection *directions){
 
     if(!num_directions)
         return 0;
@@ -241,15 +240,15 @@ static int athena_load_spriteset_direction(const struct Turbo_Property *directio
         
         directions->name = direction_name;
 
-        athena_load_spriteset_frame(direction_values->value.value.array, direction_values->value.length, images, masks, &directions->frames);
+        athena_load_spriteset_frame(direction_values->value.value.array, direction_values->value.length, images, &directions->frames);
         athena_last_spriteset_frame(directions->frames)->next = directions->frames;
 
-        return athena_load_spriteset_direction(direction_values + 1, num_directions - 1, images, masks, directions + 1);
+        return athena_load_spriteset_direction(direction_values + 1, num_directions - 1, images, directions + 1);
     }
 }
 
 static int athena_load_spriteset_action(const struct Turbo_Property *action_values, unsigned long num_actions, 
-    struct Athena_Image *images, struct Athena_Image *masks, struct Athena_SpriteAction *actions){
+    struct Athena_Image *images, struct Athena_SpriteAction *actions){
 
     if(!num_actions)
         return 0;
@@ -269,11 +268,11 @@ static int athena_load_spriteset_action(const struct Turbo_Property *action_valu
         actions->directions = Athena_AssureCapacity(NULL, sizeof(struct Athena_SpriteDirection), actions->num_directions, &actions->directions_capacity);
         
         {
-            const int err = athena_load_spriteset_direction(action_values->value.value.object, action_values->value.length, images, masks, actions->directions);
+            const int err = athena_load_spriteset_direction(action_values->value.value.object, action_values->value.length, images, actions->directions);
             if (err!=0)
                 return err;
             else
-                return athena_load_spriteset_action(action_values + 1, num_actions - 1, images, masks, actions + 1);
+                return athena_load_spriteset_action(action_values + 1, num_actions - 1, images, actions + 1);
         }
     }
 }
@@ -282,13 +281,9 @@ static int athena_load_spriteset_action(const struct Turbo_Property *action_valu
 int Athena_LoadSpritesetFromTurboValue(const struct Turbo_Value *value, struct Athena_Spriteset *to, const char *directory){
     const struct Turbo_Value 
         * const images = Turbo_Helper_GetConstObjectElement(value, "images"),
-        * const masks = Turbo_Helper_GetConstObjectElement(value, "masks"),
         * const actions = Turbo_Helper_GetConstObjectElement(value, "actions");
     
-    if(!(images && actions && masks))
-        return -1;
-    
-    if(images->length != masks->length)
+    if(!(images && actions))
         return -1;
     
     to->num_actions = actions->length;
@@ -299,13 +294,8 @@ int Athena_LoadSpritesetFromTurboValue(const struct Turbo_Value *value, struct A
     to->images_capacity = 0;
     to->images = Athena_AssureCapacity(NULL, sizeof(struct Athena_Image), to->num_images, &to->images_capacity);
 
-    to->num_masks = masks->length;
-    to->masks_capacity = 0;
-    to->masks = Athena_AssureCapacity(NULL, sizeof(struct Athena_Image), to->num_masks, &to->masks_capacity);
-
     athena_load_spriteset_images(images->value.array, images->length, to->images, directory);
-    athena_load_spriteset_images(masks->value.array, masks->length, to->masks, directory);
-    athena_load_spriteset_action(actions->value.object,actions->length, to->images, to->masks, to->actions);
+    athena_load_spriteset_action(actions->value.object,actions->length, to->images, to->actions);
     
     return 0;
 }
