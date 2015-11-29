@@ -4,11 +4,21 @@
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
 #include <sys/shm.h>
-#include <sys/errno.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <strings.h>
+#include <string.h>
 #include <assert.h>
+
+#ifdef __linux__
+#include <errno.h>
+#else
+#include <sys/errno.h>
+#endif
+/*
+#define PRINT_ALL_X_MODES 1
+*/
+
+#define ATHENA_X_EVENT_MASK (StructureNotifyMask|KeyPressMask|ButtonPress|ExposureMask|PointerMotionMask)
 
 static Display *display = NULL;
 
@@ -70,6 +80,10 @@ static const char *class_name(int c){
 
 #endif
 
+#if (defined __APPLE__) || (defined_WIN32)
+#define ATHENA_ALLOW_32_BITDEPTH
+#endif
+
 int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned h, const char *title){
     struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
     x_window->w = w;
@@ -89,10 +103,12 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
             printf("[Athena_Private_CreateWindow]Visual %i:\n\tVisual 0x%lx\n\tClass %s\n\tDepth %d\n\n",
                 i, x_window->visinfo[i].visualid, class_name(x_window->visinfo[i].class), x_window->visinfo[i].depth);
 #endif
+#ifdef ATHENA_ALLOW_32_BITDEPTH
             if(x_window->visinfo[i].class == TrueColor && x_window->visinfo[i].depth==32){
                 x_window->framebuffer_info = i;
                 break;
             }
+#endif
             i++;
         }
         
@@ -108,12 +124,17 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
         }
         
         if(x_window->framebuffer_info==-1){
-            puts("Couldn't find a reliable framebuffer visual, defaulting to visual 0");
+            puts("[Athena_Private_CreateWindow]Couldn't find a reliable framebuffer visual, defaulting to visual 0");
             x_window->framebuffer_info = 0;
-        }        
+        }
+#ifndef NDEBUG
+        else{
+            printf("[Athena_Private_CreateWindow]Used framebuffer visual %i\n", x_window->framebuffer_info);
+        }
+#endif
         /* Actually create the image, as well as the shared memory segment to copy to. */
         x_window->framebuffer = XShmCreateImage(display, athena_x11_visinfo(x_window)->visual, athena_x11_visinfo(x_window)->depth, ZPixmap, NULL, &x_window->shminfo, w, h);
-        printf("Created image of size %i (pitch) x %i (height) = %i\n", x_window->framebuffer->bytes_per_line, x_window->framebuffer->height, x_window->framebuffer->bytes_per_line * x_window->framebuffer->height);
+        printf("[Athena_Private_CreateWindow]Created image of size %i (pitch) x %i (height) = %i\n", x_window->framebuffer->bytes_per_line, x_window->framebuffer->height, x_window->framebuffer->bytes_per_line * x_window->framebuffer->height);
         x_window->shminfo.shmid = shmget(IPC_PRIVATE, x_window->framebuffer->bytes_per_line * x_window->framebuffer->height, IPC_CREAT|0777);
         
         if(x_window->shminfo.shmid == -1){
@@ -149,7 +170,7 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
         x_window->window = XCreateSimpleWindow(display, x_window->root_window, x, y, w, h, 0, black, black);
     }
 
-    XSelectInput(display, x_window->window, StructureNotifyMask|KeyPressMask|ExposureMask|PointerMotionMask);
+    XSelectInput(display, x_window->window, ATHENA_X_EVENT_MASK);
     x_window->gc = XCreateGC(display, x_window->window, 0, NULL);
 
     if(title)
@@ -171,9 +192,9 @@ int Athena_Private_Update(void *handle, unsigned format, const void *RGBA, unsig
     else if(athena_x11_visinfo(x_window)->depth==24){
         unsigned i;
         const unsigned num_pixels = w * h;
-        const unsigned char *in = RGBA;
+        const unsigned int *in = RGBA;
         for(i = 0; i<num_pixels; i++){
-            unsigned char *pixel = ((unsigned char *)(x_window->shminfo.shmaddr)) + (3 * i);
+            unsigned char *pixel = ((unsigned char *)(x_window->shminfo.shmaddr)) + (i * 4);
             pixel[2] = in[i] & 0xFF;
             pixel[1] = (in[i] >> 8) & 0xFF;
             pixel[0] = (in[i] >> 16) & 0xFF;
@@ -242,7 +263,10 @@ int Athena_Private_FlipWindow(void *handle){
 unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
     XEvent event;
     struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
-    XNextEvent(display, &event);
+
+    if(XCheckMaskEvent(display, ATHENA_X_EVENT_MASK, &event)==False)
+        return 0;
+
     switch(event.type){
         case MotionNotify:
             x_window->mouse_x = event.xmotion.x;
@@ -252,12 +276,12 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
             /* Quit outright here? */
         break;
         case DestroyNotify:
-            bzero(to, sizeof(struct Athena_Event));
+            memset(to, 0, sizeof(struct Athena_Event));
             to->type = athena_quit_event;
             return 1;
         case ButtonPress:
 
-            bzero(to, sizeof(struct Athena_Event));
+            memset(to, 0, sizeof(struct Athena_Event));
 
             /* We might as well update the mouse position while we are here. */
             to->x = x_window->mouse_x = event.xbutton.x;
