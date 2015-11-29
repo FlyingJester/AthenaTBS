@@ -7,6 +7,7 @@
 #include "memset_pattern4.h"
 
 #define ATHENA_MIN(A, B) (((A)>(B))?(B):(A))
+#define ATHENA_MAX(A, B) (((A)<(B))?(B):(A))
 
 void Athena_CreateImageArray(struct Athena_ImageArray *ia){
     ia->images = malloc(sizeof(struct Athena_Image) * 8);
@@ -297,31 +298,37 @@ void Athena_BlendRect(struct Athena_Image *dst, int x, int y, unsigned w, unsign
     else{
         struct Athena_Viewport to;
         to.image = dst;
-        to.x = x;
-        to.y = y;
-        to.w = w;
-        to.h = h;
-        
-        {
-            int n_w = to.w, n_h = to.h;
-            if(n_w + to.x > dst->w)
-                n_w = dst->w - to.x;
-
-            if(n_h + to.y > dst->h)
-                n_h = dst->h - to.y;
-        
-            assert(n_w);
-            assert(n_h);
-            
-            to.w = n_w;
-            to.h = n_h;
-        }
-        
+        to.x = x; to.y = y; to.w = w; to.h = h;
+/*
+        to.x = ATHENA_MAX(x, 0);
+        to.y = ATHENA_MAX(y, 0);
+        to.w = ATHENA_MIN(w, dst->w-x);
+        to.h = ATHENA_MIN(h, dst->h-y);
+*/
         Athena_BlendViewport(&to, color, blend_func);
     }
 }
 
 void Athena_BlendViewport(struct Athena_Viewport *v, uint32_t color, uint32_t (*blend_func)(uint32_t src, uint32_t dst)){
+/*
+    if(v->x + v->w <= 0 || v->y + v->h <= 0)
+        return;    
+
+    if(v->x<0){
+        v->w+=v->x;
+        v->x = 0;
+    }
+    if(v->y<0){
+        v->h+=v->y;
+        v->y = 0;
+    }
+*/
+    v->w = ATHENA_MIN(v->w, v->image->w - v->x);
+    v->h = ATHENA_MIN(v->h, v->image->h - v->y);
+
+    if(v->x > v->image->w || v->y > v->image->h || v->w<=0 || v->h<=0)
+        return;
+
     athena_blend_rect_iter(v, color, 0, 0, blend_func);
 }
 

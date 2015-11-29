@@ -9,10 +9,6 @@ struct Athena_Image{
     unsigned w, h;
 };
 
-struct Athena_MaskedImage{
-    struct Athena_Image *image, *mask;
-};
-
 struct Athena_ImageArray{
     struct Athena_Image *images;
     unsigned num_images, images_capacity;
