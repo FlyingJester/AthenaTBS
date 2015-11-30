@@ -12,6 +12,9 @@ AddOption('--use-intel-cc', dest="use-intel-cc", nargs=1, action='store')
 if GetOption('use-intel-cc') == 'y':
     use_intel_cc = True
 
+print os.name
+print sys.platform
+
 if os.name=="posix":
     environment.Append(
         CFLAGS = " -ansi -Wno-long-long ", 
@@ -20,7 +23,7 @@ if os.name=="posix":
     environment.Prepend(CCFLAGS = " -pedantic -Wall -Werror -g -fstrict-aliasing -pipe ")
     if not use_intel_cc:
          environment.Prepend(CCFLAGS = " -Wno-unused-result ")
-         if not sys.platform.startswith("cyg"):
+         if not sys.platform.startswith("cyg") and not sys.platform=="msys":
              environment.Prepend(CCFLAGS = " -fPIC ")
     if False and sys.platform == "darwin":
         XFlag = " -arch x86_64 -arch i586 "
