@@ -8,7 +8,7 @@ conf = Configure(environment)
 
 prefer_nanosleep = True
 
-if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
+if sys.platform.startswith("win") or sys.platform.startswith("cyg") or sys.platform=="msys":
     sources += ["sleep_windows.c", "ticks_windows.c"]
 else:
     sources += ["ticks_unix.c"]
