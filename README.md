@@ -52,7 +52,7 @@ The Cocoa backend is known to have serious issues with graphics. Please use the 
 
 ****Linux****
 
-The X11 backend has no graphics support yet. Please use the SDL2 backend. Any patches to improve the X11 backend are welcome.
+There is a native X11 graphics backend. It is recommended to use the X11 backend over the SDL2 backend.
 
 ****OpenBSD****
 
