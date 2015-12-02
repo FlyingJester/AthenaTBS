@@ -18,9 +18,10 @@ libathena = environment.StaticLibrary("athena",
         "animation.c", "image.c", "load_png.c", "load_tga.c", "window_style.c", "container.c", "font.c", "viewport.c",
         "turbo_json_helpers.c", "button.c", "menu.c", "load_opus.c", "audio_ctl.c", "unit_classes.c", "pathfind.c",
         "server_thread.c", "ui_thread.c",
-	"options.c", "titlescreen.c"
+	"options.c", "titlescreen.c",
+        "sgi_screen.c", "cynical.c"
     ],
-    LIBS = athena_libs, CPPDEFINES = ["EMBED_CYNICAL"])
+    LIBS = athena_libs)
 
 athena_libs = [libathena] + athena_libs
 

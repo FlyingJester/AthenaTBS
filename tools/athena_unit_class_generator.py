@@ -8,12 +8,6 @@ autogen_warning =  """
  */
  \n
 """
-# struct Athena_Class {
-#     float defense, attack;
-#     unsigned movement, attacks;
-#     unsigned range;
-#     const char *name;
-#     struct Athena_Spriteset *spriteset;
 
 def gen_int_to_str(i):
     return str(i).split('.')[0]
