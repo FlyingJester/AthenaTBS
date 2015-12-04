@@ -1,5 +1,9 @@
 #include "window.h"
 #include "private_window.h"
+
+/* This is necessary on some glibc setups to get shm */
+#define _XOPEN_SOURCE 500
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XShm.h>
