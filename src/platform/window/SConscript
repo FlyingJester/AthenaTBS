@@ -12,7 +12,8 @@ prefer_x11 = True
 use_cocoa = False
 
 # Forces the use of SDL2 even on platforms with native backends
-use_sdl2 = not (sys.platform.startswith("haiku") or os.name=="posix")
+is_win = sys.platform.startswith("win") or sys.platform.startswith("cyg") or sys.platform.startswith("msys")
+use_sdl2 = is_win or not (sys.platform.startswith("haiku") or os.name=="posix")
 
 if use_sdl2:
     athena_window = window_environment.SharedLibrary("athena_window", ["window.c", "window_sdl.c"], LIBS = ["SDL2"])

@@ -11,14 +11,18 @@ l_env = environment.Clone()
 
 configure = Configure(l_env)
 
+is_win = sys.platform.startswith("win") or sys.platform.startswith("cyg") or sys.platform.startswith("msys")
+
 if not no_sndio and configure.CheckCHeader("sndio.h"):
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_sndio.c"], LIBS = ["sndio"])
 elif sys.platform.startswith("haiku"):
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_haiku.cpp"], LIBS = ["be", "game"])
 elif sys.platform == 'darwin':
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], FRAMEWORKS = ["OpenAL"])
+elif is_win and configure.CheckCHeader("dsound.h"):
+    athena_audio = environment.SharedLibrary("athena_audio", ["audio_directsound.c"], LIBS= ["dsound"])
 else:
-    if sys.platform.startswith("win") or sys.platform.startswith("cyg"):
+    if is_win:
         al_lib = "openal32"
     else:
         al_lib = "openal"
