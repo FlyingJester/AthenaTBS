@@ -32,10 +32,35 @@
 /* Default number of secondary buffers to create. */
 #define ATHENA_BUFFERS 2
 
+struct Athena_Sound{
+    struct Athena_SoundContext *ctx;
+
+    WAVEFORMATEX wave_format;
+
+    LPDIRECTSOUNDBUFFER buffer;
+    unsigned size, num_buffers;
+    void *soft_buffer;
+    /* All in bytes, regardless of bits per sample */
+    unsigned soft_size, soft_capacity, soft_cursor;
+
+    struct Athena_SoundConfig config;
+};
+
 struct Athena_SoundContext{
     LPDIRECTSOUND8 ctx;
     LPDIRECTSOUNDBUFFER primary_buffer;
+    unsigned die;
+    HANDLE notification;
 };
+
+void Athena_SoundThread(void *a){
+    struct Athena_SoundContext *const ctx = a;
+    while(!ctx->die){
+        WaitForSingleObjectEx(ctx->notification, ATHENA_PACKET_MS, TRUE);
+        /* So I guess fill the buffers...somehow... */
+        ResetEvent(ctx->notification);
+    }
+}
 
 static const char *athena_ds_err(HRESULT err){
     switch(err){
@@ -54,20 +79,6 @@ static const char *athena_ds_err(HRESULT err){
             return "[FIXME] Unknown";
     }
 }
-
-struct Athena_Sound{
-    struct Athena_SoundContext *ctx;
-
-    WAVEFORMATEX wave_format;
-
-    LPDIRECTSOUNDBUFFER buffer[ATHENA_BUFFERS];
-    unsigned size, num_buffers;
-    void *soft_buffer;
-    /* All in bytes, regardless of bits per sample */
-    unsigned soft_size, soft_capacity, soft_cursor;
-
-    struct Athena_SoundConfig config;
-};
 
 /*
 struct Athena_SoundConfig{
@@ -120,12 +131,14 @@ struct Athena_SoundContext *Athena_CreateSoundContext(){
     else{
 
         DSBUFFERDESC buffer_info;
-        WAVEFORMATEX wave_format;
+        HWND win;
+        if(!(win = GetForegroundWindow()))
+            win = GetDesktopWindow();
 
         memset(&buffer_info, 0, sizeof(DSBUFFERDESC));
 
         /* This isn't the best, but it is the simplest. */
-        if(FAILED(err = IDirectSound_SetCooperativeLevel(l_ctx.ctx, GetDesktopWindow(), DSSCL_PRIORITY))){
+        if(FAILED(err = IDirectSound_SetCooperativeLevel(l_ctx.ctx, win, DSSCL_PRIORITY))){
            fprintf(stderr, "Cannot set cooperative level.\nError Code %s\n", athena_ds_err(err));
         }
         buffer_info.dwSize = sizeof(DSBUFFERDESC);
@@ -135,17 +148,16 @@ struct Athena_SoundContext *Athena_CreateSoundContext(){
             fprintf(stderr, "Cannot create primary buffer.\nError Code %s\n", athena_ds_err(err));
             return athena_release_ctx(&l_ctx);
         }
-        athena_wave_format_prepare(&wave_format, ATHENA_CHANNELS, ATHENA_RATE, ATHENA_SAMPLE_BITS);
-/*
-        if(0 && FAILED(IDirectSoundBuffer_SetFormat(l_ctx.primary_buffer, &wave_format))){
-*/
+
+        l_ctx.notification = CreateEvent(0, FALSE, FALSE, 0);
+
+        /* Start the mixer. */
         if(FAILED(IDirectSoundBuffer_Play(l_ctx.primary_buffer, 0, 0, DSBPLAY_LOOPING))){
             return athena_release_ctx(&l_ctx);
         }
         else{
             struct Athena_SoundContext *ctx = malloc(sizeof(struct Athena_SoundContext));
             assert(ctx);
-
             ctx[0] = l_ctx;
             return ctx;
         }
@@ -209,7 +221,7 @@ void Athena_SoundInit(struct Athena_Sound *snd, unsigned num_channels, unsigned 
         int i = 0;
         HRESULT err;
         while(i<ATHENA_BUFFERS){
-            if(FAILED(err = IDirectSound_CreateSoundBuffer(snd->ctx->ctx, &buffer_info, snd->buffer + i, NULL))){
+            if(FAILED(err = IDirectSound_CreateSoundBuffer(snd->ctx->ctx, &buffer_info, &snd->buffer, NULL))){
                 fputs("Failed to create sound buffer\n", stderr);
                 fprintf(stderr, "Error code %s\n", athena_ds_err(err));
             }
@@ -224,19 +236,14 @@ void Athena_SoundGetConfig(const struct Athena_Sound *snd, struct Athena_SoundCo
 }
 
 void Athena_SoundSetConfig(struct Athena_Sound *snd, const struct Athena_SoundConfig *to){
-    int i = 0;
     const LONG pan = (to->pan==0.0f) ? DSBPAN_CENTER :
         (to->pan>0.0f) ? to->pan*DSBPAN_RIGHT : - to->pan * DSBPAN_LEFT;
 
     snd->config = *to;
 
-    while(i<ATHENA_BUFFERS){
-        if(snd->buffer[i]){
-            IDirectSoundBuffer_SetVolume(snd->buffer[i], snd->config.volume * DSBVOLUME_MAX);
-            IDirectSoundBuffer_SetPan(snd->buffer[i], pan);
-        }
-        i++;
-    }
+    IDirectSoundBuffer_SetVolume(snd->buffer, snd->config.volume * DSBVOLUME_MAX);
+    IDirectSoundBuffer_SetPan(snd->buffer, pan);
+
 }
 
 float Athena_SoundGetLength(const struct Athena_Sound *snd){
@@ -276,37 +283,38 @@ unsigned Athena_SoundPost(struct Athena_Sound *snd, const void *data, unsigned l
 }
 
 void Athena_SoundPlay(struct Athena_Sound *snd){
-/*
-    LPDIRECTSOUNDBUFFER pDSBuffer      = NULL;
-    DWORD               dwDSBufferSize = NULL;
-    CWaveFile*          pWaveFile      = NULL;
-    DSBPOSITIONNOTIFY*  aPosNotify     = NULL;
-    LPDIRECTSOUNDNOTIFY pDSNotify      = NULL;
-*/
     HRESULT err;
     LPDIRECTSOUNDNOTIFY notify;
     GUID g = IID_IDirectSoundNotify;
 
-    if(FAILED(err = IDirectSoundBuffer_QueryInterface(snd->buffer[0], &g, (void**)(&notify)))){
+    if(FAILED(err = IDirectSoundBuffer_QueryInterface(snd->buffer, &g, (void**)(&notify)))){
         fprintf(stderr, "Could not query buffer interface.\nError Code %s\n", athena_ds_err(err));
         return;
     }
+    else{
+        DSBPOSITIONNOTIFY notifies;
 
-    if(FAILED(err = IDirectSoundBuffer_Play(snd->buffer[0], 0, 0, (snd->config.loop)?DSBPLAY_LOOPING:0))){
+        notifies.dwOffset = snd->wave_format.nBlockAlign * ATHENA_PACKET_SIZE * 8;
+        notifies.hEventNotify = snd->ctx->notification;
+
+        IDirectSoundNotify_SetNotificationPositions(notify, 1, &notifies);
+
+    }
+    if(FAILED(err = IDirectSoundBuffer_Play(snd->buffer, 0, 0, snd->config.loop ? DSBPLAY_LOOPING : 0))){
         fprintf(stderr, "Could not play buffer.\nError Code %s\n", athena_ds_err(err));
         return;
     }
-
 }
 
-void Athena_SoundPause(struct Athena_Sound *sound){
-
+void Athena_SoundPause(struct Athena_Sound *snd){
+    IDirectSoundBuffer_Stop(snd->buffer);
 }
 
-void Athena_SoundStop(struct Athena_Sound *sound){
-
+void Athena_SoundStop(struct Athena_Sound *snd){
+    IDirectSoundBuffer_Stop(snd->buffer);
+    IDirectSoundBuffer_SetCurrentPosition(snd->buffer, 0);
 }
 
-void Athena_SoundRewind(struct Athena_Sound *sound){
-
+void Athena_SoundRewind(struct Athena_Sound *snd){
+    IDirectSoundBuffer_SetCurrentPosition(snd->buffer, 0);
 }
