@@ -20,7 +20,7 @@ elif sys.platform.startswith("haiku"):
 elif sys.platform == 'darwin':
     athena_audio = environment.SharedLibrary("athena_audio", ["audio_openal.c"], FRAMEWORKS = ["OpenAL"])
 elif is_win and configure.CheckCHeader("dsound.h"):
-    athena_audio = environment.SharedLibrary("athena_audio", ["audio_directsound.c"], LIBS= ["dsound"])
+    athena_audio = environment.SharedLibrary("athena_audio", ["audio_directsound.c"], LIBS= ["dsound", "libdxguid"])
 else:
     if is_win:
         al_lib = "openal32"

@@ -136,8 +136,10 @@ struct Athena_SoundContext *Athena_CreateSoundContext(){
             return athena_release_ctx(&l_ctx);
         }
         athena_wave_format_prepare(&wave_format, ATHENA_CHANNELS, ATHENA_RATE, ATHENA_SAMPLE_BITS);
-
-        if(FAILED(IDirectSoundBuffer_SetFormat(l_ctx.primary_buffer, &wave_format))){
+/*
+        if(0 && FAILED(IDirectSoundBuffer_SetFormat(l_ctx.primary_buffer, &wave_format))){
+*/
+        if(FAILED(IDirectSoundBuffer_Play(l_ctx.primary_buffer, 0, 0, DSBPLAY_LOOPING))){
             return athena_release_ctx(&l_ctx);
         }
         else{
@@ -198,7 +200,7 @@ void Athena_SoundInit(struct Athena_Sound *snd, unsigned num_channels, unsigned 
         buffer_info.dwBufferBytes = DSBSIZE_MIN;
     }
 
-    buffer_info.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME;
+    buffer_info.dwFlags = DSBCAPS_CTRLPAN | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPOSITIONNOTIFY;
     buffer_info.dwSize = sizeof(DSBUFFERDESC);
 
     buffer_info.lpwfxFormat = &snd->wave_format;
@@ -273,7 +275,27 @@ unsigned Athena_SoundPost(struct Athena_Sound *snd, const void *data, unsigned l
 
 }
 
-void Athena_SoundPlay(struct Athena_Sound *sound){
+void Athena_SoundPlay(struct Athena_Sound *snd){
+/*
+    LPDIRECTSOUNDBUFFER pDSBuffer      = NULL;
+    DWORD               dwDSBufferSize = NULL;
+    CWaveFile*          pWaveFile      = NULL;
+    DSBPOSITIONNOTIFY*  aPosNotify     = NULL;
+    LPDIRECTSOUNDNOTIFY pDSNotify      = NULL;
+*/
+    HRESULT err;
+    LPDIRECTSOUNDNOTIFY notify;
+    GUID g = IID_IDirectSoundNotify;
+
+    if(FAILED(err = IDirectSoundBuffer_QueryInterface(snd->buffer[0], &g, (void**)(&notify)))){
+        fprintf(stderr, "Could not query buffer interface.\nError Code %s\n", athena_ds_err(err));
+        return;
+    }
+
+    if(FAILED(err = IDirectSoundBuffer_Play(snd->buffer[0], 0, 0, (snd->config.loop)?DSBPLAY_LOOPING:0))){
+        fprintf(stderr, "Could not play buffer.\nError Code %s\n", athena_ds_err(err));
+        return;
+    }
 
 }
 
