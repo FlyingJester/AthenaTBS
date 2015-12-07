@@ -29,6 +29,13 @@ struct Athena_SelectingPosition{
     int x, y;
 };
 
+struct Athena_BuildPosition{
+    struct Athena_Class *clazz;
+
+    /* In tile coordinates */
+    int x, y;
+};
+
 /* UI and graphics data. This must only ever be touched by the UI thread. */
 struct Athena_UI{
     int camera_x, camera_y;
@@ -78,6 +85,7 @@ void Athena_AppendMessageList(struct Athena_MessageList **to, struct Athena_Mess
 /* Message Creation facilities */
 char *Athena_CreateEndTurnMessage(int *size);
 char *Athena_CreateMovementMessage(int *size, struct Athena_Unit *that, int to_x, int to_y);
+char *Athena_CreateBuildMessage(int *size, struct Athena_Unit *that, struct Athena_Class *clazz, int to_x, int to_y);
 char *Athena_CreateAttackMessage(int *size, struct Athena_Unit *that, int to_x, int to_y);
 
 int Athena_GameTest();

@@ -144,6 +144,19 @@ char *Athena_CreateAttackMessage(int *size, struct Athena_Unit *that, int to_x, 
     return message_string;
 }
 
+static const char athena_build_message_string[] =
+"{\n    \"type\":\"BuildUnit\",\n    \"from\":{\"x\":%i, \"y\":%i, \"type\":\"%s\"},\n    \"to\":{\"x\":%i, \"y\":%i, \"type\":\"%s\"}\n}\n";
+char *Athena_CreateBuildMessage(int *size, struct Athena_Unit *that, struct Athena_Class *clazz, int to_x, int to_y){
+    const char * const from_typename = (that->clazz)?that->clazz->name:"",
+        * const to_typename = clazz->name;
+    const unsigned name_len = strlen(from_typename) + strlen(to_typename);
+    char *const message_string = malloc(sizeof(athena_build_message_string) + 200 + name_len);
+    sprintf(message_string, athena_build_message_string, that->x, that->y, from_typename, to_x, to_y, to_typename);
+
+    size[0] = athena_strnlen(message_string, sizeof(athena_build_message_string) + 200, 0);
+    return message_string;
+}
+
 /* ========================================================================== */
 /* Game Tests */
 /* ========================================================================== */

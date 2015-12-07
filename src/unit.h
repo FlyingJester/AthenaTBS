@@ -34,6 +34,11 @@ struct Athena_UnitList {
     struct Athena_UnitList *next;
 };
 
+struct Athena_ClassList{
+    struct Athena_Class *clazz;
+    struct Athena_ClassList *next;
+};
+
 int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
 int Athena_DrawUnitList(struct Athena_UnitList *units, struct Athena_Image *to, unsigned tile_w, unsigned tile_h, int x, int y);
 #define Athena_DrawUnits Athena_DrawUnitList

@@ -16,6 +16,11 @@ struct Athena_GameState;
  *    Type: Athena_SelectingPosition *
  *    Free: callee
  *
+ *    Name: build
+ *    Type: Athena_BuildPosition *
+ *    Free: callee
+ *    Note: This is used to indicate where and what to be built by a source_unit.
+ *
  *    Name: game_state
  *    Type: Athena_GameState *
  *    Free: caller

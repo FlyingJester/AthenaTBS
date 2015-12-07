@@ -12,7 +12,33 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+void unit_build_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
+    struct Athena_BuildPosition *const build = Athena_FindTypeInArgList(args, "build");
+    if(build && unit){
+        int size;
+
+        struct Athena_MessageList * const msg = malloc(sizeof(struct Athena_MessageList)); 
+        
+        msg->msg_text = Athena_CreateBuildMessage(&size, unit, build->clazz, build->x, build->y);
+        
+        Turbo_Object(&msg->value, msg->msg_text, msg->msg_text + size);
+
+        msg->next = NULL;
+
+        Athena_AppendMessageList(&(messages->next), msg);
+
+#ifndef NDEBUG
+        printf("[unit_build_selection_callback]Building unit %s using %s at %i, %i\n", build->clazz->name, unit->clazz->name, build->x, build->y);
+#endif
+    }
+
+    if(build)
+        free(build);
+
+}
+
+static void unit_movement_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
     struct Athena_SelectingPosition *const position = Athena_FindTypeInArgList(args, "destination");
     struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
     if(position && unit){
@@ -86,6 +112,15 @@ void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_Mes
 
     }
     Athena_CancelMenuCallback(args, messages);
+}
+
+void unit_build_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
+    if(!args)
+        return;
+    else{
+/*        struct Athena_GameState *const state = args->arg; */
+        
+    }
 }
 
 void unit_attack_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
