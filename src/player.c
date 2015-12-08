@@ -22,3 +22,20 @@ void Athena_DrawPlayerDataBox(const struct Athena_Player *player, struct Athena_
         
     }
 }
+
+unsigned Athena_CanPayResources(const struct Athena_Resources *payer, const struct Athena_Resources *amount){
+    return
+        payer->cash >= amount->cash &&
+        payer->metal >= amount->metal &&
+        payer->food >= amount->food;
+}
+
+unsigned Athena_PayResources(struct Athena_Resources *payer, const struct Athena_Resources *amount){
+    const unsigned worked = Athena_CanPayResources(payer, amount);
+    
+    payer->cash -= amount->cash;
+    payer->metal -= amount->metal;
+    payer->food -= amount->food;
+    
+    return worked;
+}

@@ -1,5 +1,6 @@
 #include "tech_tree.h"
 #include <stdlib.h>
+#include <string.h>
 
 void Athena_AppendBonus(const char *what, int amount, struct Athena_BonusList **to){
     if(to[0]!=NULL)
@@ -36,4 +37,46 @@ void Athena_AppendTechLevel(struct Athena_TechTree *tree, struct Athena_TechTree
     else{
         to[0] = tree;
     }
+}
+
+void Athena_ForEachTechBonus(struct Athena_TechTree *tree, void(*callback)(struct Athena_Bonus *bonus, void *a), void *arg){
+    Athena_ForEachBonus(tree->bonuses, callback, arg);
+}
+
+void Athena_ForEachBonus(struct Athena_BonusList *list, void(*callback)(struct Athena_Bonus *bonus, void *a), void *arg){
+    if(list){
+        callback(&list->bonus, arg);
+        Athena_ForEachBonus(list->next, callback, arg);
+    }
+}
+
+void Athena_ForEachTechClass(struct Athena_TechTree *tree, void(*callback)(struct Athena_Class *clazz, void *a), void *arg){
+    Athena_ForEachClass(tree->clazzes, callback, arg);
+}
+
+void Athena_ForEachClass(struct Athena_ClassList *list, void(*callback)(struct Athena_Class *clazz, void *a), void *arg){
+    if(list){
+        callback(list->clazz, arg);
+        Athena_ForEachClass(list->next, callback, arg);
+    }
+}
+
+struct athena_bonus_struct_1{
+    const char *what; 
+    long int a;
+};
+
+static void athena_bonus_type_accumulate_callback(struct Athena_Bonus *bonus, void *arg){
+    struct athena_bonus_struct_1 *b = arg;
+    if(strcmp(bonus->what, b->what)==0)
+        b->a += bonus->amount;
+}
+
+long int Athena_AccumulateTechBonus(struct Athena_TechTree *tree, const char *bonus_name){
+    struct athena_bonus_struct_1 arg = { NULL, 0l };
+    arg.what = bonus_name;
+
+    Athena_ForEachTechBonus(tree, athena_bonus_type_accumulate_callback, &arg);
+    
+    return arg.a;
 }

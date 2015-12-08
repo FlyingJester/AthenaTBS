@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
     struct Athena_Options option;
     const int err1 = Athena_LoadOptions("athena_settings.json", &option);
     struct Athena_Window * const window = Athena_CreateWindow(option.screen_w, option.screen_h, "Athena Test");
-    struct Athena_Player players[] = {{0, 0, 0, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF, 1}, {0, 0, 0, "Link", {NULL, 0, 0}, 0xFF0FF0F0, 1}};
+    struct Athena_Player players[] = {{{0, 0, 0}, "Flying Jester", {NULL, 0, 0}, 0xFF0000FF, 1}, {{0, 0, 0}, "Link", {NULL, 0, 0}, 0xFF0FF0F0, 1}};
     struct Athena_Field field;
 
     struct Athena_Sound *sound = Athena_LoadOpusFile("res/sounds/night_at_the_river.opus");
