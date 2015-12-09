@@ -417,13 +417,28 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
                 that->ui.last_camera_motion.type=ui_cam_none;
             }
         }
-/*
-        if(that->ui.camera_x<-(that->ui.framebuffer.w>>1))
-            that->ui.camera_x = -(that->ui.framebuffer.w>>1);
+
+        {
+            const int min_x = -(int)(that->ui.framebuffer.w>>1),
+                min_y = -(int)(that->ui.framebuffer.h>>1),
+                max_x = (that->field->w * that->field->tileset->tile_width)  + min_x,
+                max_y = (that->field->h * that->field->tileset->tile_height) + min_y;
             
-        if(that->ui.camera_y<-(that->ui.framebuffer.h>>1))
-            that->ui.camera_y = -(that->ui.framebuffer.h>>1);
-*/
+    
+            if(that->ui.camera_x >= max_x)
+                that->ui.camera_x = max_x;
+                
+            if(that->ui.camera_y >= max_y)
+                that->ui.camera_y = max_y;
+
+            if(that->ui.camera_x <= min_x)
+                that->ui.camera_x = min_x;
+                
+            if(that->ui.camera_y <= min_y)
+                that->ui.camera_y = min_y;
+
+        }
+
     }
 
     { /* Start Drawing. Maybe someday move this out of here. Who knows. Not me. */
