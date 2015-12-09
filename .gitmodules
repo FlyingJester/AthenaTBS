@@ -7,3 +7,6 @@
 [submodule "res/fonts/sgi"]
 	path = res/fonts/sgi
 	url = https://github.com/sphere-group/sgi_screen
+[submodule "res/fonts/selawik"]
+	path = res/fonts/selawik
+	url = https://github.com/sphere-group/selawik
