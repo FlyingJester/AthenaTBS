@@ -405,7 +405,7 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
         }
         { /* Draw info bar */
 
-            struct Athena_Viewport port = { NULL, 0, 0, 128, 48 };
+            struct Athena_Viewport port = { NULL, 0, 0, 160, 64 };
             port.image = &that->ui.framebuffer;
 
             Athena_DrawPlayerDataBox(that->players + that->whose_turn, &port);
@@ -508,7 +508,7 @@ static void athena_end_turn_callback(struct Athena_ButtonArgList *arg, struct At
     }
 }
 
-static struct Athena_Button end_turn_button = { 128, 0, 64, 20, "End Turn", NULL, athena_open_end_turn_menu };
+static struct Athena_Button end_turn_button = { 160, 0, 0, 20, "End Turn", NULL, athena_open_end_turn_menu };
 
 void Athena_UIInit(struct Athena_GameState *state){
     state->ui.click_sound = Athena_LoadOpusFile("res/sounds/bloop.opus");
@@ -522,6 +522,10 @@ void Athena_UIInit(struct Athena_GameState *state){
 
     state->ui.buttons = malloc(sizeof(struct Athena_ButtonList));
     
+    if(end_turn_button.w==0){
+        end_turn_button.w = StringWidth(GetSystemFont(), end_turn_button.text) + 8;
+    }
+
     state->ui.buttons->button = end_turn_button;
     state->ui.buttons->button.arg = Athena_DefaultButtonArgList(state);
 

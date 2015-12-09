@@ -19,7 +19,7 @@ libathena = environment.StaticLibrary("athena",
         "turbo_json_helpers.c", "button.c", "menu.c", "load_opus.c", "audio_ctl.c", "unit_classes.c", "pathfind.c",
         "server_thread.c", "ui_thread.c",
 	"options.c", "titlescreen.c",
-        "sgi_screen.c", "cynical.c"
+        "sgi_screen.c", "cynical.c", "selawik.c"
     ],
     LIBS = athena_libs)
 

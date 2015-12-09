@@ -61,7 +61,7 @@ gen_unit_class_definitions = environment.Command(
     CreateAthenaClassesSourceCommand)
 
 gen_sgi_font_include = environment.Command(
-    [font_sources_prefix + ".c", font_sources_prefix + ".h"],
+    ["src/sgi_screen.c", "src/sgi_screen.h"],
     "res/fonts/sgi/sgi_screen.rfn",
     CreateBinaryCFiles
 )
@@ -69,6 +69,12 @@ gen_sgi_font_include = environment.Command(
 gen_cynical_font_include = environment.Command(
     ["src/cynical.c", "src/cynical.h"],
     "res/fonts/cynical.rfn",
+    CreateBinaryCFiles
+)
+
+gen_selawik_font_include = environment.Command(
+    ["src/selawik.c", "src/selawik.h"],
+    "res/fonts/selawik/selawik-small-bold.rfn",
     CreateBinaryCFiles
 )
 

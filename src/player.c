@@ -2,6 +2,7 @@
 #include "image.h"
 #include "font.h"
 #include "window_style.h"
+#include <stdio.h>
 
 void Athena_DrawPlayerDataBox(const struct Athena_Player *player, struct Athena_Viewport *to){
     
@@ -12,14 +13,23 @@ void Athena_DrawPlayerDataBox(const struct Athena_Player *player, struct Athena_
 
     Athena_DrawWindowStyle(&style, to);
 
-    WriteString(GetSystemFont(), player->name, to->image, to->x + 20, to->y + 4);
+    WriteString(GetTitleFont(), player->name, to->image, to->x + 20, to->y + 4);
     
     if(player->flag.pixels){
         Athena_BlitBlended(&player->flag, to->image, to->x + 4, to->y + 4);
     }
     
     {
-        
+        char buffer[80];
+        sprintf(buffer, "%i", player->resources.cash);
+        WriteString(GetSystemFont(), "Cash", to->image, to->x + 20, to->y + 20);
+        WriteString(GetSystemFont(), buffer, to->image, to->x + 70, to->y + 20);
+        sprintf(buffer, "%i", player->resources.metal);
+        WriteString(GetSystemFont(), "Metal",to->image, to->x + 20, to->y + 34);
+        WriteString(GetSystemFont(), buffer, to->image, to->x + 70, to->y + 34);
+        sprintf(buffer, "%i", player->resources.food);
+        WriteString(GetSystemFont(), "Food", to->image, to->x + 20, to->y + 48);
+        WriteString(GetSystemFont(), buffer, to->image, to->x + 70, to->y + 48);
     }
 }
 

@@ -16,7 +16,7 @@ static int athena_set_menu_position(struct Athena_ButtonList *buttons, int x, in
 }
 
 void Athena_OrganizeMenu(struct Athena_Menu *menu){
-    menu->h = athena_set_menu_position(menu->buttons, menu->x + 4, menu->y + 16, menu->w - 8, 20) - menu->y;
+    menu->h = athena_set_menu_position(menu->buttons, menu->x + 4, menu->y + 20, menu->w - 8, 20) - menu->y;
 }
 
 static struct Athena_Viewport *athena_viewport_from_menu(const struct Athena_Menu *from, struct Athena_Image *image, struct Athena_Viewport *to){
@@ -28,7 +28,7 @@ void Athena_DrawMenu(struct Athena_Menu *menu, struct Athena_Viewport *onto){
     struct Athena_Viewport frame;
 
     Athena_DrawDefaultWindowStyle(athena_viewport_from_menu(menu, onto->image, &frame));
-    WriteString(GetSystemFont(), menu->text, onto->image, menu->x + 4, menu->y + 4);
+    WriteString(GetTitleFont(), menu->text, onto->image, menu->x + 4, menu->y + 4);
     Athena_UIDrawButtons(menu->buttons, onto);
 }
 

@@ -1,5 +1,7 @@
 #include "font.h"
 #include "cynical.h"
+#include "sgi_screen.h"
+#include "selawik.h"
 #include "bufferfile/bufferfile.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -117,7 +119,11 @@ unsigned long StringWidthN(struct Athena_Font *font, const char *str, unsigned l
     return w;
 }
 
-static struct Athena_Font *system_font = NULL;
+static struct Athena_Font *title_font = NULL,
+    * system_font = NULL,
+    * mono_font = NULL;
+
+#if 0
 
 struct Athena_Font *GetSystemFont(){
     if(system_font==NULL){
@@ -140,6 +146,28 @@ struct Athena_Font *GetSystemFont(){
     return system_font;
 }
 
+#endif
+
+struct Athena_Font *GetSystemFont(){
+    if(system_font==NULL)
+        system_font = LoadFontMem((uint32_t *)sgi_screen_rfn, SGI_SCREEN_RFN_SIZE);
+    return system_font;
+}
+
+struct Athena_Font *GetMonoFont(){
+    if(mono_font==NULL)
+        mono_font = LoadFontMem((uint32_t *)sgi_screen_rfn, SGI_SCREEN_RFN_SIZE);
+    return mono_font;
+}
+
+struct Athena_Font *GetTitleFont(){
+    if(title_font==NULL){
+        title_font = LoadFontMem((uint32_t *)selawik_small_bold_rfn, SELAWIK_SMALL_BOLD_RFN_SIZE);
+        PolarizeFont(title_font);
+    }
+    return title_font;
+}
+
 void DestroyFont(struct Athena_Font *font){
     uint64_t i = 0;
     
@@ -154,5 +182,44 @@ void DestroyFont(struct Athena_Font *font){
 }
 
 void DestroySystemFont(){
-    DestroyFont(system_font);
+    if(system_font)
+        DestroyFont(system_font);
+}
+
+void DestroyTitleFont(){
+    if(title_font)
+        DestroyFont(title_font);
+}
+
+void DestroyMonoFont(){
+    if(mono_font)
+        DestroyFont(mono_font);
+}
+
+void PolarizeFont(struct Athena_Font *font){
+/*
+    unsigned long number_glyphs;
+    struct Athena_Image *glyphs;
+*/
+    int i;
+    for(i=0; i<font->number_glyphs; i++){
+        int z = font->glyphs[i].w * font->glyphs[i].h;
+        uint8_t *a = (uint8_t *)(font->glyphs[i].pixels);
+        a += 3;
+        while(--z){
+/*
+            if(a[0]<32)
+                a[0] = 0;
+            else if(a[0]<96)
+                a[0] = 64;
+*/
+            if(a[0]<96)
+                a[0] = 0;
+            else if(a[0]<160)
+                a[0] = 128;
+            else
+                a[0] = 0xFF;
+            a+=4;
+        }
+    }
 }
