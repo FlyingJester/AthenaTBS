@@ -22,7 +22,7 @@
 #define PRINT_ALL_X_MODES 1
 */
 
-#define ATHENA_X_EVENT_MASK (StructureNotifyMask|KeyPressMask|ButtonPress|ExposureMask|PointerMotionMask)
+#define ATHENA_X_EVENT_MASK (StructureNotifyMask|KeyPressMask|KeyReleaseMask|ButtonPress|ExposureMask|PointerMotionMask)
 
 static Display *display = NULL;
 
@@ -327,6 +327,7 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
             to->type = athena_click_event;
             return 1;
         case KeyPress:
+        case KeyRelease:
             {   
                 KeySym sim;
                 XComposeStatus compose;
@@ -337,17 +338,16 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
                 else{
                     int key = athena_x_prepare_key(buffer[0]);
                     if(key>=0){
-                        printf("Parsed %s as %i\n", buffer, key);
                         memset(to, 0, sizeof(struct Athena_Event));
 
-                        x_window->keys[key] = 1;
+                        x_window->keys[key] = event.type==KeyPress;
 
                         to->which = key + 'a';
                         to->type = athena_key_event;
                         return 1;
                     }
                     else{
-                        printf("Unable to parse %s\n", buffer);
+                        fprintf(stderr, "Unable to parse %s\n", buffer);
                     }
                 }
             }

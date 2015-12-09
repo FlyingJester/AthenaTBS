@@ -63,7 +63,7 @@ void Athena_DrawImageIndex(const struct Athena_Tileset *ts, struct Athena_Image 
 
 void athena_draw_tile_row_iter(const struct Athena_Tileset *ts, struct Athena_Image *onto, const struct Athena_TileIndexArray *indices,
     unsigned offset, unsigned len, int x, int y){
-    if(x < onto->w && offset<len){
+    if(offset<len){
         Athena_DrawTileIndex(ts, onto, indices->indices[offset], x, y);
         athena_draw_tile_row_iter(ts, onto, indices, offset+1, len, x+ts->tile_width, y);
     }
@@ -73,7 +73,7 @@ void Athena_DrawTileRow(const struct Athena_Tileset *ts, struct Athena_Image *on
     unsigned offset, unsigned len, int x, int y){
 
     if(x + (long)ts->tile_width < 0){
-        Athena_DrawTileRow(ts, onto, indices, offset, len, x + ts->tile_width, y);
+        Athena_DrawTileRow(ts, onto, indices, offset+1, len-1, x + ts->tile_width, y);
     }
     else {
         athena_draw_tile_row_iter(ts, onto, indices, offset, ATHENA_MIN(indices->num_indices, offset + len), x, y);

@@ -17,10 +17,10 @@ int Athena_DrawUnit(struct Athena_Unit *unit, struct Athena_Image *to, unsigned 
             color = unit->owner->color;
         }
         
-        Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, tile_w, 2, color);
-        Athena_FillRect(to, unit->x * tile_w + 2, ((unit->y + 1) * tile_h) - 2, tile_w - 4, 2, color);
-        Athena_FillRect(to, unit->x * tile_w, unit->y * tile_h, 2, tile_h, color);
-        Athena_FillRect(to, ((unit->x + 1) * tile_w) - 2, unit->y * tile_h, 2, tile_h, color);
+        Athena_FillRect(to, -x + unit->x * tile_w,             -y + unit->y * tile_h, tile_w, 2, color);
+        Athena_FillRect(to, -x + unit->x * tile_w + 2,         -y + ((unit->y + 1) * tile_h) - 2, tile_w - 4, 2, color);
+        Athena_FillRect(to, -x + unit->x * tile_w,             -y + unit->y * tile_h, 2, tile_h, color);
+        Athena_FillRect(to, -x + ((unit->x + 1) * tile_w) - 2, -y + unit->y * tile_h, 2, tile_h, color);
 
         if(unit->actions>0){
             Athena_DrawAnimation(sprite, to, to_x, to_y);

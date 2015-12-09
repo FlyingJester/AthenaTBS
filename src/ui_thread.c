@@ -11,6 +11,7 @@
 #include <TurboJSON/object.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 void unit_build_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
     struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
@@ -214,7 +215,7 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
         if(list){
 
             int x, y;
-            Athena_FieldPixelXYToTileXY(field, event->x - ui->camera_x, event->y - ui->camera_y, &x, &y);
+            Athena_FieldPixelXYToTileXY(field, event->x, event->y, &x, &y, ui->camera_x, ui->camera_y);
 
             if(Athena_PositionInList(list, x, y)){
 
@@ -255,7 +256,7 @@ static int athena_ui_get_unit_menu(struct Athena_GameState *that, struct Athena_
         return 0;
     else{
         int x, y;
-        Athena_FieldPixelXYToTileXY(that->field, event->x - that->ui.camera_x, event->y - that->ui.camera_y, &x, &y);
+        Athena_FieldPixelXYToTileXY(that->field, event->x, event->y, &x, &y, that->ui.camera_x, that->ui.camera_y);
         
         {
             struct Athena_Unit *const unit = Athena_FindUnitAt(units, x, y);
@@ -363,8 +364,8 @@ static void athena_draw_selector(const struct Athena_Field *field, struct Athena
         int x, y, mouse_x, mouse_y;
         Athena_GetMousePosition(ui->window, &mouse_x, &mouse_y);
 
-        Athena_FieldPixelXYToTileXY(field, mouse_x - ui->camera_x, mouse_y - ui->camera_y, &x, &y);
-        Athena_FieldTileXYToPixelXY(field, x, y, &x, &y);
+        Athena_FieldPixelXYToTileXY(field, mouse_x, mouse_y, &x, &y, ui->camera_x, ui->camera_y);
+        Athena_FieldTileXYToPixelXY(field, x, y, &x, &y, ui->camera_x, ui->camera_y);
         
         Athena_BlendRect(&ui->framebuffer, x, y, field->tileset->tile_width, field->tileset->tile_height, Athena_RGBAToRaw(0xE0, 0xE0, 0x30, 0xFF), Athena_RGBARawAverage);
     }
@@ -372,20 +373,57 @@ static void athena_draw_selector(const struct Athena_Field *field, struct Athena
 
 static void athena_positions_callback(void *arg, int x, int y){
     struct Athena_GameState *state = arg;
-    Athena_FieldTileXYToPixelXY(state->field, x, y, &x, &y);
+    Athena_FieldTileXYToPixelXY(state->field, x, y, &x, &y, state->ui.camera_x, state->ui.camera_y);
     
-    Athena_BlendRect(&state->ui.framebuffer, x - state->ui.camera_x, y - state->ui.camera_y, 
-        state->field->tileset->tile_width, state->field->tileset->tile_height, Athena_RGBAToRaw(0x30, 0x30, 0x10, 0), Athena_RGBARawAdd);
+    Athena_BlendRect(&state->ui.framebuffer, x, y, state->field->tileset->tile_width, state->field->tileset->tile_height,
+        Athena_RGBAToRaw(0x30, 0x30, 0x10, 0), Athena_RGBARawAdd);
 }
 
 int Athena_UIThreadFrame(struct Athena_GameState *that){
     struct Athena_MessageList messages;
     messages.next = NULL;
+/*
+    ...
+*/
+    memset(that->ui.framebuffer.pixels, 0, that->ui.framebuffer.w * that->ui.framebuffer.h * 4);
+
     { /* Camera controls. This must be handled before anything else, so that drawing can reflect changes as soon as possible. */
-        if(Athena_IsKeyPressed(that->ui.window, 'a'))
-            exit(0);
-        
-        
+        int64_t amount = 1;
+        const int64_t current_time = Athena_GetMillisecondTicks();
+        if(that->ui.last_camera_motion.type==ui_cam_key && that->ui.last_camera_motion.time)
+            amount = current_time - that->ui.last_camera_motion.time;
+        if(amount){
+            if(Athena_IsKeyPressed(that->ui.window, 'w')){
+                that->ui.camera_y-=amount;
+                that->ui.last_camera_motion.type=ui_cam_key;
+                that->ui.last_camera_motion.time=current_time;
+            }
+            else if(Athena_IsKeyPressed(that->ui.window, 'a')){
+                that->ui.camera_x-=amount;
+                that->ui.last_camera_motion.type=ui_cam_key;
+                that->ui.last_camera_motion.time=current_time;
+            }
+            else if(Athena_IsKeyPressed(that->ui.window, 's')){
+                that->ui.camera_y+=amount;
+                that->ui.last_camera_motion.type=ui_cam_key;
+                that->ui.last_camera_motion.time=current_time;
+            }
+            else if(Athena_IsKeyPressed(that->ui.window, 'd')){
+                that->ui.camera_x+=amount;
+                that->ui.last_camera_motion.type=ui_cam_key;
+                that->ui.last_camera_motion.time=current_time;
+            }
+            else if(that->ui.last_camera_motion.type==ui_cam_key){
+                that->ui.last_camera_motion.type=ui_cam_none;
+            }
+        }
+/*
+        if(that->ui.camera_x<-(that->ui.framebuffer.w>>1))
+            that->ui.camera_x = -(that->ui.framebuffer.w>>1);
+            
+        if(that->ui.camera_y<-(that->ui.framebuffer.h>>1))
+            that->ui.camera_y = -(that->ui.framebuffer.h>>1);
+*/
     }
 
     { /* Start Drawing. Maybe someday move this out of here. Who knows. Not me. */

@@ -32,9 +32,7 @@ static int athena_draw_field_iter(const struct Athena_Field *field, struct Athen
 }
 
 int Athena_DrawField(const struct Athena_Field *field, struct Athena_Image *onto, int x, int y){
-    if(x + (long)field->tileset->tile_width < 0)
-        return 0;
-    return athena_draw_field_iter(field, onto, 0, x, y);
+    return athena_draw_field_iter(field, onto, 0, -x, -y);
 }
 
 int Athena_LoadFieldFromFile(const char *file, struct Athena_Field *to){
@@ -161,15 +159,15 @@ int Athena_LoadFieldFromTurboValue(const struct Turbo_Value *value, struct Athen
     return ret;
 }
 
-int Athena_FieldTileXYToPixelXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to){
-    x_to[0] = x*field->tileset->tile_width;
-    y_to[0] = y*field->tileset->tile_height;
+int Athena_FieldTileXYToPixelXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to, int camera_x, int camera_y){
+    x_to[0] = x*field->tileset->tile_width - camera_x;
+    y_to[0] = y*field->tileset->tile_height - camera_y;
     return 0;
 }
 
-int Athena_FieldPixelXYToTileXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to){
-    x_to[0] = x/field->tileset->tile_width;
-    y_to[0] = y/field->tileset->tile_height;
+int Athena_FieldPixelXYToTileXY(const struct Athena_Field *field, int x, int y, int *x_to, int *y_to, int camera_x, int camera_y){
+    x_to[0] = (x + camera_x)/field->tileset->tile_width;
+    y_to[0] = (y + camera_y)/field->tileset->tile_height;
     return 0;
 }
 
