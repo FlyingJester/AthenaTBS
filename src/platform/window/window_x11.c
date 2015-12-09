@@ -337,6 +337,7 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
                 else{
                     int key = athena_x_prepare_key(buffer[0]);
                     if(key>=0){
+                        printf("Parsed %s as %i\n", buffer, key);
                         memset(to, 0, sizeof(struct Athena_Event));
 
                         x_window->keys[key] = 1;
@@ -344,6 +345,9 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
                         to->which = key + 'a';
                         to->type = athena_key_event;
                         return 1;
+                    }
+                    else{
+                        printf("Unable to parse %s\n", buffer);
                     }
                 }
             }
@@ -367,7 +371,7 @@ int Athena_Private_IsKeyPressed(void *handle, unsigned key){
     {
         const int k = athena_x_prepare_key(key);
         if(k>=0)
-            return x_window->keys[key];
+            return x_window->keys[k];
     }
     return 0;
 }
