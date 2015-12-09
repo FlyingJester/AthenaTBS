@@ -194,6 +194,8 @@ int Athena_Private_Update(void *handle, unsigned format, const void *RGBA, unsig
         memcpy(x_window->shminfo.shmaddr, RGBA, w * h << 2);
     }
     else if(athena_x11_visinfo(x_window)->depth==24){
+        memcpy(x_window->shminfo.shmaddr, RGBA, w * h << 2);
+/*
         unsigned i;
         const unsigned num_pixels = w * h;
         const unsigned int *in = RGBA;
@@ -203,6 +205,7 @@ int Athena_Private_Update(void *handle, unsigned format, const void *RGBA, unsig
             pixel[1] = (in[i] >> 8) & 0xFF;
             pixel[0] = (in[i] >> 16) & 0xFF;
         }
+*/
     }
     else{
         memcpy(x_window->shminfo.shmaddr, RGBA, w * h * athena_x11_visinfo(x_window)->depth >> 3);
