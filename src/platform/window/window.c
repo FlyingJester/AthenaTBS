@@ -72,7 +72,7 @@ int Athena_FlipWindow(struct Athena_Window *that){
 }
 
 unsigned Athena_GetEvent(struct Athena_Window *that, struct Athena_Event *to){
-    return Athena_Private_GetEvent(that, to);
+    return Athena_Private_GetEvent(that->handle, to);
 }
 
 int Athena_IsKeyPressed(struct Athena_Window *that, unsigned key){

@@ -3,7 +3,8 @@
 enum Athena_EventType {
     athena_unknown_event,
     athena_quit_event,
-    athena_click_event
+    athena_click_event,
+    athena_key_event
 };
 
 enum Athena_MouseButton {

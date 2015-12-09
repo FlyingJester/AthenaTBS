@@ -39,6 +39,12 @@ struct Athena_BuildPosition{
 /* UI and graphics data. This must only ever be touched by the UI thread. */
 struct Athena_UI{
     int camera_x, camera_y;
+    struct{
+        int64_t time;
+        unsigned event_x, event_y;
+        enum {ui_cam_none, ui_cam_mouse, ui_cam_key} type;
+    } last_camera_motion;
+
     struct Athena_Image framebuffer;
     struct Athena_Window *window;
     struct Athena_ButtonList *buttons;

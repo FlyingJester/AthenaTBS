@@ -321,6 +321,7 @@ static int athena_ui_thread_handle_event(struct Athena_GameState *that, struct A
                 }
                 break;
             case athena_unknown_event:
+            case athena_key_event:
                 break;
             case athena_quit_event:
                 that->status = 1;
@@ -380,11 +381,17 @@ static void athena_positions_callback(void *arg, int x, int y){
 int Athena_UIThreadFrame(struct Athena_GameState *that){
     struct Athena_MessageList messages;
     messages.next = NULL;
-    
+    { /* Camera controls. This must be handled before anything else, so that drawing can reflect changes as soon as possible. */
+        if(Athena_IsKeyPressed(that->ui.window, 'a'))
+            exit(0);
+        
+        
+    }
+
     { /* Start Drawing. Maybe someday move this out of here. Who knows. Not me. */
         
         Athena_LockMonitor(that->monitor);
-        
+
         { /* Field Drawing, requires a lock. */
             Athena_DrawField(that->field, &that->ui.framebuffer, that->ui.camera_x, that->ui.camera_y);
             

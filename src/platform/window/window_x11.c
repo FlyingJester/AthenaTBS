@@ -33,6 +33,11 @@ static Display *display = NULL;
     if(!A_HANDLE)\
         return -1
 
+#define ATHENA_MAX_KEYS 100
+
+/* This may later change to something else to support unicode codepoints. */
+typedef unsigned char athena_key_t;
+
 struct Athena_X_Window {
     Window root_window, window;
     Colormap color_map;
@@ -48,6 +53,8 @@ struct Athena_X_Window {
     unsigned was_attached;
 
     unsigned w, h;
+
+    athena_key_t keys[ATHENA_MAX_KEYS];
 };
 
 static const XVisualInfo *athena_x11_visinfo(const struct Athena_X_Window *x_window){
@@ -180,6 +187,8 @@ int Athena_Private_CreateWindow(void *handle, int x, int y, unsigned w, unsigned
     if(title)
         XStoreName(display, x_window->window, title);
 
+    memset(x_window->keys, 0, ATHENA_MAX_KEYS * sizeof(athena_key_t));
+
     return 0;
 }
 
@@ -267,6 +276,20 @@ int Athena_Private_FlipWindow(void *handle){
     return 0;
 }
 
+static int athena_x_prepare_key(unsigned key){
+    if(key>='0' && key<='9')
+        return ('z' - 'a') + (key - '0');
+
+    if(key >= 'A' && key<='Z')
+        key -= 'A' - 'a';
+    if(key>= 'a')
+        key -= 'a';
+    if(key < ATHENA_MAX_KEYS)
+        return key;
+    else
+        return -1;
+}
+
 unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
     XEvent event;
     struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
@@ -303,6 +326,29 @@ unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
                 to->which = athena_unknown_mouse_button;
             to->type = athena_click_event;
             return 1;
+        case KeyPress:
+            {   
+                KeySym sim;
+                XComposeStatus compose;
+                char buffer[16];
+                int len = XLookupString(&event.xkey, buffer, sizeof(buffer), &sim, &compose);
+                if(!(buffer[0]!=0 && buffer[1]==0 && len))
+                    break;
+                else{
+                    int key = athena_x_prepare_key(buffer[0]);
+                    if(key>=0){
+                        memset(to, 0, sizeof(struct Athena_Event));
+
+                        x_window->keys[key] = 1;
+
+                        to->which = key + 'a';
+                        to->type = athena_key_event;
+                        return 1;
+                    }
+                }
+            }
+    
+
     }
     return 0;
 }
@@ -316,5 +362,12 @@ int Athena_Private_GetMousePosition(void *handle, int *x, int *y){
 }
 
 int Athena_Private_IsKeyPressed(void *handle, unsigned key){
+    struct Athena_X_Window * const x_window = ATHENA_VERIFY(handle);
+    
+    {
+        const int k = athena_x_prepare_key(key);
+        if(k>=0)
+            return x_window->keys[key];
+    }
     return 0;
 }
