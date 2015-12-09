@@ -82,12 +82,12 @@ static uint8_t athena_read_tga_16(uint32_t *to, const uint8_t *from){
 }
 
 static uint8_t athena_read_tga_24(uint32_t *to, const uint8_t *from){
-    to[0] = Athena_RGBAToRaw(from[2], from[1], from[0], 0xFF);
+    to[0] = Athena_RGBAToRaw(from[0], from[1], from[2], 0xFF);
     return 3;
 }
 
 static uint8_t athena_read_tga_32(uint32_t *to, const uint8_t *from){
-    to[0] = Athena_RGBAToRaw(from[2], from[1], from[0], from[3]);
+    to[0] = Athena_RGBAToRaw(from[0], from[1], from[2], from[3]);
     return 4;
 }
 

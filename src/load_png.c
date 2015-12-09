@@ -115,17 +115,39 @@ start_row:
                 row_mem = row_buf;
                 
                 memcpy(row_mem, row_p, to->w * 3);
+start_pixel_color_alpha_mux:
+/*                memcpy(row_p, row_mem, 3); */
 
-start_pixel_mux:
-                memcpy(row_p, row_mem, 3);
+                row_p[2] = row_mem[0];
+                row_p[1] = row_mem[1];
+                row_p[0] = row_mem[2];
+
                 row_p += 3;
                 row_mem += 3;
-                    
+
                 row_p[0] = 0xFF;
                 row_p++;
 
                 if(++w<to->w)
-                    goto start_pixel_mux;
+                    goto start_pixel_color_alpha_mux;
+            }
+            else{
+                int w = 0;
+                char r, g, b;
+start_pixel_color_mux:
+                
+                b = row_p[0];
+                g = row_p[1];
+                r = row_p[2];
+                
+                row_p[0] = r;
+                row_p[1] = g;
+                row_p[2] = b;
+
+                row_p += 4;
+
+                if(++w<to->w)
+                    goto start_pixel_color_mux;
             }
         }
         if(++h < to->h)

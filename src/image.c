@@ -352,21 +352,21 @@ const uint32_t *Athena_PixelConst(const struct Athena_Image *to, int x, int y){
 /* 0xFF00FFFF is yellow. That is all. */
 
 uint32_t Athena_RGBAToRaw(uint8_t r, uint8_t g, uint8_t b, uint8_t a){
-    return (a << 24) | (b << 16) | (g << 8) | (r);
+    return (a << 24) | (r << 16) | (g << 8) | (b);
 }
 
 void Athena_RawToRGBA(uint32_t rgba, uint8_t *r, uint8_t *g, uint8_t *b, uint8_t *a){
-    r[0] = rgba & 0xFF;
+    b[0] = rgba & 0xFF;
     rgba >>= 8;
     g[0] = rgba & 0xFF;
     rgba >>= 8;
-    b[0] = rgba & 0xFF;
+    r[0] = rgba & 0xFF;
     rgba >>= 8;
     a[0] = rgba & 0xFF;
 }
 
 uint8_t Athena_RawToR(uint32_t rgba){
-    return rgba & 0xFF;
+    return (rgba >> 16) & 0xFF;
 }
 
 uint8_t Athena_RawToG(uint32_t rgba){
@@ -374,7 +374,7 @@ uint8_t Athena_RawToG(uint32_t rgba){
 }
 
 uint8_t Athena_RawToB(uint32_t rgba){
-    return (rgba >> 16) & 0xFF;
+    return rgba & 0xFF;
 }
 
 uint8_t Athena_RawToA(uint32_t rgba){
