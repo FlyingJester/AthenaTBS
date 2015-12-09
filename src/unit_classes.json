@@ -6,7 +6,10 @@
         "range":1.0,
         "movement":0.0,
         "actions":1.0,
-        "is_building":true
+        "is_building":true,
+        "cash":10,
+        "metal":50,
+        "food":10
     },
     {
         "name":"Fortification",
@@ -25,7 +28,10 @@
         "movement":0.0,
         "actions":0.0,
         "is_building":true,
-        "is_path":true
+        "is_path":true,
+        "cash":5,
+        "metal":5,
+        "food":5
     },
     {
         "name":"Wormer",

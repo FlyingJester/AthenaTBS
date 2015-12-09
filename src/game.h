@@ -71,8 +71,8 @@ struct Athena_GameState{
     struct Athena_Field *field;
     struct Athena_EventData event;
     struct Athena_Player *players;
-    struct Athena_UI ui;
     unsigned whose_turn, num_players;
+    struct Athena_UI ui;
     int status;
 };
 

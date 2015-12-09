@@ -77,6 +77,11 @@ int main(int argc, char *argv[]){
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),       NULL,11, 5);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),       NULL,12, 5);
 
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 0, 5, 2);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Path"),          players + 0, 6, 2);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Industrial"),    players + 0, 5, 1);
+    Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Fortification"), players + 0, 6, 1);
+
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 7, 4);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 7, 5);
     Athena_SpawnUnit(&field.units, Athena_BuiltinClass("Coalition Builder"), players + 0, 7, 6);

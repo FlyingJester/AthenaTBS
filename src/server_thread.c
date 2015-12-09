@@ -1,4 +1,5 @@
 #include "server_thread.h"
+#include "player.h"
 #include "unit.h"
 #include "turbo_json_helpers.h"
 #include <TurboJSON/parse.h>
@@ -157,6 +158,7 @@ static int athena_handle_message_iter(struct Athena_MessageList *msg, struct Ath
                 case EndTurn:
                     Athena_RenewUnitList(that->field->units);
                     that->whose_turn = (that->whose_turn+1) % that->num_players;
+                    Athena_GivePlayerIncome(&that->players[that->whose_turn], that->field->units);
                     athena_clear_corpses(&that->field->units, NULL);
                     break;
                 case MoveUnit:

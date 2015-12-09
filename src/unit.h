@@ -1,6 +1,7 @@
 #pragma once
 #include "spriteset.h"
 #include "menu.h"
+#include "player.h"
 
 struct Athena_Player;
 
@@ -19,6 +20,7 @@ struct Athena_Class {
     unsigned is_building, can_build, is_path;
     const char *name;
     struct Athena_Spriteset *spriteset;
+    struct Athena_Resources income;
 };
 
 struct Athena_Unit {

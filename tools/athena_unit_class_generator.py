@@ -22,18 +22,28 @@ def gen_bool_to_str(n, dict):
     return gen_int_to_str(gen_bool_to_int(n, dict))
 
 def GenerateAthenaClassDictionary(that, n):
-    return dict(
+    def int_from_str_if_exists(key):
+        if key in that:
+            return int(that[key])
+        else:
+            return 0
+
+    x = dict(
         defense = str(that["defense"]),
         attack  = str(that["attack"]),
         movement= gen_int_to_str(that["movement"]),
         actions = gen_int_to_str(that["actions"]),
         range   = gen_int_to_str(that["range"]),
         is_building = gen_bool_to_str("is_building", that),
-        can_build = gen_bool_to_str("can_build", that),
+        can_build   = gen_bool_to_str("can_build", that),
         is_path = gen_bool_to_str("is_path", that),
         name    = str(that["name"]),
+        cash    = gen_int_to_str(int_from_str_if_exists("cash")),
+        metal   = gen_int_to_str(int_from_str_if_exists("metal")),
+        food    = gen_int_to_str(int_from_str_if_exists("food")),
         i = n
     )
+    return x
 
 def CreateAthenaClassesSource(classes, paths):
     for p in paths:
@@ -66,7 +76,11 @@ def CreateAthenaClassesSource(classes, paths):
     header.write("extern " + class_array_def + ";\n")
     source.write(class_array_def + " = {\n")
     
-    class_template = Template(" $defense, $attack, $movement, $actions, $range, $is_building, $can_build, $is_path, \"$name\",\n        athena_unit_classes_spritesets + $i ")
+    class_template = Template("""
+        $defense, $attack, $movement, $actions, $range, $is_building, $can_build, $is_path, \"$name\",
+        athena_unit_classes_spritesets + $i,
+        { $cash, $metal, $food }
+    """)
     
     i = 0
     for that in classes:

@@ -86,7 +86,7 @@ athena_game_start:
 
     Athena_UIThreadFrame(&game_state);
 
-    Athena_MillisecondSleep(10); 
+/*    Athena_MillisecondSleep(10); */
 
     Athena_LockMonitor(game_state.monitor);
     {
