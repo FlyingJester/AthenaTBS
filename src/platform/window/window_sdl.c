@@ -57,9 +57,9 @@ int Athena_Private_HideWindow(void *handle){
 
 static SDL_Surface *Athena_Private_SurfaceOfFormat(unsigned w, unsigned h, unsigned format, const void *RGB){
 const unsigned long
-    r0 = 0x000000FF,
+    r0 = 0x00FF0000,
     g0 = 0x0000FF00,
-    b0 = 0x00FF0000,
+    b0 = 0x000000FF,
     a0 = 0xFF000000,
     r1 = 0x0000FF00,
     g1 = 0x00FF0000,
