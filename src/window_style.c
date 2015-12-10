@@ -47,6 +47,7 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
      *
      */
     
+    uint32_t pixels[16];
     struct Athena_Image corner_buffer;
     
     const uint32_t colorA = Athena_RGBARawBlend(mixing_color, starting_color),
@@ -64,7 +65,9 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
     colors[4] = colorE;
     colors[5] = colorF;
 
-    Athena_CreateImage(&corner_buffer, 4, 4);
+    corner_buffer.w = corner_buffer.h = 4;
+    corner_buffer.pixels = pixels;
+/*    Athena_CreateImage(&corner_buffer, 4, 4); */
     /* Draw the corners. */
     Athena_ImageFromPalette(&corner_buffer, ul_corner, colors);
     Athena_Blit(&corner_buffer, to->image, to->x, to->y);
@@ -105,8 +108,6 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
     Athena_FillRect(to->image, to->x + 4, to->y + 4, to->w - 8, to->h - 8, colorF);
 
     Athena_BlendViewport(to, mask, Athena_RGBARawMultiply);
-
-    Athena_DestroyImage(&corner_buffer);
 
 }
 
