@@ -67,7 +67,7 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
 
     corner_buffer.w = corner_buffer.h = 4;
     corner_buffer.pixels = pixels;
-/*    Athena_CreateImage(&corner_buffer, 4, 4); */
+
     /* Draw the corners. */
     Athena_ImageFromPalette(&corner_buffer, ul_corner, colors);
     Athena_Blit(&corner_buffer, to->image, to->x, to->y);
