@@ -209,7 +209,6 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
     if(!ui->selection_callback)
         return 0;
     else{
-        struct Athena_SelectingPosition *position = malloc(sizeof(struct Athena_SelectingPosition));
         struct Athena_PositionList *list = ui->positions_callback(ui->positions_arg);
         
         if(list){
@@ -218,7 +217,7 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
             Athena_FieldPixelXYToTileXY(field, event->x, event->y, &x, &y, ui->camera_x, ui->camera_y);
 
             if(Athena_PositionInList(list, x, y)){
-
+                struct Athena_SelectingPosition *position = malloc(sizeof(struct Athena_SelectingPosition));
                 position->unit = Athena_FindUnitAt(field->units, position->x = x, position->y = y);
                 Athena_AppendButtonArgList(ui->selection_arg, position, "destination");
 
@@ -366,7 +365,7 @@ static void athena_draw_selector(const struct Athena_Field *field, struct Athena
 
         Athena_FieldPixelXYToTileXY(field, mouse_x, mouse_y, &x, &y, ui->camera_x, ui->camera_y);
         Athena_FieldTileXYToPixelXY(field, x, y, &x, &y, ui->camera_x, ui->camera_y);
-        
+
         Athena_BlendRect(&ui->framebuffer, x, y, field->tileset->tile_width, field->tileset->tile_height, Athena_RGBAToRaw(0xE0, 0xE0, 0x30, 0xFF), Athena_RGBARawAverage);
     }
 }
@@ -447,7 +446,7 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
 
         { /* Field Drawing, requires a lock. */
             Athena_DrawField(that->field, &that->ui.framebuffer, that->ui.camera_x, that->ui.camera_y);
-            
+
             Athena_DrawUnits(that->field->units, &that->ui.framebuffer, 
                 that->field->tileset->tile_width, that->field->tileset->tile_height, that->ui.camera_x, that->ui.camera_y);
             

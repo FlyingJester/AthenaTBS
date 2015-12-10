@@ -237,8 +237,7 @@ server_thread_begin:
 
     Athena_UnlockMonitor(that->monitor);
 
-    if(msg)
-        athena_free_messages(msg);
+    athena_free_messages(msg);
 
     Athena_LockMonitor(that->monitor);
     if(that->status==0){

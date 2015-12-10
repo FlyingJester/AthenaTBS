@@ -105,6 +105,9 @@ void Athena_DefaultWindowStyleCallback(struct Athena_Viewport *to, void *arg, ui
     Athena_FillRect(to->image, to->x + 4, to->y + 4, to->w - 8, to->h - 8, colorF);
 
     Athena_BlendViewport(to, mask, Athena_RGBARawMultiply);
+
+    Athena_DestroyImage(&corner_buffer);
+
 }
 
 void Athena_DrawDefaultWindowStyle(struct Athena_Viewport *onto){
