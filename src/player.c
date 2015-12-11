@@ -48,18 +48,6 @@ unsigned Athena_PayResources(struct Athena_Player *player, const struct Athena_R
     return worked;
 }
 
-void Athena_AddResources(struct Athena_Resources *to, const struct Athena_Resources *from){
-    to->cash += from->cash;
-    to->metal += from->metal;
-    to->food += from->food;
-}
-
-void Athena_SubResources(struct Athena_Resources *to, const struct Athena_Resources *from){
-    to->cash -= from->cash;
-    to->metal -= from->metal;
-    to->food -= from->food;
-}
-
 static void athena_accumulate_unit_income(const struct Athena_Player *player, const struct Athena_UnitList *list, struct Athena_Resources *to){
     if(list){
         if(list->unit.owner==player)

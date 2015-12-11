@@ -1,7 +1,7 @@
 #pragma once
 #include "spriteset.h"
 #include "menu.h"
-#include "player.h"
+#include "resources.h"
 
 struct Athena_Player;
 

@@ -2,7 +2,7 @@
 #include "image.h"
 #include "viewport.h"
 #include "unit.h"
-#include "player.h"
+#include "resources.h"
 
 struct Athena_Bonus{
     const char *what;
