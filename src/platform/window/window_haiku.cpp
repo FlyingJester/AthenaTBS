@@ -236,3 +236,7 @@ int Athena_Private_GetMousePosition(void *a, int *x, int *y){
 unsigned Athena_Private_GetEvent(void *a, struct Athena_Event *to){
     return static_cast<Athena_DirectWindow **>(a)[0]->GetAthenaEvent(to);
 }
+
+int Athena_Private_IsKeyPressed(void *handle, unsigned key){
+    return 0;
+}
