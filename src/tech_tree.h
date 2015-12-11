@@ -10,7 +10,12 @@ struct Athena_Bonus{
 };
 
 struct Athena_BonusList{
+    const char *title;
     struct Athena_Bonus bonus;
+/* We need to make a decision about this...
+    const char **reqs;
+    unsigned num_reqs, reqs_capacity;
+*/
     struct Athena_BonusList *next;
 };
 
@@ -25,6 +30,8 @@ struct Athena_Research{
     struct Athena_Resources cost;
     struct Athena_BonusList *bonuses;
 };
+
+void Athena_DrawTechTree(struct Athena_TechTree *tree, struct Athena_Viewport *to);
 
 void Athena_AppendBonus(const char *what, int amount, struct Athena_BonusList **to);
 void Athena_AppendClass(struct Athena_Class *clazz, struct Athena_ClassList **to);

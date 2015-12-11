@@ -13,7 +13,7 @@ extern "C" {
     struct Athena_Font *LoadFontMem(const void *mem_z, const unsigned long size_in_bytes);
     void DestroyFont(struct Athena_Font *font);
     void WriteString(struct Athena_Font *font, const char *str, struct Athena_Image *onto, unsigned x, unsigned y);
-    void WriteStringN(struct Athena_Font *font, const char *str, unsigned long n, struct Athena_Image *onto, unsigned x, unsigned y);
+    void WriteStringN(struct Athena_Font *font, const char *str, unsigned long n, struct Athena_Image *onto, unsigned x, unsigned y, uint32_t color);
     
     unsigned long StringWidth(struct Athena_Font *font, const char *str);
     unsigned long StringWidthN(struct Athena_Font *font, const char *str, unsigned long n);

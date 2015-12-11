@@ -1,6 +1,24 @@
 #include "tech_tree.h"
+#include "window_style.h"
 #include <stdlib.h>
 #include <string.h>
+
+static void athena_draw_tech_tree_iter(struct Athena_Viewport *to, struct Athena_ClassList *clazzes){
+    if(clazzes){
+        
+        
+        
+        Athena_ShrinkViewport(to, 0, 24, 0, 0);
+        athena_draw_tech_tree_iter(to, clazzes->next);
+    }
+}
+
+void Athena_DrawTechTree(struct Athena_TechTree *tree, struct Athena_Viewport *to){
+    struct Athena_Viewport p = *to;
+    Athena_DrawDefaultWindowStyle(to);
+    Athena_ShrinkViewport(&p, 4, 4, 4, 4);
+    athena_draw_tech_tree_iter(&p, tree->clazzes);
+}
 
 void Athena_AppendBonus(const char *what, int amount, struct Athena_BonusList **to){
     if(to[0]!=NULL)

@@ -95,13 +95,13 @@ void WriteString(struct Athena_Font *font, const char *str, struct Athena_Image 
         str++;
     }
 }
-void WriteStringN(struct Athena_Font *font, const char *str, unsigned long n, struct Athena_Image *onto, unsigned x, unsigned y){
+void WriteStringN(struct Athena_Font *font, const char *str, unsigned long n, struct Athena_Image *onto, unsigned x, unsigned y, uint32_t color){
     if(!str)
         return;
     while(*str!='\0' && n--){
         struct Athena_Image* const surf = GetBoundedGlyph(font, *str);
 
-        Athena_BlitBlended(surf, onto, x, y);
+        Athena_BlitMasked(surf, onto, x, y, color);
 
         x+=surf->w;
         

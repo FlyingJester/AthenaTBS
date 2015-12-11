@@ -1,5 +1,11 @@
 #include "viewport.h"
 
+void Athena_ShrinkViewport(struct Athena_Viewport *port, int left, int top, int right, int bottom){
+    port->x += left;
+    port->w -= left - right;
+    port->y += top;
+    port->h -= top - bottom;
+}
 
 unsigned Athena_IsWithinXYWH(int p_x, int p_y, unsigned p_w, unsigned p_h, int x, int y){
     return x >= p_x &&
