@@ -9,6 +9,7 @@
     #define ATHENA_OVERRIDE override
 #else
     #define ATHENA_OVERRIDE
+    #define nullptr NULL
 #endif
 
 static std::queue<Athena_Event> athena_haiku_events;
@@ -26,11 +27,24 @@ public:
         BApplication::MessageRecieved(message);
     }
 
+    static thread_id msg_thread;
+    static int32 msg_handler_callback(void *data){
+        be_app->Run();
+
+        //...
+        delete be_app;
+    }
 };
 
+thread_id Athena_Application::msg_thread;
+
 void *Athena_Private_CreateHandle(){
-    if(!be_app)
+    if(!be_app){
         new Athena_Application();
+        Athena_Application::msg_thread = 
+            spawn_thread(Athena_Application::msg_handler_callback, "athena_haiku_app", B_NORMAL_PRIORITY, nullptr);
+        resume_thread(Athena_Application::msg_thread);
+    }
 }
 
 unsigned Athena_Private_GetEvent(void *handle, struct Athena_Event *to){
