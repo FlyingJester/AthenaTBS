@@ -88,32 +88,19 @@ public:
         if(connected && bits){
             const int32 l_w = (bounds.right - bounds.left) + 1,
                 l_h = (bounds.bottom - bounds.top) + 1;
-                for(int l_y = 0; l_y<l_h && l_y < a_h; l_y++){
-                    int8 *to = bits + (((bounds.top + l_y) * byte_pitch) + bounds.left) * (bits_per_pixel>>3)
-                    switch(format){
-                        case B_RGB32:
-                        case B_RGBA32:
-                        case B_RGB32_BIG:
-                        case B_RGBA32_BIG:
-                            
-                            memcpy(to, RGB + (w * l_y * 4), ((l_w<a_h)?l_w:l_h)*4);
-                            break;
-                    }
+            for(int l_y = 0; l_y<l_h && l_y < a_h; l_y++){
+                int8 *to = bits + (((bounds.top + l_y) * byte_pitch) + bounds.left) * (bits_per_pixel>>3)
+                switch(format){
+                    case B_RGB32:
+                    case B_RGBA32:
+                    case B_RGB32_BIG:
+                    case B_RGBA32_BIG:
+                        memcpy(to, RGB + (w * l_y * 4), ((l_w<a_h)?l_w:l_h)*4);
+                        break;
                 }
-            /*
-               p = w->fBits+(clip->top*w->fRowBytes)+clip->left;
-               y = 0;
-               while (y < height) {
-                  memset(p, 0x00, width);
-                  y++;
-                  p+=adder;
-               }
-            */
-            
-            
+            }
         }
         locker.unlock();
-        
     }
 
 };
