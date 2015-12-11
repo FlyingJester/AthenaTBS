@@ -10,6 +10,8 @@ prefer_nanosleep = True
 
 if sys.platform.startswith("win") or sys.platform.startswith("cyg") or sys.platform=="msys":
     sources += ["sleep_windows.c", "ticks_windows.c"]
+if sys.platform.startswith("haiku"):
+    sources += ["sleep_haiku.cpp", "ticks_unix.c"]
 else:
     sources += ["ticks_unix.c"]
     if conf.CheckCHeader("unistd.h") and conf.CheckFunc("usleep") and not prefer_nanosleep:
