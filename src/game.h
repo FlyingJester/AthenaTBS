@@ -68,6 +68,16 @@ struct Athena_UI{
      */
     struct Athena_ButtonArgList *positions_arg;
     struct Athena_PositionList *(*positions_callback)(struct Athena_ButtonArgList *);
+    
+    /* This is intended for drawing an overlay. As such, it is called after ALL
+     * other drawing code. Additionally, while this value is set, all other event 
+     * callbacks are disabled.
+     * If this callback returns 0, then it will be unset and all associated values will
+     * be freed, ending this overlay.
+     */
+    struct Athena_ButtonArgList *overlay_arg;
+    unsigned (*overlay_event_callback)(struct Athena_ButtonArgList *, const struct Athena_Event *event, struct Athena_MessageList *);
+    void (*overlay_draw_callback)(const struct Athena_ButtonArgList *, struct Athena_Image *framebuffer);
 
     /* Yes, we have only one menu open at a time. */
     struct Athena_Menu *menu;

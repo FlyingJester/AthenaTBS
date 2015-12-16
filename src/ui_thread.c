@@ -380,6 +380,13 @@ static void athena_positions_callback(void *arg, int x, int y){
         Athena_RGBAToRaw(0x30, 0x30, 0x10, 0), Athena_RGBARawAdd);
 }
 
+static void athena_end_overlay(struct Athena_GameState *that){
+    Athena_FreeButtonArgList(that->ui.overlay_arg);
+    that->ui.overlay_arg = NULL;
+    that->ui.overlay_event_callback = NULL;
+    that->ui.overlay_draw_callback = NULL;
+}
+
 int Athena_UIThreadFrame(struct Athena_GameState *that){
     struct Athena_MessageList messages;
     messages.next = NULL;
@@ -484,6 +491,10 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
                 Athena_DrawMenu(that->ui.menu, &onto);
         }
 
+        { /* overlay processing. */
+            if(that->ui.overlay_draw_callback)
+                that->ui.overlay_draw_callback(that->ui.overlay_arg, &that->ui.framebuffer);
+        }
         Athena_UnlockMonitor(that->monitor);        
 
         athena_do_fps_drawing(&that->ui.framebuffer);
@@ -495,7 +506,13 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
     Athena_LockMonitor(that->monitor);
     {
         struct Athena_Event event;
-        athena_ui_thread_handle_event(that, &event, &messages);
+        if(that->ui.overlay_event_callback){
+            if(that->ui.overlay_event_callback(that->ui.overlay_arg, &event, &messages) == 0){
+                athena_end_overlay(that);
+            }
+        }
+        else
+            athena_ui_thread_handle_event(that, &event, &messages);
     }
 
     {
@@ -570,7 +587,12 @@ static void athena_end_turn_callback(struct Athena_ButtonArgList *arg, struct At
     }
 }
 
+static void athena_open_tech_tree(struct Athena_ButtonArgList *arg, struct Athena_MessageList *messages){
+    
+}
+
 static struct Athena_Button end_turn_button = { 160, 0, 0, 20, "End Turn", NULL, athena_open_end_turn_menu };
+static struct Athena_Button tech_tree_button = { 0, 0, 0, 20, "Tech Tree", NULL, athena_open_tech_tree };
 
 void Athena_UIInit(struct Athena_GameState *state){
     state->ui.click_sound = Athena_LoadOpusFile("res/sounds/bloop.opus");
@@ -587,9 +609,18 @@ void Athena_UIInit(struct Athena_GameState *state){
     if(end_turn_button.w==0){
         end_turn_button.w = StringWidth(GetSystemFont(), end_turn_button.text) + 8;
     }
+    if(tech_tree_button.w==0){
+        tech_tree_button.w = StringWidth(GetSystemFont(), tech_tree_button.text) + 8;
+    }
+    if(tech_tree_button.x==0){
+        tech_tree_button.x = end_turn_button.x + end_turn_button.w;
+    }
 
     state->ui.buttons->button = end_turn_button;
     state->ui.buttons->button.arg = Athena_DefaultButtonArgList(state);
 
-    state->ui.buttons->next = NULL;
+    state->ui.buttons->next = malloc(sizeof(struct Athena_ButtonList));
+    state->ui.buttons->next->button = tech_tree_button;
+    state->ui.buttons->next->button.arg = Athena_DefaultButtonArgList(state);
+    state->ui.buttons->next->next = NULL;
 }

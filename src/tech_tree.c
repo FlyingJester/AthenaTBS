@@ -101,7 +101,7 @@ static void athena_draw_tech_tree_iter(struct Athena_Viewport *to, struct Athena
     if(bonuses){
         WriteString(GetTitleFont(), bonuses->title, to->image, to->x + 2, to->y + 2);
         {
-            char buffer[80];
+            char buffer[100];
             int amount = bonuses->bonus.amount;
             char prefix = '+';
             if(bonuses->bonus.amount<0){
