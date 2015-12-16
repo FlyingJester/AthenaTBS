@@ -204,7 +204,7 @@ static void athena_breadth_positions_iter(const struct Athena_Unit *unit, const 
     if(!pos)
         return;
     else{
-    
+
         in_list[0] = pos->next;
 
         athena_try_add_breadth_position(unit, pos->x + 1, pos->y, pos->distance, field, in_list, out_list, dead_list);
@@ -246,7 +246,7 @@ struct Athena_PositionList *Athena_MovementPositions(struct Athena_ButtonArgList
 
         athena_breadth_inner(unit, state->field, &in_list, &out_list, &dead_list);
     }
-    
+
     {
         struct Athena_PositionList *pos_list = NULL;
         athena_breadth_to_position_list(&pos_list, out_list);

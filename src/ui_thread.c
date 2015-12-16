@@ -102,7 +102,7 @@ void unit_movement_callback(struct Athena_ButtonArgList *args, struct Athena_Mes
             Athena_FreeButtonArgList(state->ui.selection_arg);
 
         Athena_CopyButtonArgList(&state->ui.selection_arg, args);
-        
+
         state->ui.selection_callback = unit_movement_selection_callback;
 
         if(state->ui.positions_arg)
@@ -237,6 +237,8 @@ static int athena_process_selector(const struct Athena_Field *field, struct Athe
             Athena_FreeButtonArgList(ui->positions_arg);
         ui->positions_arg = NULL;
         
+        
+
         return 1;
     }
 }
@@ -460,6 +462,7 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
             if(that->ui.positions_callback){
                 struct Athena_PositionList *pos = that->ui.positions_callback(that->ui.positions_arg);
                 Athena_FoldPositions(pos, athena_positions_callback, that);
+                Athena_FreePositionList(pos);
             }
         }
         { /* Draw info bar */

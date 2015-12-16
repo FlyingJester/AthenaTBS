@@ -12,6 +12,13 @@ extern "C" {
     struct Athena_Font *LoadFont(const char *filename);
     struct Athena_Font *LoadFontMem(const void *mem_z, const unsigned long size_in_bytes);
     void DestroyFont(struct Athena_Font *font);
+
+    /* This means you will be sure to keep mem_z valid until you call DestroyStaticFont. Also, be SURE you call
+     * DestroyStaticFont and not DestroyFont.
+     */
+    struct Athena_Font *LoadStaticFontMem(void *mem_z, const unsigned long size_in_bytes);
+    void DestroyStaticFont(struct Athena_Font *font);
+
     void WriteString(struct Athena_Font *font, const char *str, struct Athena_Image *onto, unsigned x, unsigned y);
     void WriteStringN(struct Athena_Font *font, const char *str, unsigned long n, struct Athena_Image *onto, unsigned x, unsigned y, uint32_t color);
     

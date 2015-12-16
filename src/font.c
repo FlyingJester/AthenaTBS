@@ -59,7 +59,10 @@ const uint32_t sig =
 
             if(size<(offset+(w*h))*4){
                 puts("Unexpected End of File");
-                /* TODO: HUGE MEMORY LEAK! */
+
+                while(i--) /* This is fine since font->glyphs[i] is not yet valid. */
+                    Athena_DestroyImage(font->glyphs + i);
+
                 free(font->glyphs);
                 return NULL;
             }
@@ -71,6 +74,62 @@ const uint32_t sig =
         }
     }
     return font;
+}
+
+struct Athena_Font *LoadStaticFontMem(void *mem_z, const unsigned long size){
+    uint32_t *mem = mem_z;
+    struct Athena_Font *font = malloc(sizeof(struct Athena_Font));
+        
+#ifdef __EMSCRIPTEN__
+    mem = (uint32_t *)(((uint8_t*)(mem))-1);
+#endif
+
+const uint32_t sig = 
+#ifdef __EMSCRIPTEN__
+    0x66722e82;
+#else
+    0x6e66722e;
+#endif
+
+
+    if(mem[0]!=sig){ /* 0x66722e82 */
+        printf("Bad Signature %x\n", mem[0]);
+        return NULL;
+    }
+    if(((const uint16_t *)(&mem[1]))[0] != 2)
+        return NULL;
+    else{
+        unsigned i = 0, offset = 64;
+        const unsigned num_chars = ((const uint16_t *)(&mem[1]))[1];
+        font->number_glyphs = num_chars;
+        font->glyphs = calloc(num_chars, sizeof(struct Athena_Image));
+        /* Real data starts at 64. */
+            
+        while(i<num_chars){
+            unsigned w = ((const uint16_t *)(mem + offset))[0],
+                h = ((const uint16_t *)(mem + offset))[1];
+
+            offset+=8;
+
+            if(size<(offset+(w*h))*4){
+                puts("Unexpected End of File");
+                free(font->glyphs);
+                return NULL;
+            }
+
+            font->glyphs[i].w = w;
+            font->glyphs[i].h = h;
+            font->glyphs[i].pixels = mem + offset;
+            offset+=w*h;
+            i++;
+        }
+    }
+    return font;
+}
+
+void DestroyStaticFont(struct Athena_Font *font){
+    free(font->glyphs);
+    free(font);
 }
 
 struct Athena_Image *GetBoundedGlyph(struct Athena_Font *font, unsigned i){
@@ -150,20 +209,20 @@ struct Athena_Font *GetSystemFont(){
 
 struct Athena_Font *GetSystemFont(){
     if(system_font==NULL)
-        system_font = LoadFontMem((uint32_t *)sgi_screen_rfn, SGI_SCREEN_RFN_SIZE);
+        system_font = LoadStaticFontMem((uint32_t *)sgi_screen_rfn, SGI_SCREEN_RFN_SIZE);
     return system_font;
 }
 
 struct Athena_Font *GetMonoFont(){
     if(mono_font==NULL)
-        mono_font = LoadFontMem((uint32_t *)sgi_screen_rfn, SGI_SCREEN_RFN_SIZE);
+        mono_font = LoadStaticFontMem((uint32_t *)sgi_screen_rfn, SGI_SCREEN_RFN_SIZE);
     return mono_font;
 }
 
 struct Athena_Font *GetTitleFont(){
     if(title_font==NULL){
-        title_font = LoadFontMem((uint32_t *)selawik_small_bold_rfn, SELAWIK_SMALL_BOLD_RFN_SIZE);
-        PolarizeFont(title_font);
+        title_font = LoadStaticFontMem((uint32_t *)selawik_small_bold_rfn, SELAWIK_SMALL_BOLD_RFN_SIZE);
+/*        PolarizeFont(title_font); */
     }
     return title_font;
 }
@@ -183,17 +242,17 @@ void DestroyFont(struct Athena_Font *font){
 
 void DestroySystemFont(){
     if(system_font)
-        DestroyFont(system_font);
+        DestroyStaticFont(system_font);
 }
 
 void DestroyTitleFont(){
     if(title_font)
-        DestroyFont(title_font);
+        DestroyStaticFont(title_font);
 }
 
 void DestroyMonoFont(){
     if(mono_font)
-        DestroyFont(mono_font);
+        DestroyStaticFont(mono_font);
 }
 
 void PolarizeFont(struct Athena_Font *font){

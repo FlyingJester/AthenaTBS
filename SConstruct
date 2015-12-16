@@ -17,8 +17,8 @@ print sys.platform
 
 if os.name=="posix":
     environment.Append(
-        CFLAGS = " -ansi -Wno-long-long ", 
-        CXXFLAGS = " -std=c++11 -fno-rtti -fno-exceptions ",
+        CFLAGS = " -ansi -Wno-long-long -Os ", 
+        CXXFLAGS = " -std=c++11 -fno-rtti -fno-exceptions -Os ",
         LINKFLAGS = " -g ")
     environment.Prepend(CCFLAGS = " -pedantic -Wall -Werror -g -fstrict-aliasing -pipe ")
     if not use_intel_cc:

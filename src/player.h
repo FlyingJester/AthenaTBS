@@ -12,7 +12,9 @@ struct Athena_Player{
     struct Athena_Image flag;
     const uint32_t color;
     unsigned human;
-    struct Athena_TechTree tech;
+    
+    const char *tech;
+    unsigned num_tech, tech_capacity;
 };
 
 void Athena_GivePlayerIncome(struct Athena_Player *player, const struct Athena_UnitList *units);
