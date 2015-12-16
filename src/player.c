@@ -66,3 +66,36 @@ void Athena_PlayerIncome(const struct Athena_Player *player, const struct Athena
     memset(to, 0, sizeof(struct Athena_Resources));
     athena_accumulate_unit_income(player, list, to);
 }
+
+static const char *athena_find_tech(const char *which, const char **has_tech, unsigned num_has_tech){
+    if(!num_has_tech)
+        return NULL;
+    else if(strcmp(*has_tech, which)==0){
+        return *has_tech;
+    }   
+    else
+        return athena_find_tech(which, has_tech+1, num_has_tech-1);
+}
+
+static unsigned athena_meets_bonus_reqs(const char **has_tech, unsigned num_has_tech, const char **needs_tech, unsigned num_needs_tech){
+    if(num_needs_tech==0)
+        return 1;
+    else{
+        const char * const found = athena_find_tech(*needs_tech, has_tech, num_needs_tech);
+        if(!found)
+            return 0;
+        else if(found==*has_tech){
+            has_tech++;
+            num_has_tech--;
+        }
+        else if(0 && found==has_tech[num_has_tech-1]){
+            num_has_tech--;
+        }
+
+        return athena_meets_bonus_reqs(has_tech, num_has_tech, needs_tech+1, num_needs_tech-1);
+    }
+}
+
+unsigned Athena_PlayerMeetsReqsBonus(const struct Athena_Player *player, const struct Athena_BonusList *bonus){
+    return athena_meets_bonus_reqs(player->tech, player->num_tech, bonus->reqs, bonus->num_reqs);
+}

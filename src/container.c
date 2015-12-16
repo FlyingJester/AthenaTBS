@@ -25,3 +25,10 @@ void *Athena_AddOneCapacity(void *data, unsigned element_size, unsigned *size, u
     size[0]++;
     return Athena_AssureCapacity(data, element_size, *size, capacity);
 }
+
+void Athena_FreeContainer(void **that, unsigned size){
+    if(size){
+        free(that[0]);
+        Athena_FreeContainer(that+1, size-1);
+    }
+}

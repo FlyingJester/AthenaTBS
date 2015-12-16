@@ -1,6 +1,7 @@
 #include "game.h"
 #include "unit.h"
 #include "ui_thread.h"
+#include "tech_tree.h"
 #include "server_thread.h"
 #include "thread/thread.h"
 #include "time/sleep.h"
@@ -66,6 +67,9 @@ int Athena_Game(struct Athena_Field *field, unsigned num_players, struct Athena_
     struct Athena_Thread *const server_thread = Athena_CreateThread(Athena_ServerThreadWrapper, &game_state);
 
     memset(&game_state, 0, sizeof(struct Athena_GameState));
+
+    /* We cache this here. */
+    Athena_GetDefaultTechTree();
 
     game_state.monitor = Athena_CreateMonitor();
     game_state.field = field;

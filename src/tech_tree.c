@@ -1,15 +1,119 @@
 #include "tech_tree.h"
 #include "window_style.h"
+#include "font.h"
+#include "container.h"
+#include <TurboJSON/parse.h>
+#include <TurboJSON/object.h>
+#include "turbo_json_helpers.h"
+#include "bufferfile/bufferfile.h"
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
-static void athena_draw_tech_tree_iter(struct Athena_Viewport *to, struct Athena_ClassList *clazzes){
-    if(clazzes){
+static struct Athena_TechTree *system_tech_treep = NULL, system_tech_tree;
+const struct Athena_TechTree *Athena_GetDefaultTechTree(){
+    if(!system_tech_treep){
+        Athena_LoadTechTreeFromFile("res/tech/default.json", system_tech_treep = &system_tech_tree);
+    }
+    return system_tech_treep;
+}
+
+void Athena_InvalidateDefaultTechTree(){
+    
+}
+
+void Athena_FreeBonusList(struct Athena_BonusList *bonuses){
+    if(bonuses){
+        struct Athena_BonusList *const next = bonuses->next;
         
-        
-        
+        Athena_FreeContainer((void **)(bonuses->reqs), bonuses->num_reqs);
+        free((void *)bonuses->reqs);
+        free((void *)bonuses);
+
+        Athena_FreeBonusList(next);
+    }
+}
+
+void Athena_FreeClassList(struct Athena_ClassList *clazzes){
+    
+}
+
+int Athena_LoadTechTreeFromFile(const char *file, struct Athena_TechTree *to){
+    int size;
+    void * const data = BufferFile(file, &size);
+    
+    if(data){
+        const int r = Athena_LoadTechTreeFromMemory(data, size, to);
+        FreeBufferFile(data, size);
+        return r;
+    }
+    else
+        return -1;
+}
+
+int Athena_LoadTechTreeFromMemory(const void *data, unsigned len, struct Athena_TechTree *to){
+    struct Turbo_Value value;
+    const char * const source = data;
+    Turbo_Value(&value, source, source + len);
+    if(value.type==TJ_Object)
+        return Athena_LoadTechTreeFromTurboValue(&value, to);
+    Turbo_FreeParse(&value);
+    return -2;
+}
+
+static int athena_tech_bonus_iter(const struct Turbo_Value *from, unsigned n, struct Athena_BonusList **bonuses){
+    if(from->type!=TJ_Object){
+        if(from->type!=TJ_String)
+            return -101;
+        else{
+            Athena_AppendBonusN(from->value.string, from->length, ATHENA_NON_BONUS, bonuses);
+            return athena_tech_bonus_iter(from+1, n-1, &(bonuses[0]->next));
+        }
+    }
+    else{
+        const struct Turbo_Value 
+            * const what = Turbo_Helper_GetConstObjectElement(from, "what"),
+            * const amount = Turbo_Helper_GetConstObjectElement(from, "amount");
+        if(!what || !amount || what->type!=TJ_String || amount->type!=TJ_Number)
+            return -102;
+        else{
+            Athena_AppendBonusN(what->value.string, what->length, amount->value.number, bonuses);
+            return athena_tech_bonus_iter(from+1, n-1, &(bonuses[0]->next));
+        }
+    }
+}
+
+int Athena_LoadTechTreeFromTurboValue(const struct Turbo_Value *value, struct Athena_TechTree *to){
+    if(value->type==TJ_Object){
+        const struct Turbo_Value 
+            * const bonuses = Turbo_Helper_GetConstObjectElement(value, "bonuses"),
+            * const clazzes = Turbo_Helper_GetConstObjectElement(value, "clazzes");
+        if(!bonuses || !clazzes || bonuses->type!=TJ_Array || clazzes->type!=TJ_Array )
+            return -4;
+        memset(to, 0, sizeof(struct Athena_TechTree));
+        return athena_tech_bonus_iter(bonuses->value.array, bonuses->length, &to->bonuses);
+    }
+    else
+        return -3;
+}
+
+static void athena_draw_tech_tree_iter(struct Athena_Viewport *to, struct Athena_BonusList *bonuses){
+    if(bonuses){
+        WriteString(GetTitleFont(), bonuses->title, to->image, to->x + 2, to->y + 2);
+        {
+            char buffer[80];
+            int amount = bonuses->bonus.amount;
+            char prefix = '+';
+            if(bonuses->bonus.amount<0){
+                amount=-amount;
+                prefix = '-';
+            }
+            sprintf(buffer, "%s %c%i", bonuses->bonus.what, prefix, amount);
+
+            WriteString(GetSystemFont(), buffer, to->image, to->x + 2, to->y + 12);
+        }
         Athena_ShrinkViewport(to, 0, 24, 0, 0);
-        athena_draw_tech_tree_iter(to, clazzes->next);
+        athena_draw_tech_tree_iter(to, bonuses->next);
     }
 }
 
@@ -17,15 +121,22 @@ void Athena_DrawTechTree(struct Athena_TechTree *tree, struct Athena_Viewport *t
     struct Athena_Viewport p = *to;
     Athena_DrawDefaultWindowStyle(to);
     Athena_ShrinkViewport(&p, 4, 4, 4, 4);
-    athena_draw_tech_tree_iter(&p, tree->clazzes);
+    athena_draw_tech_tree_iter(&p, tree->bonuses);
 }
 
 void Athena_AppendBonus(const char *what, int amount, struct Athena_BonusList **to){
+    Athena_AppendBonusN(what, strlen(what), amount, to);
+}
+
+void Athena_AppendBonusN(const char *what, unsigned len, int amount, struct Athena_BonusList **to){
     if(to[0]!=NULL)
         Athena_AppendBonus(what, amount, &to[0]->next);
     else{
         struct Athena_BonusList *const l = to[0] = malloc(sizeof(struct Athena_BonusList));
-        l->bonus.what = what;
+        if(len>=80)
+            len = 79;
+        memcpy(l->bonus.what, what, len);
+        l->bonus.what[len] = 0;
         l->bonus.amount = amount;
         l->next = NULL;
     }

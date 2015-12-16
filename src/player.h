@@ -13,7 +13,7 @@ struct Athena_Player{
     const uint32_t color;
     unsigned human;
     
-    const char *tech;
+    const char **tech;
     unsigned num_tech, tech_capacity;
 };
 
@@ -23,3 +23,6 @@ void Athena_PlayerIncome(const struct Athena_Player *player, const struct Athena
 void Athena_DrawPlayerDataBox(const struct Athena_Player *player, struct Athena_Viewport *to);
 unsigned Athena_CanPayResources(const struct Athena_Player *player, const struct Athena_Resources *amount);
 unsigned Athena_PayResources(struct Athena_Player *player, const struct Athena_Resources *amount);
+
+
+unsigned Athena_PlayerMeetsReqsBonus(const struct Athena_Player *player, const struct Athena_BonusList *bonus);
