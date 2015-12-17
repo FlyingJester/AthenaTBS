@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 void unit_build_selection_callback(struct Athena_ButtonArgList *args, struct Athena_MessageList *messages){
     struct Athena_Unit *const unit = Athena_FindTypeInArgList(args, "source_unit");
@@ -381,8 +382,10 @@ static void athena_positions_callback(void *arg, int x, int y){
 }
 
 static void athena_end_overlay(struct Athena_GameState *that){
-    Athena_FreeButtonArgList(that->ui.overlay_arg);
-    that->ui.overlay_arg = NULL;
+    if(that->ui.overlay_arg){
+        Athena_FreeButtonArgList(that->ui.overlay_arg);
+        that->ui.overlay_arg = NULL;
+    }
     that->ui.overlay_event_callback = NULL;
     that->ui.overlay_draw_callback = NULL;
 }
@@ -507,7 +510,7 @@ int Athena_UIThreadFrame(struct Athena_GameState *that){
     {
         struct Athena_Event event;
         if(that->ui.overlay_event_callback){
-            if(that->ui.overlay_event_callback(that->ui.overlay_arg, &event, &messages) == 0){
+            if(Athena_GetEvent(that->ui.window, &event) && that->ui.overlay_event_callback(that->ui.overlay_arg, &event, &messages) == 0){
                 athena_end_overlay(that);
             }
         }
@@ -588,7 +591,14 @@ static void athena_end_turn_callback(struct Athena_ButtonArgList *arg, struct At
 }
 
 static void athena_open_tech_tree(struct Athena_ButtonArgList *arg, struct Athena_MessageList *messages){
-    
+    struct Athena_GameState *const state = (struct Athena_GameState *)(arg->arg);
+    athena_end_overlay(state);
+
+    assert(state->ui.overlay_arg==NULL);
+    state->ui.overlay_arg = Athena_DefaultButtonArgList(state);
+
+    state->ui.overlay_event_callback = Athena_DefaultTechOverlayEvent;
+    state->ui.overlay_draw_callback = Athena_DefaultTechOverlayDraw;
 }
 
 static struct Athena_Button end_turn_button = { 160, 0, 0, 20, "End Turn", NULL, athena_open_end_turn_menu };

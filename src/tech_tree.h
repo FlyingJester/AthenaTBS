@@ -34,6 +34,11 @@ struct Athena_TechTree{
 const struct Athena_TechTree *Athena_GetDefaultTechTree();
 void Athena_InvalidateDefaultTechTree();
 
+/* Partially for testing purposes, overlay callbacks to display the default tech tree. 
+ * They do not require any args to be added to the arglist except the GameState */
+unsigned Athena_DefaultTechOverlayEvent(struct Athena_ButtonArgList *, const struct Athena_Event *event, struct Athena_MessageList *);
+void Athena_DefaultTechOverlayDraw(const struct Athena_ButtonArgList *, struct Athena_Image *framebuffer);
+
 int Athena_LoadTechTreeFromFile(const char *file, struct Athena_TechTree *to);
 int Athena_LoadTechTreeFromMemory(const void *data, unsigned len, struct Athena_TechTree *to);
 

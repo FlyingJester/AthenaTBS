@@ -79,7 +79,9 @@ struct Athena_UI{
     unsigned (*overlay_event_callback)(struct Athena_ButtonArgList *, const struct Athena_Event *event, struct Athena_MessageList *);
     void (*overlay_draw_callback)(const struct Athena_ButtonArgList *, struct Athena_Image *framebuffer);
 
-    /* Yes, we have only one menu open at a time. */
+    /* Yes, we have only one menu open at a time. We may want to roll this 
+     * into the overlay system at some point (as in an overlay callback that 
+     * simply draws a menu).*/
     struct Athena_Menu *menu;
 };
 

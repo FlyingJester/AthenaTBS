@@ -1,11 +1,14 @@
 #include "tech_tree.h"
+#include "game.h"
 #include "window_style.h"
+#include "viewport.h"
 #include "font.h"
 #include "container.h"
 #include <TurboJSON/parse.h>
 #include <TurboJSON/object.h>
 #include "turbo_json_helpers.h"
 #include "bufferfile/bufferfile.h"
+#include "window/window.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -35,7 +38,57 @@ void Athena_FreeBonusList(struct Athena_BonusList *bonuses){
 }
 
 void Athena_FreeClassList(struct Athena_ClassList *clazzes){
-    
+    if(clazzes){
+        struct Athena_ClassList *const next = clazzes->next;
+        free(clazzes);
+        Athena_FreeClassList(next);
+    }
+}
+
+#define MARGINS 8
+#define DIMENSIONS 20
+
+static void athena_tech_overlay_close_xy(const struct Athena_Image *im, unsigned *x, unsigned *y){
+    x[0] = im->w - ((MARGINS) + DIMENSIONS + 4);
+    y[0] = MARGINS + 4;
+}
+
+unsigned Athena_DefaultTechOverlayEvent(struct Athena_ButtonArgList *arg, const struct Athena_Event *event, struct Athena_MessageList *msg){
+    if(!arg)
+        return 0;
+    else{
+        struct Athena_GameState *const state = (struct Athena_GameState *)(arg->arg);
+        unsigned close_x, close_y;
+        athena_tech_overlay_close_xy(&state->ui.framebuffer, &close_x, &close_y);
+        if(event->type==athena_click_event && (event->which == athena_left_mouse_button || event->which == athena_unknown_mouse_button) && 
+            event->x >= close_x && event->y >= close_y && event->x - close_x <= DIMENSIONS && event->y - close_y <= DIMENSIONS)
+            return 0;
+        else
+            printf("TESTING: event %i,%i close %i,%i\n", event->x, event->y, close_x, close_y);
+        return 1;
+    }
+}
+
+void Athena_DefaultTechOverlayDraw(const struct Athena_ButtonArgList *arg, struct Athena_Image *framebuffer){
+    struct Athena_Viewport p = {NULL, MARGINS, MARGINS, 0, 0};
+    p.image = framebuffer;
+    p.w = framebuffer->w - (MARGINS<<1);
+    p.h = framebuffer->h - (MARGINS<<1);
+    Athena_DrawDefaultWindowStyle(&p);
+
+
+    { /* Lastly draw the close button. */
+        unsigned lx, ly;
+        struct Athena_Viewport close_box;
+        close_box.image = framebuffer;
+        athena_tech_overlay_close_xy(framebuffer, &lx, &ly);
+        close_box.x = lx;
+        close_box.y = ly;
+        close_box.w = close_box.h = DIMENSIONS;
+
+        Athena_DrawDefaultWindowStyle(&close_box);
+        Athena_BlendViewport(&close_box, Athena_RGBAToRaw(0xFF, 0, 0, 0xFF), Athena_RGBARawMultiply);
+    }
 }
 
 int Athena_LoadTechTreeFromFile(const char *file, struct Athena_TechTree *to){
