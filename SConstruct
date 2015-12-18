@@ -4,13 +4,48 @@ import json
 from tools import athena_unit_class_generator, athena_bin_to_c
 
 environment = Environment(ENV = os.environ)
+environment.Append(tools=["nasm"])
 
 use_intel_cc = False
+tools_overridden = {
+    "CC":False,
+    "CXX":False,
+    "LINK":False,
+    "AR":False,
+    "RANLIB":False,
+    "AS":False
+}
+tools_default = {
+    "CC":"gcc",
+    "CXX":"g++",
+    "LINK":"ld",
+    "AR":"ar",
+    "RANLIB":"ranlib",
+    "AS":"yasm"
+}
 
-AddOption('--use-intel-cc', dest="use-intel-cc", nargs=1, action='store')
+tool_prefix=""
+
+AddOption('--use-intel-cc',    dest="use-intel-cc",    nargs=1, action='store')
+AddOption('--tool-prefix', dest="tool-prefix", nargs=1, action='store')
+AddOption('--use-cc',    dest="use-cc",    nargs=1, action='store')
+AddOption('--use-cxx',   dest="use-cxx",   nargs=1, action='store')
+AddOption('--use-link',  dest="use-link",  nargs=1, action='store')
+AddOption('--use-ld',    dest="use-link",  nargs=1, action='store')
+AddOption('--use-ar',    dest="use-ar",    nargs=1, action='store')
+AddOption('--use-ranlib',dest="use-ranlib",nargs=1, action='store')
+AddOption('--use-as',    dest="use-as",    nargs=1, action='store')
 
 if GetOption('use-intel-cc') == 'y':
     use_intel_cc = True
+
+def OptionForOverride(x):
+    val = GetOption("use-" + x)
+    if val:
+        tools_overridden[x.upper()] = val
+
+if GetOption("tool-prefix"):
+    tool_prefix = GetOption("tool-prefix")
 
 print os.name
 print sys.platform
@@ -31,6 +66,23 @@ if os.name=="posix":
 
 if use_intel_cc:
     environment.Replace(CC = "icc")
+
+if tool_prefix:
+    if not tool_prefix.endswith('-'):
+        tool_prefix = tool_prefix + '-'
+    for key, _ in tools_overridden.iteritems():
+        tools_overridden[key] = tool_prefix + tools_default[key]
+else:
+    OptionForOverride("cc")
+    OptionForOverride("cxx")
+    OptionForOverride("link")
+    OptionForOverride("ar")
+    OptionForOverride("ranlib")
+    OptionForOverride("as")
+
+for key, value in tools_overridden.iteritems():
+    if value:
+        environment[key] = value
 
 environment.Prepend(
     CPPPATH = [os.path.join(os.getcwd(), "TurboJSON_src"), os.path.join(os.getcwd(), "include")], 
