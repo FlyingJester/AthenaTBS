@@ -1,0 +1,107 @@
+import os
+import sys
+
+Import("environment")
+
+use_intel_cc = False
+tools_overridden = {
+    "CC":False,
+    "CXX":False,
+    "LINK":False,
+    "AR":False,
+    "RANLIB":False,
+    "AS":False
+}
+tools_default = {
+    "CC":"gcc",
+    "CXX":"g++",
+    "LINK":"ld",
+    "AR":"ar",
+    "RANLIB":"ranlib",
+    "AS":"yasm"
+}
+
+tool_prefix=""
+
+AddOption('--use-intel-cc',    dest="use-intel-cc",    nargs=1, action='store', help=
+"""Uses the Intel C/C++ compiler.
+This is preferred over --use-cc=icc because we have specific flags in our build for the Intel compiler.""")
+
+AddOption('--tool-prefix', dest="tool-prefix", nargs=1, action='store', help=
+"""Sets a new prefix for the toolchain to use. This is useful for cross-compiling.
+For instance, a value of 'sh4-elf' will make the C compiler 'sh4-elf-gcc', the archiver 'sh4-elf-ar', etc.""")
+
+AddOption('--use-cc',    dest="use-cc",    nargs=1, action='store', help="Sets a new C compiler to use")
+AddOption('--use-cxx',   dest="use-cxx",   nargs=1, action='store', help="Sets a new C++ compiler to use")
+AddOption('--use-link',  dest="use-link",  nargs=1, action='store', help="Alias for --use-ld")
+AddOption('--use-ld',    dest="use-link",  nargs=1, action='store', help="Sets a new linker to use")
+AddOption('--use-ar',    dest="use-ar",    nargs=1, action='store', help="Sets a new archiver to use")
+AddOption('--use-ranlib',dest="use-ranlib",nargs=1, action='store', help="Sets a new archive indexer to use")
+AddOption('--use-as',    dest="use-as",    nargs=1, action='store', help="Sets a new assembler to use")
+
+AddOption('--clear-all-tool-flags', dest="clear-flags", nargs=1, action='store', help="Clears all predetermined CC, CXX, and LD/LINK flags.")
+
+AddOption('--extra-cc-flags', dest="extra-cc", nargs=1, action='store', help=
+"""Adds flags to use with the C compiler and the C++ compiler.
+These are applied after --clear-all-flags is applied but before --extra-c-flags and --extra-cxx-flags""")
+AddOption('--extra-c-flags', dest="extra-c", nargs=1, action='store',
+    help="Adds flags to use with the C compiler. These are applied after --clear-all-flags")
+AddOption('--extra-cxx-flags', dest="extra-cxx", nargs=1, action='store',
+    help="Adds flags to use with the C++ compiler. These are applied after --clear-all-flags")
+AddOption('--extra-ld-flags', dest="extra-link", nargs=1, action='store',
+    help="Adds flags to use with the linker compiler. These are applied after --clear-all-flags")
+AddOption('--extra-link-flags', dest="extra-link", nargs=1, action='store', help="Alias for --extra-ld-flags")
+
+if GetOption('use-intel-cc') == 'y':
+    use_intel_cc = True
+
+def OptionForOverride(x):
+    val = GetOption("use-" + x)
+    if val:
+        tools_overridden[x.upper()] = val
+
+if GetOption("tool-prefix"):
+    tool_prefix = GetOption("tool-prefix")
+
+
+if os.name=="posix" and (not GetOption("clear-flags") == 'y'):
+    environment.Append(
+        CFLAGS = " -ansi -Wno-long-long -Os ", 
+        CXXFLAGS = " -std=c++11 -fno-rtti -fno-exceptions -Os ",
+        LINKFLAGS = " -g ")
+    environment.Prepend(CCFLAGS = " -pedantic -Wall -Werror -g -fstrict-aliasing -pipe ")
+    if not use_intel_cc:
+         environment.Prepend(CCFLAGS = " -Wno-unused-result ")
+         if not sys.platform.startswith("cyg") and not sys.platform=="msys":
+             environment.Prepend(CCFLAGS = " -fPIC ")
+    if False and sys.platform == "darwin":
+        XFlag = " -arch x86_64 -arch i586 "
+        environment.Append(CCFLAGS = XFlag, LINKFLAGS = XFlag)
+
+for fix in ["cc", "c", "cxx", "link"]:
+    val = GetOption("extra-" + fix)
+    e = fix.upper() + "FLAGS"
+    if val:
+        environment[e] = environment[e] + " " + val + " "
+
+if use_intel_cc:
+    environment.Replace(CC = "icc")
+
+if tool_prefix:
+    if not tool_prefix.endswith('-'):
+        tool_prefix = tool_prefix + '-'
+    for key, _ in tools_overridden.iteritems():
+        tools_overridden[key] = tool_prefix + tools_default[key]
+else:
+    OptionForOverride("cc")
+    OptionForOverride("cxx")
+    OptionForOverride("link")
+    OptionForOverride("ar")
+    OptionForOverride("ranlib")
+    OptionForOverride("as")
+
+for key, value in tools_overridden.iteritems():
+    if value:
+        environment[key] = value
+
+Return("environment")
