@@ -16,7 +16,8 @@ environment.Prepend(
 
 saved_env = environment.Clone()
 
-turbojson = SConscript(dirs = ["TurboJSON_src/TurboJSON"], exports = ["environment"])
+build_tests = False
+turbojson = SConscript(dirs = ["TurboJSON_src/TurboJSON"], exports = ["environment", "build_tests"])
 
 environment = saved_env.Clone()
 

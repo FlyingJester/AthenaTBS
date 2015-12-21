@@ -33,6 +33,60 @@ athena_strnlen_begin:
 }
 #endif
 
+int Athena_ParseEngineMessage(struct Athena_MessageList *to, const char *(*read_function)(void *arg, uint32_t len), void(*free_function)(void *arg, const char *z), void *arg){
+    /* end is the ending position in msg, as will be passed to TurboJSON */
+    const char *const head = read_function(arg, 4), *msg = NULL, *end = NULL;
+
+    if(!head)
+        return -1;
+
+    if(memcmp(head, "HTTP", 4)==0 || memcmp(head, "http", 4)==0){
+        return -3; /* Not implemented yet. */
+    }
+    else if(memcmp(head, "Athe", 4)==0){
+        const char *const head2 = read_function(arg, 10);
+        char c;
+        int x = 0;
+        if(!head2 || memcmp(head2, "na Message", 10)!=0)
+            return -8; /* Bad Athena header. */
+        
+        if(free_function){
+            free_function(arg, head);
+            free_function(arg, head2);
+        }
+
+        do{ /* Burn through the rest of the line. Normally this will be a single space, to pad the first line to 16 bytes. */
+            const char *ch = read_function(arg, 1);
+            if(!ch || ++x > 33)
+                return -8;
+            c = ch[0];
+            if(free_function)
+                free_function(arg, ch);
+        }while(c!='\n');
+    }
+    
+    return msg!=end;
+}
+
+/* For use with Athena_ParseEngineMessage. `arg` must be a Athena_MessageMemoryBuffer. */
+const char *Athena_MemoryReadFunction(void *arg, uint32_t len){
+    struct Athena_MessageMemoryBuffer *const that = arg;
+    const char * const ptr = that->data + that->at;
+    
+    that->at += len;
+    
+    if(that->at > that->len){
+        that->at = that->len;
+        return NULL;
+    }
+
+    return ptr;
+}
+
+void Athena_FreeReadWrapper(void *arg, const char *z){
+    if(z)
+        free((char *)z);
+}
 
 struct Athena_Player *Athena_ConquestCondition(const struct Athena_Field *field, unsigned num_players){
     /* A player is winning if they have any units at all. If we have more than one, we have no winner yet. */

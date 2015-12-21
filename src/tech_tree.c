@@ -45,6 +45,8 @@ void Athena_FreeClassList(struct Athena_ClassList *clazzes){
     }
 }
 
+static void athena_draw_tech_tree_iter(struct Athena_Viewport *to, struct Athena_BonusList *bonuses);
+
 #define MARGINS 8
 #define DIMENSIONS 20
 
@@ -76,6 +78,8 @@ void Athena_DefaultTechOverlayDraw(const struct Athena_ButtonArgList *arg, struc
     p.h = framebuffer->h - (MARGINS<<1);
     Athena_DrawDefaultWindowStyle(&p);
 
+    Athena_ShrinkViewport(&p, 4, 4, 4, 4);
+    athena_draw_tech_tree_iter(&p, Athena_GetDefaultTechTree()->bonuses);
 
     { /* Lastly draw the close button. */
         unsigned lx, ly;

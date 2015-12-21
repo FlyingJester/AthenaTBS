@@ -11,6 +11,27 @@
 #include "window/window.h"
 #include <TurboJSON/value.h>
 
+/* Used to parse a message passed in the engine format. 
+ * The message can use either our own athena protocol,
+ * or http to encapsulate the JSON data. 
+ * 
+ * The read_function is expected to return `len` bytes of data past the last read called with `arg`.
+ * See Athena_MemoryReadFunction for an example if you really need one.
+ * free_function may be NULL, to indicate we don't need to free the result.
+ */
+int Athena_ParseEngineMessage(struct Athena_MessageList *to, const char *(*read_function)(void *arg, uint32_t len), void(*free_function)(void *arg, const char *z), void *arg);
+
+struct Athena_MessageMemoryBuffer{
+    const char *data;
+    uint64_t len, at;
+};
+
+/* For use with Athena_ParseEngineMessage. `arg` must be a Athena_MessageMemoryBuffer. */
+const char *Athena_MemoryReadFunction(void *arg, uint32_t len);
+
+/* Supplied to call free() on z. Should be enough for most read_functions. */
+void Athena_FreeReadWrapper(void *, const char *z);
+
 struct Athena_MessageList{
     /* This is the owning pointer to this text */
     char *msg_text;

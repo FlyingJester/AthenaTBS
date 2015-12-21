@@ -5,7 +5,7 @@ Import("environment")
 has_sndio = False
 
 # Set this to True to ignore the existence of sndio headers.
-no_sndio = True
+no_sndio = sys.platform.startswith("linux")
 
 l_env = environment.Clone()
 
