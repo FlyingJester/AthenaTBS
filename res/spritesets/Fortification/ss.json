@@ -11,6 +11,5 @@
             ]
         }
     },
-    "images":["Fortification.png"],
-    "masks":["mask.tga"]
+    "images":["Fortification.png"]
 }

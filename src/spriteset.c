@@ -138,8 +138,7 @@ Example spriteset:
             ]
         }
     },
-    "images":["Fortification.png"],
-    "masks":["Fortification.png"],
+    "images":["Fortification.png"]
 }
 */
 

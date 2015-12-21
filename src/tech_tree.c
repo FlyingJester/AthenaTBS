@@ -16,7 +16,7 @@
 static struct Athena_TechTree *system_tech_treep = NULL, system_tech_tree;
 const struct Athena_TechTree *Athena_GetDefaultTechTree(){
     if(!system_tech_treep){
-        Athena_LoadTechTreeFromFile("res/tech/default.json", system_tech_treep = &system_tech_tree);
+        Athena_LoadTechTreeFromFile("res/tech/default/level1.json", system_tech_treep = &system_tech_tree);
     }
     return system_tech_treep;
 }

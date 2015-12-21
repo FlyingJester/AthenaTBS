@@ -8,8 +8,5 @@
     },
     "images":[
         "BlackCoatIdleSouth.png"
-    ],
-    "masks":[
-        "BlackCoatIdleSouthIdle.tga"
     ]
 }

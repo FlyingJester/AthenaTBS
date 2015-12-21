@@ -18,7 +18,7 @@ struct Athena_Class {
     unsigned movement, actions;
     unsigned range;
     unsigned is_building, can_build, is_path;
-    const char *name;
+    const char *name, *built_by;
     struct Athena_Spriteset *spriteset;
     struct Athena_Resources income;
 };

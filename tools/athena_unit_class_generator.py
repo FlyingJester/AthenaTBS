@@ -27,6 +27,11 @@ def GenerateAthenaClassDictionary(that, n):
             return int(that[key])
         else:
             return 0
+    
+    if "is_building" in that and that["is_building"]:
+        l_built_by = ""
+    else:
+        l_built_by = str(that["built_by"])
 
     x = dict(
         defense = str(that["defense"]),
@@ -38,6 +43,7 @@ def GenerateAthenaClassDictionary(that, n):
         can_build   = gen_bool_to_str("can_build", that),
         is_path = gen_bool_to_str("is_path", that),
         name    = str(that["name"]),
+        built_by= l_built_by,
         cash    = gen_int_to_str(int_from_str_if_exists("cash")),
         metal   = gen_int_to_str(int_from_str_if_exists("metal")),
         food    = gen_int_to_str(int_from_str_if_exists("food")),
@@ -77,7 +83,7 @@ def CreateAthenaClassesSource(classes, paths):
     source.write(class_array_def + " = {\n")
     
     class_template = Template("""
-        $defense, $attack, $movement, $actions, $range, $is_building, $can_build, $is_path, \"$name\",
+        $defense, $attack, $movement, $actions, $range, $is_building, $can_build, $is_path, \"$name\", \"$built_by\",
         athena_unit_classes_spritesets + $i,
         { $cash, $metal, $food }
     """)
