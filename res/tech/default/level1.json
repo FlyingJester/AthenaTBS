@@ -1,0 +1,10 @@
+{
+	"bonuses":[
+		{"title":"Bigger Guns", "what":"attack", "which":[], "amount":1},
+		{"title":"Cobalt Lasers", "what":"attack", "which":["?", "!Black Coat"], "amount":1},
+		{"title":"Hollow-point Bullets", "what":"attack", "which":["~", "=Black Coat"], "amount":2},
+		{"title":"Bakelit Flak Jackets", "what":"defense", "which":["~", "=Conscript", "=Coalition Builder"], "amount":1},
+		"Water Resistant Sealant"
+	],
+	"clazzes":["Fortification", "Industrial", "Path"]
+}
