@@ -51,11 +51,11 @@ void Athena_FreeTechTree(struct Athena_TechTree *tree);
 /* Simply draws the entire tech tree. This will not be very useful to an actual player. */
 void Athena_DrawTechTree(struct Athena_TechTree *tree, struct Athena_Viewport *to);
 
-void Athena_AppendBonus(const char *what, int amount, struct Athena_BonusList **to);
-void Athena_AppendBonusN(const char *what, unsigned len, int amount, struct Athena_BonusList **to);
+void Athena_AppendBonus(const char *title, const char *what, int amount, struct Athena_BonusList **to);
+void Athena_AppendBonusN(const char *title, unsigned title_len, const char *what, unsigned what_len, int amount, struct Athena_BonusList **to);
 void Athena_AppendClass(struct Athena_Class *clazz, struct Athena_ClassList **to);
 
-void Athena_AppendTechBonus(const char *what, int amount, struct Athena_TechTree *to);
+void Athena_AppendTechBonus(const char *title, const char *what, int amount, struct Athena_TechTree *to);
 void Athena_AppendTechClass(struct Athena_Class *clazz, struct Athena_TechTree *to);
 void Athena_FreeBonusList(struct Athena_BonusList *bonuses);
 void Athena_FreeClassList(struct Athena_ClassList *clazzes);

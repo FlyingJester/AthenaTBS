@@ -123,18 +123,23 @@ static int athena_tech_bonus_iter(const struct Turbo_Value *from, unsigned n, st
         if(from->type!=TJ_String)
             return -101;
         else{
-            Athena_AppendBonusN(from->value.string, from->length, ATHENA_NON_BONUS, bonuses);
+            Athena_AppendBonusN(from->value.string, from->length, from->value.string, from->length, ATHENA_NON_BONUS, bonuses);
             return athena_tech_bonus_iter(from+1, n-1, &(bonuses[0]->next));
         }
     }
     else{
         const struct Turbo_Value 
             * const what = Turbo_Helper_GetConstObjectElement(from, "what"),
+            * title = Turbo_Helper_GetConstObjectElement(from, "title"),
             * const amount = Turbo_Helper_GetConstObjectElement(from, "amount");
-        if(!what || !amount || what->type!=TJ_String || amount->type!=TJ_Number)
+
+        if(!title || title->type!=TJ_String)
+            title = what;
+        
+        if(!what || !amount || what->type!=TJ_String || title->type!=TJ_String || amount->type!=TJ_Number)
             return -102;
         else{
-            Athena_AppendBonusN(what->value.string, what->length, amount->value.number, bonuses);
+            Athena_AppendBonusN(title->value.string, title->length, what->value.string, what->length, amount->value.number, bonuses);
             return athena_tech_bonus_iter(from+1, n-1, &(bonuses[0]->next));
         }
     }
@@ -181,19 +186,27 @@ void Athena_DrawTechTree(struct Athena_TechTree *tree, struct Athena_Viewport *t
     athena_draw_tech_tree_iter(&p, tree->bonuses);
 }
 
-void Athena_AppendBonus(const char *what, int amount, struct Athena_BonusList **to){
-    Athena_AppendBonusN(what, strlen(what), amount, to);
+void Athena_AppendBonus(const char *title, const char *what, int amount, struct Athena_BonusList **to){
+    Athena_AppendBonusN(title, strlen(title), what, strlen(what), amount, to);
 }
 
-void Athena_AppendBonusN(const char *what, unsigned len, int amount, struct Athena_BonusList **to){
+void Athena_AppendBonusN(const char *title, unsigned t_len, const char *what, unsigned w_len, int amount, struct Athena_BonusList **to){
     if(to[0]!=NULL)
-        Athena_AppendBonus(what, amount, &to[0]->next);
+        Athena_AppendBonusN(title, t_len, what, w_len, amount, &to[0]->next);
     else{
         struct Athena_BonusList *const l = to[0] = malloc(sizeof(struct Athena_BonusList));
-        if(len>=80)
-            len = 79;
-        memcpy(l->bonus.what, what, len);
-        l->bonus.what[len] = 0;
+        if(t_len>=80)
+            t_len = 79;
+
+        if(w_len>=80)
+            w_len = 79;
+
+        memcpy(l->title, title, t_len);
+        l->title[t_len] = 0;
+
+        memcpy(l->bonus.what, what, w_len);
+        l->bonus.what[w_len] = 0;
+
         l->bonus.amount = amount;
         l->next = NULL;
     }
@@ -209,8 +222,8 @@ void Athena_AppendClass(struct Athena_Class *clazz, struct Athena_ClassList **to
     }
 }
 
-void Athena_AppendTechBonus(const char *what, int amount, struct Athena_TechTree *to){
-    Athena_AppendBonus(what, amount, &to->bonuses);
+void Athena_AppendTechBonus(const char *title, const char *what, int amount, struct Athena_TechTree *to){
+    Athena_AppendBonus(title, what, amount, &to->bonuses);
 }
 
 void Athena_AppendTechClass(struct Athena_Class *clazz, struct Athena_TechTree *to){

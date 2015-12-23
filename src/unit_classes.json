@@ -21,6 +21,15 @@
         "is_building":true
     },
     {
+        "name":"Barracks",
+        "attack":1.0,
+        "defense":1.0,
+        "range":1.0,
+        "movement":0.0,
+        "actions":1.0,
+        "is_building":true
+    },
+    {
         "name":"Path",
         "attack":0.0,
         "defense":255.0,
