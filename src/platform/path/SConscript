@@ -1,10 +1,17 @@
 import os
+import sys
 
 Import("environment")
 
+is_win = sys.platform.startswith("win") or sys.platform.startswith("cyg") or sys.platform.startswith("msys")
+
+
+if is_win:
+    athena_pathutils = environment.Library("athena_pathutils", ["path.c", "filetype_win32.c"])
 if os.name == "posix":
     athena_pathutils = environment.Library("athena_pathutils", ["path.c", "filetype_unix.c"])
-else:
+else: # Just in case.
+    print("Warning: no path backend")
     athena_pathutils = environment.Library("athena_pathutils", ["path.c"])
 
 Return("athena_pathutils")
