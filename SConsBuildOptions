@@ -52,6 +52,10 @@ AddOption('--extra-ld-flags', dest="extra-link", nargs=1, action='store',
     help="Adds flags to use with the linker compiler. These are applied after --clear-all-flags")
 AddOption('--extra-link-flags', dest="extra-link", nargs=1, action='store', help="Alias for --extra-ld-flags")
 
+AddOption('--audio-driver', dest="audio-drv", nargs=1, action='store', help="Sets the audio driver. Current options are OpenAL, Haiku, and sndio.")
+AddOption('--disable-sndio', dest="no-sndio", nargs=1, action='store',
+    help="Disables sndio support even when detected. Useful for Linux with both OpenAL and sndio installed..")
+
 if GetOption('use-intel-cc') == 'y':
     use_intel_cc = True
 
