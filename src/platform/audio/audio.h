@@ -13,7 +13,12 @@ struct Athena_SoundConfig{
     unsigned char loop;
 };
 
-enum Athena_SoundFormat { Athena_SoundU16, Athena_SoundU32, Athena_SoundFloat };
+enum Athena_SoundFormat { Athena_SoundU8, Athena_SoundS16, Athena_SoundS24, Athena_SoundS32, Athena_SoundFloat };
+#define ATHENA_FORMAT_BYTE_SIZE(FORMAT_)\
+    (FORMAT_ == Athena_SoundFloat) ? 4 :\
+    (FORMAT_ + 1)
+
+#define ATHENA_VOLUME_EPSILON 0.0025f
 
 /* This MUST be either 16-bit integer or 32-bit float. */
 enum Athena_SoundFormat Athena_PreferredFormat(struct Athena_SoundContext *);

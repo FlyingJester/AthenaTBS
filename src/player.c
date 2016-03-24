@@ -6,6 +6,42 @@
 #include <stdio.h>
 #include <string.h>
 
+static unsigned athena_builds(unsigned remaining, struct Athena_Class **buildable,
+    unsigned i, const char *builder, const struct Athena_Class **out){
+    if(remaining == 0){
+        return i;
+    }
+    else{
+        if(strcmp(builder, buildable[0]->built_by) == 0){
+            out[0] = buildable[0];
+            return athena_builds(remaining - 1, buildable + 1, i + 1, builder, out + 1);
+        }
+        else
+            return athena_builds(remaining - 1, buildable + 1, i, builder, out);
+    }
+}
+
+static unsigned athena_can_build(unsigned n, struct Athena_Class **const buildable, const struct Athena_Class *class){
+    if(n == 0)
+        return 0;
+    else{
+        
+        if(*buildable == class)
+            return 1;
+        else
+            return athena_can_build(n-1, buildable+1, class);
+    }
+}
+
+unsigned Athena_CanBuild(const struct Athena_Player *player, struct Athena_Class *class){
+    return athena_can_build(player->num_buildable, player->buildable, class);
+}
+
+/* Will return at most 16. Returns the number of matches filled in. */
+unsigned Athena_GetBuilds(const struct Athena_Player *player, const char *builder, const struct Athena_Class **out){
+    return athena_builds(player->num_buildable, player->buildable, 0, builder, out);
+}
+
 void Athena_DrawPlayerDataBox(const struct Athena_Player *player, struct Athena_Viewport *to){
     
     struct Athena_WindowStyle style;
@@ -22,7 +58,7 @@ void Athena_DrawPlayerDataBox(const struct Athena_Player *player, struct Athena_
     }
     
     {
-        char buffer[80];
+        char buffer[0x100];
         sprintf(buffer, "%i", player->resources.cash);
         WriteString(GetSystemFont(), "Cash", to->image, to->x + 20, to->y + 20);
         WriteString(GetSystemFont(), buffer, to->image, to->x + 70, to->y + 20);

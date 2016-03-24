@@ -80,7 +80,7 @@ void Athena_DestroySoundContext(struct Athena_SoundContext *ctx){
 }
 
 enum Athena_SoundFormat Athena_PreferredFormat(struct Athena_SoundContext *ctx){
-    return Athena_SoundU16;
+    return Athena_SoundS16;
 }
 
 enum Athena_SoundFormat Athena_PreferredSoundFormat(struct Athena_Sound *snd){
