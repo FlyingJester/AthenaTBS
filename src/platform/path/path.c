@@ -2,6 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined _WIN32 || defined __CYGWIN__
+#define PATH_SEPARATOR(X) (X=='/' || X=='\\')
+#else
+#define PATH_SEPARATOR(X) (X=='/')
+#endif
+
 char *Athena_CanonizePathName(const char * const in){
     
     /* Slightly overengineered, we double our string size (cap) when we need more room */
@@ -18,7 +24,7 @@ char *Athena_CanonizePathName(const char * const in){
     /* Calculate all the components. */
     while(*at!='\0'){
         switch(*at){
-#ifdef _WIN32
+#if defined _WIN32 || defined __CYGWIN__
             case '\\':
 #endif
             case '/':
@@ -117,11 +123,11 @@ void Athena_GetContainingDirectoryStaticN(char * in, unsigned len){
     if(len && (!Athena_IsDirectory(in))){
         char *end = in + len - 1;
         /* Remove any trailing slashes */
-        if(*end=='/'){
+        if(PATH_SEPARATOR(*end)){
             end--;
         }
         
-        while(end != in && *end!='/')
+        while(end != in && !PATH_SEPARATOR(*end))
             end--;
         if(end!=in){
             end[0] = '\0';
@@ -137,7 +143,7 @@ char *Athena_GetContainingDirectory(const char * const in){
     if(in[0] == '\0')
         return NULL;
     else{
-        const unsigned in_len = strlen(in);
+        const unsigned long in_len = strlen(in);
         char *r_path = malloc(in_len + 1);
         
         memcpy(r_path, in, in_len + 1);
