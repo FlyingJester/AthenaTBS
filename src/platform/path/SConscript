@@ -8,7 +8,7 @@ is_win = sys.platform.startswith("win") or sys.platform.startswith("cyg") or sys
 
 if is_win:
     athena_pathutils = environment.Library("athena_pathutils", ["path.c", "filetype_win32.c"])
-if os.name == "posix":
+elif os.name == "posix":
     athena_pathutils = environment.Library("athena_pathutils", ["path.c", "filetype_unix.c"])
 else: # Just in case.
     print("Warning: no path backend")
