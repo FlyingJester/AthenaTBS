@@ -8,7 +8,7 @@
 
 static unsigned athena_builds(unsigned remaining, struct Athena_Class **buildable,
     unsigned i, const char *builder, const struct Athena_Class **out){
-    if(remaining == 0){
+    if(remaining == 0 || i==16){
         return i;
     }
     else{
